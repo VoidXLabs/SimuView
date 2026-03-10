@@ -11,7 +11,7 @@
     <groupId>com.voidxlab</groupId>
     <artifactId>SimuView</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>SimuViewBackEnd</name>
     <description>SimuViewBackEnd</description>
     <properties>
