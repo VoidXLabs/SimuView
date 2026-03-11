@@ -1,16 +1,76 @@
-import { useState } from "react";
+import { useState, useRef, useEffect} from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Upload, Link as LinkIcon } from "lucide-react";
 import { Box } from '@mui/material';
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+import { isJobSiteUrl } from '../utils/urlChecker';
 
 export default function Setup() {
-  // todo 进入Setup页面时， 会根据当前用户id和当前时间戳生成一个view_id
-  const timestamp = Date.now();
-  const view_id = timestamp.toString() + "1";
+  // 进入Setup页面时， 生成当前会话的view_id
+  const [view_id] = useState(() => uuidv4());
+  console.log(view_id); // 例如: "36b8f84d-df4e-4d49-b662-bcde71a8764f"
 
+  // websocket相关变量
+  const [loadingText, setLoadingText] = useState('等待输入');
+  const [isParsing, setIsParsing] = useState(false);
+  const [parsedData, setParsedData] = useState(null);
+
+  // 💡使用 useRef 存储 WebSocket 实例
+  const wsRef = useRef<WebSocket | null>(null);
+  // 组件挂载时：建立 WebSocket 连接
+    useEffect(() => {
+        console.log(`初始化 WebSocket 连接，通道ID: ${view_id}`);
+        // 建立连接
+        const ws = new WebSocket(`ws://your-backend-domain.com/ws/parse-task/${view_id}`);
+        wsRef.current = ws;
+
+        // 监听连接建立
+        ws.onopen = () => {
+            console.log('✅ WebSocket 连接已建立');
+        };
+
+        // 监听后端推送的消息
+        ws.onmessage = (event) => {
+            const response = JSON.parse(event.data);
+            
+            switch(response.status) {
+                case 'processing':
+                    // 后端推送：连接成功、解析中、存储中...
+                    setLoadingText(response.message);
+                    break;
+                case 'success':
+                    // 后端推送：大功告成
+                    setIsParsing(false);
+                    setLoadingText('解析成功！');
+                    setParsedData(response.data);
+                    // TODO: 可以在这里使用 react-router-dom 的 useNavigate() 跳转到面试页面
+                    break;
+                case 'error':
+                    // 后端推送：爬虫失败、被反爬拦截等
+                    setIsParsing(false);
+                    setLoadingText('抓取失败，请手动输入JD');
+                    break;
+                default:
+                    break;
+            }
+        };
+
+        ws.onerror = (error) => console.error("❌ WebSocket 发生错误", error);
+        ws.onclose = () => console.log("⚠️ WebSocket 连接已关闭");
+
+        // 组件卸载时的清理函数
+        return () => {
+            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+                ws.close();
+            }
+        };
+    }, [view_id]); // 依赖项数组包含 viewId
+
+  // 页面中相关变量
   const navigate = useNavigate();
   const [jobUrl, setJobUrl] = useState("");
   const [resume, setResume] = useState<File | null>(null);
@@ -22,8 +82,44 @@ export default function Setup() {
     }
   };
 
-  // 解析招聘信息
-  const analysisJobUrl = () => {
+  // 解析招聘信息 todo: 发送 HTTP 请求
+  const analysisJobUrl = async () => {
+    if (!jobUrl.trim()) {
+      alert("请输入岗位链接！");
+      return;
+    }
+
+    if(!isJobSiteUrl(jobUrl)) {
+      alert("请输入支持的招聘网站链接！");
+      return;
+    }
+
+    // 锁定 UI：禁用按钮，显示进度条
+    setIsParsing(true);
+    setLoadingText('正在提交解析任务...');
+
+    try {
+        // 发送异步 HTTP POST 请求触发爬虫
+        const response = await axios.post('https://your-backend-domain.com/api/start-parse', {
+            view_id: view_id,
+            url: jobUrl
+        });
+
+        const data = response.data;
+        console.log('返回数据:', data);
+        
+        // 🚨 注意重点：
+        // HTTP 请求返回 200 成功，只代表“后端把任务放进队列了”。
+        // 我们【绝不能】在这里把 isParsing 设为 false！
+        // 真正的状态解除，必须依赖 useEffect 里 ws.onmessage 收到的 success 信号。
+        setLoadingText('任务已进入队列，等待后台处理...');
+        
+    } catch (error) {
+        // 如果提交任务本身失败（比如网络断开，或者后端网关报错）
+        setIsParsing(false);
+        setLoadingText('系统繁忙，任务提交失败');
+        console.error("提交爬虫任务失败", error);
+    }
 
   }
 
@@ -46,7 +142,6 @@ export default function Setup() {
     }
   };
 
-  const isJobUrlValid = jobUrl.trim() !== "";
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -87,9 +182,9 @@ export default function Setup() {
                 </div>
                 <Button 
                   onClick={analysisJobUrl}
-                  disabled={!isJobUrlValid} 
+                  disabled={isParsing} 
                   className="bg-neutral-800 hover:bg-neutral-700">
-                    解析
+                    {isParsing ? '解析中...' : '开始解析'}
                 </Button>
               </Box>
               <p className="text-sm text-neutral-500">
