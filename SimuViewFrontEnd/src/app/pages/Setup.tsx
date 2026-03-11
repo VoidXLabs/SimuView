@@ -25,7 +25,7 @@ export default function Setup() {
     useEffect(() => {
         console.log(`初始化 WebSocket 连接，通道ID: ${view_id}`);
         // 建立连接
-        const ws = new WebSocket(`ws://your-backend-domain.com/ws/parse-task/${view_id}`);
+        const ws = new WebSocket(`ws://xxx/ws/v1/interview/task-status/{view_id}${view_id}`);
         wsRef.current = ws;
 
         // 监听连接建立
@@ -100,7 +100,7 @@ export default function Setup() {
 
     try {
         // 发送异步 HTTP POST 请求触发爬虫
-        const response = await axios.post('https://your-backend-domain.com/api/start-parse', {
+        const response = await axios.post('https://xxx/api/v1/interview/start-parse', {
             view_id: view_id,
             url: jobUrl
         });
