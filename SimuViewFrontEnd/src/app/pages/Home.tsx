@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import { Brain } from "lucide-react";
 import { Button } from "../components/ui/button";
 
+
 export default function Home() {
   const navigate = useNavigate();
 
@@ -14,6 +15,7 @@ export default function Home() {
               <Brain className="w-10 h-10 text-white" />
             </div>
           </div>
+
           <h1 className="text-4xl font-semibold text-neutral-900">
             AI 智能模拟面试系统
           </h1>

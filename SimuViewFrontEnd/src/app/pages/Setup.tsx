@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Upload, Link as LinkIcon } from "lucide-react";
+import { Box } from '@mui/material';
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 
 export default function Setup() {
+  // todo 进入Setup页面时， 会根据当前用户id和当前时间戳生成一个view_id
+  const timestamp = Date.now();
+  const view_id = timestamp.toString() + "1";
+
   const navigate = useNavigate();
   const [jobUrl, setJobUrl] = useState("");
   const [resume, setResume] = useState<File | null>(null);
+  const [prepearation, setPrepearation] = useState<true | false>(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -16,11 +22,23 @@ export default function Setup() {
     }
   };
 
+  // 解析招聘信息
+  const analysisJobUrl = () => {
+
+  }
+
+  // 解析用户简历
+  const analysisUserResume = () => {
+
+  }
+
+
   const handleStartInterview = () => {
     if (jobUrl && resume) {
       // 将数据传递到面试页面
       navigate("/interview", {
         state: {
+          view_id,
           jobUrl,
           resumeName: resume.name,
         },
@@ -28,7 +46,7 @@ export default function Setup() {
     }
   };
 
-  const isFormValid = jobUrl.trim() !== "" && resume !== null;
+  const isJobUrlValid = jobUrl.trim() !== "";
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -50,22 +68,30 @@ export default function Setup() {
           </p>
 
           <div className="space-y-6">
-            {/* 岗位URL输入 */}
+            {/* 岗位URL输入 todo : 当点击解析按钮时 触发分析岗位信息脚本 */}
             <div className="space-y-2">
               <Label htmlFor="job-url" className="text-neutral-700">
                 Boss直聘岗位链接
               </Label>
-              <div className="relative">
-                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                <Input
-                  id="job-url"
-                  type="url"
-                  placeholder="https://www.zhipin.com/job_detail/..."
-                  value={jobUrl}
-                  onChange={(e) => setJobUrl(e.target.value)}
-                  className="pl-11 h-12 bg-neutral-50 border-neutral-200 focus:border-neutral-400 focus:ring-neutral-400"
-                />
-              </div>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="relative" style={{ flex: 1 }}>
+                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                  <Input
+                    id="job-url"
+                    type="url"
+                    placeholder="https://www.zhipin.com/job_detail/..."
+                    value={jobUrl}
+                    onChange={(e) => setJobUrl(e.target.value)}
+                    className="pl-11 h-12 bg-neutral-50 border-neutral-200 focus:border-neutral-400 focus:ring-neutral-400"
+                  />
+                </div>
+                <Button 
+                  onClick={analysisJobUrl}
+                  disabled={!isJobUrlValid} 
+                  className="bg-neutral-800 hover:bg-neutral-700">
+                    解析
+                </Button>
+              </Box>
               <p className="text-sm text-neutral-500">
                 粘贴Boss直聘上的目标岗位链接
               </p>
@@ -120,7 +146,7 @@ export default function Setup() {
             <div className="pt-4">
               <Button
                 onClick={handleStartInterview}
-                disabled={!isFormValid}
+                disabled={!prepearation}
                 className="w-full h-12 bg-neutral-800 hover:bg-neutral-700 disabled:bg-neutral-300 disabled:text-neutral-500 text-white rounded-xl text-base"
               >
                 开始面试
