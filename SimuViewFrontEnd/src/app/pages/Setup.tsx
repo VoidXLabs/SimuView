@@ -33,7 +33,7 @@ export default function Setup() {
             console.log('✅ WebSocket 连接已建立');
         };
 
-        // 监听后端推送的消息
+        // 监听后端推送的消息: todo 通道复用
         ws.onmessage = (event) => {
             const response = JSON.parse(event.data);
             
@@ -75,6 +75,8 @@ export default function Setup() {
   const [jobUrl, setJobUrl] = useState("");
   const [resume, setResume] = useState<File | null>(null);
   const [prepearation, setPrepearation] = useState<true | false>(false);
+  const [isJdReady, setIsJdReady] = useState<true | false>(false);
+  const [isResumeReady, setisResumeReady] = useState<true | false>(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -123,20 +125,19 @@ export default function Setup() {
 
   }
 
-  // 解析用户简历
+  // 解析用户简历 todo: 发送post请求 解析用户简历
   const analysisUserResume = () => {
 
   }
 
 
   const handleStartInterview = () => {
-    if (jobUrl && resume) {
+    if (isJdReady && isResumeReady) {
       // 将数据传递到面试页面
       navigate("/interview", {
         state: {
           view_id,
           jobUrl,
-          resumeName: resume.name,
         },
       });
     }
@@ -241,7 +242,7 @@ export default function Setup() {
             <div className="pt-4">
               <Button
                 onClick={handleStartInterview}
-                disabled={!prepearation}
+                disabled={!(isJdReady && isResumeReady)}
                 className="w-full h-12 bg-neutral-800 hover:bg-neutral-700 disabled:bg-neutral-300 disabled:text-neutral-500 text-white rounded-xl text-base"
               >
                 开始面试
