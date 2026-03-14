@@ -72,8 +72,6 @@ export default function Setup() {
                 setLoadingText('解析成功！');
                 setParsedData(response.data);
                 
-                // 注意：这里由于 React 闭包陷阱，直接 if(isJdReady && isResumeReady) 可能会拿到旧状态
-                // 建议将跳转逻辑移到另一个专门监听 [isJdReady, isResumeReady] 的 useEffect 中
                 if(response.type == 1) {
                   setIsJdReady(true);
                 } else if(response.type == 2){
@@ -139,7 +137,7 @@ export default function Setup() {
 
     try {
         // 发送异步 HTTP POST 请求触发爬虫
-        const response = await axios.post('https://xxx/api/v1/interview/job-parse', {
+        const response = await axios.post('https://localhost:8080/api/v1/preview/job-parse', {
             view_id: view_id,
             url: jobUrl
         });
@@ -176,7 +174,7 @@ export default function Setup() {
     setLoadingText('正在提交解析任务...');
     try {
         // 发送异步 HTTP POST 请求解析简历
-        const response = await axios.post('https://xxx/api/v1/interview/resume-parse', {
+        const response = await axios.post('https://localhost:8080/api/v1/preview/resume-parse', {
             view_id: view_id,
             body: formData,
         });
