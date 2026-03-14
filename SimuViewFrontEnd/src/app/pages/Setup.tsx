@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect} from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Upload, Link as LinkIcon, Loader2, CheckCircle2 } from "lucide-react";
-import { Box } from '@mui/material';
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -30,7 +29,7 @@ export default function Setup() {
   // 👇 新增的监控状态
   const [wsStatus, setWsStatus] = useState<'connecting' | 'open' | 'closed' | 'error'>('connecting');
   const [wsLogs, setWsLogs] = useState<string[]>([]); // 存储历史消息
-  const [isMonitorVisible, setIsMonitorVisible] = useState(true); // 控制小窗的收起/展开
+  const [isMonitorVisible, setIsMonitorVisible] = useState(false); // 控制小窗的收起/展开
   const addWsLog = (message: string) => {
     setWsLogs((prev) => {
       const newLogs = [...prev, `[${new Date().toLocaleTimeString()}] ${message}`];
@@ -44,7 +43,7 @@ export default function Setup() {
   // 组件挂载时：建立 WebSocket 连接
   useEffect(() => {
     console.log(`初始化 WebSocket 连接，通道ID: ${view_id}`);
-    addWsLog(`正在连接 ws://localhost:8080/ws/v1/interview/task-status/${view_id}...`);
+    addWsLog(`正在连接...`);
     setWsStatus('connecting');
 
     const ws = new WebSocket(`ws://localhost:8080/ws/v1/interview/task-status/${view_id}`);
@@ -60,7 +59,7 @@ export default function Setup() {
     // 监听后端推送的消息
     ws.onmessage = (event) => {
         // 💡 记录收到的原始消息
-        addWsLog(`📩 收到消息: ${event.data}`);
+        addWsLog(`📩 ${event.data}`);
         
         const response = JSON.parse(event.data);
         switch(response.status) {
@@ -81,7 +80,7 @@ export default function Setup() {
             case 'error':
                 setIsParsing(false);
                 setLoadingText('抓取失败，请手动输入JD');
-                addWsLog(`❌ 业务报错: ${response.message || '未知错误'}`);
+                addWsLog(`❌ ${response.message || '未知错误'}`);
                 break;
             default:
                 break;
@@ -91,13 +90,13 @@ export default function Setup() {
     // 👇 补全：监听连接关闭
     ws.onclose = (event) => {
         setWsStatus('closed');
-        addWsLog(`⚠️ 连接已关闭 (代码: ${event.code})`);
+        addWsLog(`⚠️ 关闭 (代码: ${event.code})`);
     };
 
     // 👇 补全：监听底层错误
     ws.onerror = (error) => {
         setWsStatus('error');
-        addWsLog('❌ WebSocket 发生错误');
+        addWsLog('❌ 发生错误');
         console.error('WebSocket Error:', error);
     };
 
@@ -196,174 +195,157 @@ export default function Setup() {
 
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <div className="max-w-3xl mx-auto p-6 py-12">
+    <div className="py-12">
+      <div className="max-w-3xl mx-auto p-6">
         <button
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-neutral-600 hover:text-neutral-900 mb-8 transition-colors"
+          className="group flex items-center gap-2 text-neutral-500 hover:text-neutral-900 mb-8 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span>返回首页</span>
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium">返回首页</span>
         </button>
 
-        <div className="bg-white rounded-2xl border border-neutral-200 p-8 md:p-12">
-          <h2 className="text-2xl font-semibold text-neutral-900 mb-2">
-            面试准备
-          </h2>
-          <p className="text-neutral-600 mb-8">
-            请填写岗位信息并上传简历，我们将为您定制面试问题
-          </p>
+        <div className="bg-white rounded-3xl border border-neutral-200/60 p-8 md:p-12 shadow-sm">
+          <div className="space-y-1 mb-10">
+            <h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
+              面试准备
+            </h2>
+            <p className="text-neutral-500 text-lg">
+              请填写岗位信息并上传简历，我们将为您定制面试问题
+            </p>
+          </div>
 
-          <div className="space-y-6">
+          <div className="space-y-10">
             {/* 岗位URL输入区 */}
-            <div className="space-y-2">
-              <Label htmlFor="job-url" className="text-neutral-700">
+            <div className="space-y-3">
+              <Label htmlFor="job-url" className="text-neutral-700 font-semibold ml-1">
                 Boss直聘岗位链接
               </Label>
-              <Box sx={{ display: 'flex', gap: '16px' }}> {/* 建议用 gap 替代 justifyContent: 'space-between'，视觉更紧凑 */}
-                <div className="relative flex-1">
-                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1 group">
+                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-primary transition-colors" />
                   <Input
                     id="job-url"
                     type="url"
-                    placeholder="http://www.zhipin.com/job_detail/..."
+                    placeholder="粘贴岗位链接：http://www.zhipin.com/job_detail/..."
                     value={jobUrl}
                     onChange={(e) => setJobUrl(e.target.value)}
-                    className="pl-11 h-12 bg-neutral-50 border-neutral-200 focus:border-neutral-400 focus:ring-neutral-400"
+                    className="pl-12 h-14 bg-neutral-50/50 border-neutral-200/80 rounded-2xl focus:border-primary/50 focus:ring-primary/20 transition-all text-base"
                   />
                 </div>
                 <Button 
                   onClick={analysisJobUrl}
-                  disabled={isParsing || isJdReady} // 解析中 或者 已经解析完成时，都禁用点击
-                  className={`h-12 px-6 transition-colors ${
+                  disabled={isParsing || isJdReady}
+                  className={`h-14 px-8 text-base font-semibold rounded-2xl transition-all shadow-lg active:scale-95 ${
                     isJdReady 
-                      ? 'bg-green-600 hover:bg-green-600 opacity-90 cursor-not-allowed' // 解析完成后的样式（绿色）
-                      : 'bg-neutral-800 hover:bg-neutral-700' // 默认样式（黑色）
+                      ? 'bg-green-500 hover:bg-green-500 text-white shadow-green-200'
+                      : 'bg-primary hover:bg-primary/90 text-white shadow-primary/20'
                   }`}
                 >
-                  {/* 根据不同状态动态显示文字 */}
-                  {isJdReady ? '解析完成 ✅' : (isParsing ? '解析中...' : '开始解析')}
+                  {isJdReady ? '已就绪 ✅' : (isParsing ? '解析中...' : '开始解析')}
                 </Button>
-              </Box>
-              <p className="text-sm text-neutral-500">
-                粘贴Boss直聘上的目标岗位链接
+              </div>
+              <p className="text-xs text-neutral-400 ml-1">
+                我们目前优先支持 Boss直聘 平台
               </p>
             </div>
 
             {/* 👇 新增：全屏阻塞式加载弹窗 (仅在解析时显示) */}
             {isParsing && (
-              <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-900/40 backdrop-blur-sm transition-opacity">
-                {/* 弹窗主体 */}
-                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center transform animate-in fade-in zoom-in-95 duration-200">
-                  
-                  {/* 动态转圈图标 */}
-                  <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
-                    {/* 外圈虚线旋转轨道 */}
-                    <div className="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
-                    <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-                    {/* 内圈呼吸图标 */}
-                    <Loader2 className="w-8 h-8 text-blue-600 animate-pulse" />
+              <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-900/40 backdrop-blur-md transition-opacity duration-300">
+                <div className="bg-white rounded-[2.5rem] shadow-2xl p-10 max-w-sm w-full mx-4 flex flex-col items-center animate-in zoom-in-95 duration-300 border border-white/20">
+                  <div className="relative w-24 h-24 mb-8 flex items-center justify-center">
+                    <div className="absolute inset-0 border-[6px] border-primary/5 rounded-full"></div>
+                    <div className="absolute inset-0 border-[6px] border-primary rounded-full border-t-transparent animate-spin"></div>
+                    <Loader2 className="w-10 h-10 text-primary animate-pulse" />
                   </div>
 
-                  {/* 核心状态文字 */}
-                  <h3 className="text-xl font-bold text-neutral-900 mb-2">
-                    正在解析岗位信息
+                  <h3 className="text-2xl font-bold text-neutral-900 mb-3 text-center">
+                    AI 正在处理
                   </h3>
                   
-                  {/* 实时 WebSocket 消息推送显示 */}
-                  <p className="text-blue-600 font-medium text-center animate-pulse min-h-[1.5rem]">
+                  <p className="text-primary font-semibold text-center h-6 text-lg tracking-wide">
                     {loadingText || "正在建立安全连接..."}
                   </p>
                   
-                  <p className="text-xs text-neutral-400 mt-6 text-center">
+                  <div className="w-full bg-neutral-100 h-2 rounded-full mt-10 overflow-hidden relative">
+                    <div className="absolute inset-0 bg-primary/10"></div>
+                    <div className="absolute top-0 bottom-0 left-0 bg-primary rounded-full w-2/3 animate-[shimmer_2s_infinite_linear] shadow-[0_0_8px_rgba(3,2,19,0.3)]"></div>
+                  </div>
+
+                  <p className="text-sm text-neutral-400 mt-8 text-center leading-relaxed">
                     AI 正在高速处理中，请勿关闭或刷新页面
                   </p>
-
-                  {/* 底部仿进度条动画 (左右来回扫描效果) */}
-                  <div className="w-full bg-blue-50 h-1.5 rounded-full mt-4 overflow-hidden relative">
-                    <div className="absolute top-0 bottom-0 left-0 w-1/3 bg-blue-500 rounded-full animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] opacity-75"></div>
-                    <div className="absolute top-0 bottom-0 left-0 bg-blue-500 rounded-full w-full animate-pulse"></div>
-                  </div>
                 </div>
               </div>
             )}
 
             {/* 简历上传 */}
-            <div className="space-y-2">
-              <Label htmlFor="resume-upload" className="text-neutral-700">
-                上传简历
+            <div className="space-y-3">
+              <Label htmlFor="resume-upload" className="text-neutral-700 font-semibold ml-1">
+                上传个人简历
               </Label>
               <div 
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+                className={`group relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300 overflow-hidden ${
                   isParsing 
-                    ? "border-blue-200 bg-blue-50/30 cursor-not-allowed" // 解析中的样式
-                    : "border-neutral-300 hover:border-neutral-400 cursor-pointer" // 默认样式
+                    ? "border-primary/20 bg-neutral-50/50 cursor-not-allowed"
+                    : isResumeReady
+                    ? "border-green-200 bg-green-50/30 hover:border-green-300"
+                    : "border-neutral-200 bg-neutral-50/30 hover:border-primary/30 hover:bg-white cursor-pointer"
                 }`}
               >
-                {/* 只有在非解析状态下才允许触发 input */}
                 <input
                   id="resume-upload"
                   type="file"
                   accept=".pdf,.doc,.docx"
                   onChange={analysisUserResume}
                   className="hidden"
-                  disabled={isParsing} // 解析时禁用 input
+                  disabled={isParsing}
                 />
                 
                 <label
-                  htmlFor={isParsing ? "" : "resume-upload"} // 解析时移除 htmlFor 绑定，双重保险
-                  className={`block ${isParsing ? "cursor-not-allowed" : "cursor-pointer"}`}
+                  htmlFor={isParsing ? "" : "resume-upload"}
+                  className={`block relative z-10 ${isParsing ? "cursor-not-allowed" : "cursor-pointer"}`}
                 >
-                  <div className="flex flex-col items-center gap-3">
-                    {/* 图标动态切换 */}
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                      isParsing ? "bg-blue-100 animate-pulse" : "bg-neutral-100"
+                  <div className="flex flex-col items-center gap-5">
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${
+                      isParsing ? "bg-primary text-white animate-pulse" : 
+                      isResumeReady ? "bg-green-500 text-white scale-110" : "bg-white text-neutral-600 group-hover:scale-110 group-hover:shadow-md"
                     }`}>
                       {isParsing ? (
-                        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
-                      ) : isResumeReady ? ( // 如果解析完成了，显示勾选图标
-                        <CheckCircle2 className="w-6 h-6 text-green-600" />
+                        <Loader2 className="w-8 h-8 animate-spin" />
+                      ) : isResumeReady ? (
+                        <CheckCircle2 className="w-8 h-8" />
                       ) : (
-                        <Upload className="w-6 h-6 text-neutral-600" />
+                        <Upload className="w-8 h-8" />
                       )}
                     </div>
 
-                    <div className="space-y-1">
-                      {isParsing ? (
-                        <>
-                          {/* 核心：实时显示 WebSocket 推送的 loadingText */}
-                          <p className="font-medium text-blue-700">
-                            {loadingText || "正在处理..."}
-                          </p>
-                          <p className="text-sm text-blue-500 animate-pulse">
-                            AI 正在努力思考，请勿刷新页面
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-medium text-neutral-900">
-                            {resume ? resume.name : "点击上传简历文件"}
-                          </p>
-                          <p className="text-sm text-neutral-500">
-                            {isResumeReady ? "✅ 解析完成，点击可重新上传" : "支持 PDF、DOC、DOCX 格式"}
-                          </p>
-                        </>
-                      )}
+                    <div className="space-y-2">
+                      <p className={`text-xl font-bold transition-colors ${
+                        isParsing ? "text-primary" : 
+                        isResumeReady ? "text-green-700" : "text-neutral-900"
+                      }`}>
+                        {resume ? resume.name : (isResumeReady ? "解析完成" : "点击或拖拽简历上传")}
+                      </p>
+                      <p className="text-neutral-500 font-medium">
+                        {isResumeReady ? "✅ 简历已解析，您可以继续或重新上传" : "支持 PDF、DOCX 格式（不超过 10MB）"}
+                      </p>
                     </div>
-                    
                   </div>
                 </label>
               </div>
             </div>
 
             {/* 开始面试按钮 */}
-            <div className="pt-4">
+            <div className="pt-6">
               <Button
                 onClick={handleStartInterview}
                 disabled={!(isJdReady && isResumeReady)}
-                className="w-full h-12 bg-neutral-800 hover:bg-neutral-700 disabled:bg-neutral-300 disabled:text-neutral-500 text-white rounded-xl text-base"
+                className="w-full h-16 bg-primary hover:bg-primary/90 disabled:bg-neutral-200 disabled:text-neutral-400 text-white rounded-[1.25rem] text-xl font-bold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 group"
               >
-                开始面试
+                <span>进入面试房间</span>
+                <CheckCircle2 className={`ml-3 w-6 h-6 transition-all duration-500 ${isJdReady && isResumeReady ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`} />
               </Button>
             </div>
           </div>
@@ -375,68 +357,67 @@ export default function Setup() {
       {/* --- WebSocket 监控小窗 --- */}
       <div style={{
         position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        width: isMonitorVisible ? '350px' : 'auto',
-        backgroundColor: '#1e1e1e',
-        color: '#d4d4d4',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        fontFamily: 'monospace',
+        bottom: '30px',
+        right: '30px',
+        width: isMonitorVisible ? '400px' : 'auto',
+        backgroundColor: '#030213',
+        color: '#f8fafc',
+        borderRadius: '20px',
+        boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+        fontFamily: 'JetBrains Mono, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
         fontSize: '12px',
         zIndex: 9999,
         overflow: 'hidden',
-        border: '1px solid #333'
+        border: '1px solid rgba(255,255,255,0.1)',
+        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
       }}>
         {/* 头部区域 */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '8px 12px',
-          backgroundColor: '#2d2d2d',
-          borderBottom: isMonitorVisible ? '1px solid #444' : 'none',
+          padding: '12px 20px',
+          backgroundColor: 'rgba(255,255,255,0.05)',
           cursor: 'pointer'
         }} onClick={() => setIsMonitorVisible(!isMonitorVisible)}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* 状态指示灯 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{
-              width: '10px', height: '10px', borderRadius: '50%',
+              width: '8px', height: '8px', borderRadius: '50%',
               backgroundColor: 
-                wsStatus === 'open' ? '#4ade80' : // 绿
-                wsStatus === 'connecting' ? '#fbbf24' : // 黄
-                '#f87171', // 红
-              boxShadow: wsStatus === 'open' ? '0 0 8px #4ade80' : 'none'
+                wsStatus === 'open' ? '#22c55e' : 
+                wsStatus === 'connecting' ? '#eab308' : 
+                '#ef4444',
+              boxShadow: wsStatus === 'open' ? '0 0 12px #22c55e' : 'none'
             }}></span>
-            <strong style={{ color: '#fff' }}>WS 调试监控</strong>
-            <span style={{ color: '#888' }}>({wsStatus})</span>
+            <strong style={{ fontWeight: '600', letterSpacing: '0.05em' }}>SYSTEM ENGINE</strong>
           </div>
           <button style={{ 
-            background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: '0' 
+            background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px'
           }}>
-            {isMonitorVisible ? '▼' : '▲'}
+            {isMonitorVisible ? 'HIDE' : 'DEBUG'}
           </button>
         </div>
 
         {/* 消息列表区域 */}
         {isMonitorVisible && (
-          <div style={{ height: '250px', overflowY: 'auto', padding: '8px' }}>
+          <div style={{ height: '280px', overflowY: 'auto', padding: '16px', backgroundColor: 'rgba(0,0,0,0.2)' }}>
             {wsLogs.length === 0 ? (
-              <div style={{ color: '#666', textAlign: 'center', marginTop: '20px' }}>暂无消息...</div>
+              <div style={{ color: '#475569', textAlign: 'center', marginTop: '40px' }}>WAITING FOR EVENTS...</div>
             ) : (
               wsLogs.map((log, index) => (
                 <div key={index} style={{ 
-                  marginBottom: '6px', 
+                  marginBottom: '8px', 
                   wordBreak: 'break-all',
-                  color: log.includes('📩') ? '#61dafb' : 
+                  paddingLeft: '12px',
+                  borderLeft: '2px solid rgba(255,255,255,0.1)',
+                  color: log.includes('📩') ? '#38bdf8' : 
                          log.includes('❌') ? '#f87171' : 
-                         log.includes('✅') ? '#4ade80' : '#d4d4d4'
+                         log.includes('✅') ? '#4ade80' : '#94a3b8'
                 }}>
                   {log}
                 </div>
               ))
             )}
-            {/* 保证最新消息滚动到底部：可以使用 ref 自动滚动，这里简单处理 */}
           </div>
         )}
       </div>
