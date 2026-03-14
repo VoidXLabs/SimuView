@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect} from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Upload, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Upload, Link as LinkIcon, Loader2, CheckCircle2 } from "lucide-react";
 import { Box } from '@mui/material';
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -137,50 +137,42 @@ export default function Setup() {
 
     try {
         // 发送异步 HTTP POST 请求触发爬虫
-        const response = await axios.post('https://localhost:8080/api/v1/preview/job-parse', {
+        const response = await axios.post('http://localhost:8080/api/v1/preview/job-parse', {
             view_id: view_id,
             url: jobUrl
         });
-
         const data = response.data;
-        console.log('返回数据:', data);
-        
-        // 🚨 注意重点：
-        // HTTP 请求返回 200 成功，只代表“后端把任务放进队列了”。
-        // 我们【绝不能】在这里把 isParsing 设为 false！
-        // 真正的状态解除，必须依赖 useEffect 里 ws.onmessage 收到的 success 信号。
+        console.log('请求触发爬虫任务, 服务端响应:', data);
         setLoadingText('任务已进入队列，等待后台处理...');
-        
     } catch (error) {
-        // 如果提交任务本身失败（比如网络断开，或者后端网关报错）
         setIsParsing(false);
         setLoadingText('系统繁忙，任务提交失败');
         console.error("提交爬虫任务失败", error);
     }
-
   }
 
   // 上传简历接口
   const analysisUserResume = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setResume(e.target.files[0]);
-    } 
-    if(!resume){
+    const selectedFile = e.target.files ? e.target.files[0] : null;
+
+    if (!selectedFile) {
       alert("请上传简历！");
       return;
     }
     const formData = new FormData();
-    formData.append('resume', resume); 
+    formData.append('resume', selectedFile); // 追加文件
+    formData.append('view_id', view_id); // 追加view_id
+
+    setIsParsing(true);
     setLoadingText('正在提交解析任务...');
     try {
         // 发送异步 HTTP POST 请求解析简历
-        const response = await axios.post('https://localhost:8080/api/v1/preview/resume-parse', {
-            view_id: view_id,
-            body: formData,
+        const response = await axios.post('http://localhost:8080/api/v1/preview/resume-parse', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
 
         const data = response.data;
-        console.log('返回数据:', data);
+        console.log('请求提交解析简历任务，服务端响应:', data);
         setLoadingText('任务已进入队列，等待后台处理...');
     } catch (error) {
         setIsParsing(false);
@@ -223,18 +215,18 @@ export default function Setup() {
           </p>
 
           <div className="space-y-6">
-            {/* 岗位URL输入 todo : 当点击解析按钮时 触发分析岗位信息脚本 */}
+            {/* 岗位URL输入区 */}
             <div className="space-y-2">
               <Label htmlFor="job-url" className="text-neutral-700">
                 Boss直聘岗位链接
               </Label>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div className="relative" style={{ flex: 1 }}>
+              <Box sx={{ display: 'flex', gap: '16px' }}> {/* 建议用 gap 替代 justifyContent: 'space-between'，视觉更紧凑 */}
+                <div className="relative flex-1">
                   <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
                   <Input
                     id="job-url"
                     type="url"
-                    placeholder="https://www.zhipin.com/job_detail/..."
+                    placeholder="http://www.zhipin.com/job_detail/..."
                     value={jobUrl}
                     onChange={(e) => setJobUrl(e.target.value)}
                     className="pl-11 h-12 bg-neutral-50 border-neutral-200 focus:border-neutral-400 focus:ring-neutral-400"
@@ -242,9 +234,15 @@ export default function Setup() {
                 </div>
                 <Button 
                   onClick={analysisJobUrl}
-                  disabled={isParsing} 
-                  className="bg-neutral-800 hover:bg-neutral-700">
-                    {isParsing ? '解析中...' : '开始解析'}
+                  disabled={isParsing || isJdReady} // 解析中 或者 已经解析完成时，都禁用点击
+                  className={`h-12 px-6 transition-colors ${
+                    isJdReady 
+                      ? 'bg-green-600 hover:bg-green-600 opacity-90 cursor-not-allowed' // 解析完成后的样式（绿色）
+                      : 'bg-neutral-800 hover:bg-neutral-700' // 默认样式（黑色）
+                  }`}
+                >
+                  {/* 根据不同状态动态显示文字 */}
+                  {isJdReady ? '解析完成 ✅' : (isParsing ? '解析中...' : '开始解析')}
                 </Button>
               </Box>
               <p className="text-sm text-neutral-500">
@@ -252,46 +250,107 @@ export default function Setup() {
               </p>
             </div>
 
+            {/* 👇 新增：全屏阻塞式加载弹窗 (仅在解析时显示) */}
+            {isParsing && (
+              <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-900/40 backdrop-blur-sm transition-opacity">
+                {/* 弹窗主体 */}
+                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center transform animate-in fade-in zoom-in-95 duration-200">
+                  
+                  {/* 动态转圈图标 */}
+                  <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
+                    {/* 外圈虚线旋转轨道 */}
+                    <div className="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                    {/* 内圈呼吸图标 */}
+                    <Loader2 className="w-8 h-8 text-blue-600 animate-pulse" />
+                  </div>
+
+                  {/* 核心状态文字 */}
+                  <h3 className="text-xl font-bold text-neutral-900 mb-2">
+                    正在解析岗位信息
+                  </h3>
+                  
+                  {/* 实时 WebSocket 消息推送显示 */}
+                  <p className="text-blue-600 font-medium text-center animate-pulse min-h-[1.5rem]">
+                    {loadingText || "正在建立安全连接..."}
+                  </p>
+                  
+                  <p className="text-xs text-neutral-400 mt-6 text-center">
+                    AI 正在高速处理中，请勿关闭或刷新页面
+                  </p>
+
+                  {/* 底部仿进度条动画 (左右来回扫描效果) */}
+                  <div className="w-full bg-blue-50 h-1.5 rounded-full mt-4 overflow-hidden relative">
+                    <div className="absolute top-0 bottom-0 left-0 w-1/3 bg-blue-500 rounded-full animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] opacity-75"></div>
+                    <div className="absolute top-0 bottom-0 left-0 bg-blue-500 rounded-full w-full animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 简历上传 */}
             <div className="space-y-2">
               <Label htmlFor="resume-upload" className="text-neutral-700">
                 上传简历
               </Label>
-              <div className="border-2 border-dashed border-neutral-300 rounded-xl p-8 text-center hover:border-neutral-400 transition-colors">
+              <div 
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+                  isParsing 
+                    ? "border-blue-200 bg-blue-50/30 cursor-not-allowed" // 解析中的样式
+                    : "border-neutral-300 hover:border-neutral-400 cursor-pointer" // 默认样式
+                }`}
+              >
+                {/* 只有在非解析状态下才允许触发 input */}
                 <input
                   id="resume-upload"
                   type="file"
                   accept=".pdf,.doc,.docx"
                   onChange={analysisUserResume}
                   className="hidden"
+                  disabled={isParsing} // 解析时禁用 input
                 />
+                
                 <label
-                  htmlFor="resume-upload"
-                  className="cursor-pointer block"
+                  htmlFor={isParsing ? "" : "resume-upload"} // 解析时移除 htmlFor 绑定，双重保险
+                  className={`block ${isParsing ? "cursor-not-allowed" : "cursor-pointer"}`}
                 >
                   <div className="flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center">
-                      <Upload className="w-6 h-6 text-neutral-600" />
+                    {/* 图标动态切换 */}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                      isParsing ? "bg-blue-100 animate-pulse" : "bg-neutral-100"
+                    }`}>
+                      {isParsing ? (
+                        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                      ) : isResumeReady ? ( // 如果解析完成了，显示勾选图标
+                        <CheckCircle2 className="w-6 h-6 text-green-600" />
+                      ) : (
+                        <Upload className="w-6 h-6 text-neutral-600" />
+                      )}
                     </div>
-                    {resume ? (
-                      <div className="space-y-1">
-                        <p className="font-medium text-neutral-900">
-                          {resume.name}
-                        </p>
-                        <p className="text-sm text-neutral-500">
-                          点击可重新上传
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <p className="font-medium text-neutral-900">
-                          点击上传简历文件
-                        </p>
-                        <p className="text-sm text-neutral-500">
-                          支持 PDF、DOC、DOCX 格式
-                        </p>
-                      </div>
-                    )}
+
+                    <div className="space-y-1">
+                      {isParsing ? (
+                        <>
+                          {/* 核心：实时显示 WebSocket 推送的 loadingText */}
+                          <p className="font-medium text-blue-700">
+                            {loadingText || "正在处理..."}
+                          </p>
+                          <p className="text-sm text-blue-500 animate-pulse">
+                            AI 正在努力思考，请勿刷新页面
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-medium text-neutral-900">
+                            {resume ? resume.name : "点击上传简历文件"}
+                          </p>
+                          <p className="text-sm text-neutral-500">
+                            {isResumeReady ? "✅ 解析完成，点击可重新上传" : "支持 PDF、DOC、DOCX 格式"}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    
                   </div>
                 </label>
               </div>
