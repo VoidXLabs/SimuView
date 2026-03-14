@@ -19,70 +19,107 @@ export default function Setup() {
   const [isParsing, setIsParsing] = useState(false);
   const [parsedData, setParsedData] = useState(null);
 
-  // 💡使用 useRef 存储 WebSocket 实例
-  const wsRef = useRef<WebSocket | null>(null);
-  // 组件挂载时：建立 WebSocket 连接
-    useEffect(() => {
-        console.log(`初始化 WebSocket 连接，通道ID: ${view_id}`);
-        // 建立连接
-        const ws = new WebSocket(`ws://xxx/ws/v1/interview/task-status/{view_id}${view_id}`);
-        wsRef.current = ws;
-
-        // 监听连接建立
-        ws.onopen = () => {
-            console.log('✅ WebSocket 连接已建立');
-        };
-
-        // 监听后端推送的消息: todo 通道复用
-        ws.onmessage = (event) => {
-            const response = JSON.parse(event.data);
-            
-            switch(response.status) {
-                case 'processing':
-                    // 后端推送：连接成功、解析中、存储中...
-                    setLoadingText(response.message);
-                    break;
-                case 'success':
-                    // 后端推送：大功告成
-                    setIsParsing(false);
-                    setLoadingText('解析成功！');
-                    setParsedData(response.data);
-                    // TODO: 可以在这里使用 react-router-dom 的 useNavigate() 跳转到面试页面
-                    break;
-                case 'error':
-                    // 后端推送：爬虫失败、被反爬拦截等
-                    setIsParsing(false);
-                    setLoadingText('抓取失败，请手动输入JD');
-                    break;
-                default:
-                    break;
-            }
-        };
-
-        ws.onerror = (error) => console.error("❌ WebSocket 发生错误", error);
-        ws.onclose = () => console.log("⚠️ WebSocket 连接已关闭");
-
-        // 组件卸载时的清理函数
-        return () => {
-            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-                ws.close();
-            }
-        };
-    }, [view_id]); // 依赖项数组包含 viewId
-
-  // 页面中相关变量
+    // 页面中相关变量
   const navigate = useNavigate();
   const [jobUrl, setJobUrl] = useState("");
   const [resume, setResume] = useState<File | null>(null);
   const [prepearation, setPrepearation] = useState<true | false>(false);
   const [isJdReady, setIsJdReady] = useState<true | false>(false);
-  const [isResumeReady, setisResumeReady] = useState<true | false>(false);
+  const [isResumeReady, setIsResumeReady] = useState<true | false>(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setResume(e.target.files[0]);
-    }
+  // 👇 新增的监控状态
+  const [wsStatus, setWsStatus] = useState<'connecting' | 'open' | 'closed' | 'error'>('connecting');
+  const [wsLogs, setWsLogs] = useState<string[]>([]); // 存储历史消息
+  const [isMonitorVisible, setIsMonitorVisible] = useState(true); // 控制小窗的收起/展开
+  const addWsLog = (message: string) => {
+    setWsLogs((prev) => {
+      const newLogs = [...prev, `[${new Date().toLocaleTimeString()}] ${message}`];
+      return newLogs.slice(-50); 
+    });
   };
+
+
+  // 💡使用 useRef 存储 WebSocket 实例
+  const wsRef = useRef<WebSocket | null>(null);
+  // 组件挂载时：建立 WebSocket 连接
+  useEffect(() => {
+    console.log(`初始化 WebSocket 连接，通道ID: ${view_id}`);
+    addWsLog(`正在连接 ws://localhost:8080/ws/v1/interview/task-status/${view_id}...`);
+    setWsStatus('connecting');
+
+    const ws = new WebSocket(`ws://localhost:8080/ws/v1/interview/task-status/${view_id}`);
+    wsRef.current = ws;
+
+    // 监听连接建立
+    ws.onopen = () => {
+        console.log('✅ WebSocket 连接已建立');
+        setWsStatus('open');
+        addWsLog('✅ 连接成功');
+    };
+
+    // 监听后端推送的消息
+    ws.onmessage = (event) => {
+        // 💡 记录收到的原始消息
+        addWsLog(`📩 收到消息: ${event.data}`);
+        
+        const response = JSON.parse(event.data);
+        switch(response.status) {
+            case 'processing':
+                setLoadingText(response.message);
+                break;
+            case 'success':
+                setIsParsing(false);
+                setLoadingText('解析成功！');
+                setParsedData(response.data);
+                
+                // 注意：这里由于 React 闭包陷阱，直接 if(isJdReady && isResumeReady) 可能会拿到旧状态
+                // 建议将跳转逻辑移到另一个专门监听 [isJdReady, isResumeReady] 的 useEffect 中
+                if(response.type == 1) {
+                  setIsJdReady(true);
+                } else if(response.type == 2){
+                  setIsResumeReady(true);
+                }
+                break;
+            case 'error':
+                setIsParsing(false);
+                setLoadingText('抓取失败，请手动输入JD');
+                addWsLog(`❌ 业务报错: ${response.message || '未知错误'}`);
+                break;
+            default:
+                break;
+        }
+    };
+
+    // 👇 补全：监听连接关闭
+    ws.onclose = (event) => {
+        setWsStatus('closed');
+        addWsLog(`⚠️ 连接已关闭 (代码: ${event.code})`);
+    };
+
+    // 👇 补全：监听底层错误
+    ws.onerror = (error) => {
+        setWsStatus('error');
+        addWsLog('❌ WebSocket 发生错误');
+        console.error('WebSocket Error:', error);
+    };
+
+    // 清理函数：组件卸载时断开连接
+    return () => {
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+            ws.close();
+        }
+    };
+  }, [view_id]);
+
+  // 专门处理状态达成后的跳转
+  useEffect(() => {
+    if (isJdReady && isResumeReady) {
+      console.log("简历和JD都已就绪，准备跳转面试！");
+      handleStartInterview();
+    }
+  }, [isJdReady, isResumeReady]);
+
+  
 
   // 解析招聘信息 todo: 发送 HTTP 请求
   const analysisJobUrl = async () => {
@@ -102,7 +139,7 @@ export default function Setup() {
 
     try {
         // 发送异步 HTTP POST 请求触发爬虫
-        const response = await axios.post('https://xxx/api/v1/interview/start-parse', {
+        const response = await axios.post('https://xxx/api/v1/interview/job-parse', {
             view_id: view_id,
             url: jobUrl
         });
@@ -125,10 +162,34 @@ export default function Setup() {
 
   }
 
-  // 解析用户简历 todo: 发送post请求 解析用户简历
-  const analysisUserResume = () => {
+  // 上传简历接口
+  const analysisUserResume = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setResume(e.target.files[0]);
+    } 
+    if(!resume){
+      alert("请上传简历！");
+      return;
+    }
+    const formData = new FormData();
+    formData.append('resume', resume); 
+    setLoadingText('正在提交解析任务...');
+    try {
+        // 发送异步 HTTP POST 请求解析简历
+        const response = await axios.post('https://xxx/api/v1/interview/resume-parse', {
+            view_id: view_id,
+            body: formData,
+        });
 
-  }
+        const data = response.data;
+        console.log('返回数据:', data);
+        setLoadingText('任务已进入队列，等待后台处理...');
+    } catch (error) {
+        setIsParsing(false);
+        setLoadingText('系统繁忙，任务提交失败');
+        console.error("提交爬虫任务失败", error);
+    }
+  };
 
 
   const handleStartInterview = () => {
@@ -203,7 +264,7 @@ export default function Setup() {
                   id="resume-upload"
                   type="file"
                   accept=".pdf,.doc,.docx"
-                  onChange={handleFileChange}
+                  onChange={analysisUserResume}
                   className="hidden"
                 />
                 <label
@@ -250,6 +311,77 @@ export default function Setup() {
             </div>
           </div>
         </div>
+      </div>
+
+
+
+      {/* --- WebSocket 监控小窗 --- */}
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        width: isMonitorVisible ? '350px' : 'auto',
+        backgroundColor: '#1e1e1e',
+        color: '#d4d4d4',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        zIndex: 9999,
+        overflow: 'hidden',
+        border: '1px solid #333'
+      }}>
+        {/* 头部区域 */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px 12px',
+          backgroundColor: '#2d2d2d',
+          borderBottom: isMonitorVisible ? '1px solid #444' : 'none',
+          cursor: 'pointer'
+        }} onClick={() => setIsMonitorVisible(!isMonitorVisible)}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* 状态指示灯 */}
+            <span style={{
+              width: '10px', height: '10px', borderRadius: '50%',
+              backgroundColor: 
+                wsStatus === 'open' ? '#4ade80' : // 绿
+                wsStatus === 'connecting' ? '#fbbf24' : // 黄
+                '#f87171', // 红
+              boxShadow: wsStatus === 'open' ? '0 0 8px #4ade80' : 'none'
+            }}></span>
+            <strong style={{ color: '#fff' }}>WS 调试监控</strong>
+            <span style={{ color: '#888' }}>({wsStatus})</span>
+          </div>
+          <button style={{ 
+            background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: '0' 
+          }}>
+            {isMonitorVisible ? '▼' : '▲'}
+          </button>
+        </div>
+
+        {/* 消息列表区域 */}
+        {isMonitorVisible && (
+          <div style={{ height: '250px', overflowY: 'auto', padding: '8px' }}>
+            {wsLogs.length === 0 ? (
+              <div style={{ color: '#666', textAlign: 'center', marginTop: '20px' }}>暂无消息...</div>
+            ) : (
+              wsLogs.map((log, index) => (
+                <div key={index} style={{ 
+                  marginBottom: '6px', 
+                  wordBreak: 'break-all',
+                  color: log.includes('📩') ? '#61dafb' : 
+                         log.includes('❌') ? '#f87171' : 
+                         log.includes('✅') ? '#4ade80' : '#d4d4d4'
+                }}>
+                  {log}
+                </div>
+              ))
+            )}
+            {/* 保证最新消息滚动到底部：可以使用 ref 自动滚动，这里简单处理 */}
+          </div>
+        )}
       </div>
     </div>
   );
