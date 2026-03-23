@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import { Brain } from "lucide-react";
 import { Button } from "../components/ui/button";
+import GoogleTTSPlayer from '../components/GoogleTTSPlayer';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -51,6 +52,8 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        <GoogleTTSPlayer />
       </div>
     </div>
   );
