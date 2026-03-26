@@ -18,13 +18,16 @@ export default function Setup() {
   const [isParsing, setIsParsing] = useState(false);
   const [parsedData, setParsedData] = useState(null);
 
-    // 页面中相关变量
+  // 页面中相关变量
   const navigate = useNavigate();
   const [jobUrl, setJobUrl] = useState("");
   const [resume, setResume] = useState<File | null>(null);
   const [prepearation, setPrepearation] = useState<true | false>(false);
   const [isJdReady, setIsJdReady] = useState<true | false>(false);
   const [isResumeReady, setIsResumeReady] = useState<true | false>(false);
+
+  const [jdId, setJdId] = useState("")
+  const [resumeId, setresumeId] = useState("")
 
   // 👇 新增的监控状态
   const [wsStatus, setWsStatus] = useState<'connecting' | 'open' | 'closed' | 'error'>('connecting');
@@ -72,9 +75,13 @@ export default function Setup() {
                 setParsedData(response.data);
                 
                 if(response.type == 1) {
+                  setJdId(response.data.jd_id)
                   setIsJdReady(true);
+                  console.log("解析岗位已完成，岗位信息id为: ", response.data.jd_id);
                 } else if(response.type == 2){
+                  setresumeId(response.data.resume_id)
                   setIsResumeReady(true);
+                  console.log("解析简历已完成，简历信息id为: ", response.data.resume_id);
                 }
                 break;
             case 'error':
@@ -183,11 +190,12 @@ export default function Setup() {
 
   const handleStartInterview = () => {
     if (isJdReady && isResumeReady) {
-      // 将数据传递到面试页面
+      // 将数据传递到面试页面 岗位id 简历id
       navigate("/interview", {
         state: {
           view_id,
-          jobUrl,
+          jdId,
+          resumeId
         },
       });
     }
