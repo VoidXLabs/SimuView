@@ -2,3 +2,4 @@ node_modules/
 **/application-secret.yml
 **/application-*.yml
 !application.yml
+**/resume.pdf
