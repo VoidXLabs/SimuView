@@ -1,4 +1,4 @@
-package com.voidxlab.simuview.dto;
+package com.voidxlab.simuview.common.dto;
 
 public class WsResponse {
     private String status;  // processing, success, error

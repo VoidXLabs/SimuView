@@ -2,7 +2,7 @@ package com.voidxlab.simuview.websocket;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.voidxlab.simuview.dto.WsResponse;
+import com.voidxlab.simuview.common.dto.WsResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

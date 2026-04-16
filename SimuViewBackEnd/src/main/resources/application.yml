@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: secret
+  application:
+    name: SimuViewBackEnd
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  datasource:
+    url: jdbc:mysql://localhost:3306/simuview?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+    username: root
+    password: ${spring.datasource.password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: llama3.1:8b
+    openai:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode
+      api-key: ${spring.ai.openai.api-key}
+      chat:
+        options:
+          model: qwen-max-latest
+      embedding:
+        options:
+          model: text-embedding-v3
+          dimensions: 1024
+
+aliyun:
+  oss:
+    endpoint: oss-cn-shanghai.aliyuncs.com
+    access-key-id: ${aliyun.oss.access-key-id}
+    access-key-secret: ${aliyun.oss.access-key-secret}
+    bucket-name: simuview-program
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      table-underline: true

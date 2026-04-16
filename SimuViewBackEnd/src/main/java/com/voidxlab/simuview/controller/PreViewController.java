@@ -1,6 +1,6 @@
 package com.voidxlab.simuview.controller;
 
-import com.voidxlab.simuview.dto.WsResponse;
+import com.voidxlab.simuview.common.dto.WsResponse;
 import com.voidxlab.simuview.websocket.InterviewStatusHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
