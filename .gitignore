@@ -3,3 +3,4 @@ node_modules/
 **/application-*.yml
 !application.yml
 **/resume.pdf
+**/test
