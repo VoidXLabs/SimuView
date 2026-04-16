@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 **/application-secret.yml
 **/application-*.yml
+**/resume.pdf
 !application.yml
 ### STS ###
 .apt_generated
