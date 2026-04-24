@@ -29,9 +29,8 @@ CREATE TABLE `resume_information` (
   `resume_id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '简历 ID', /* */
   `user_id` BIGINT NOT NULL COMMENT '候选人 ID', /* */
   `file_url` VARCHAR(500) NOT NULL COMMENT '简历源文件存储路径 (PDF/Word)', /* */
-  `parsed_content` JSON DEFAULT NULL COMMENT '简历结构化内容 (存 JSON，包含教育经历、工作经历等)', /* */
+  `content` LONGTEXT DEFAULT NULL COMMENT '简历结构化内容 (存 JSON，包含教育经历、工作经历等)', /* */
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间', /* */
-  CONSTRAINT `fk_resume_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='简历信息表';
 
 -- 4. 面试记录表

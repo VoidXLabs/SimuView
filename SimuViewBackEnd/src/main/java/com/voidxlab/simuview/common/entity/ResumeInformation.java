@@ -27,7 +27,7 @@ public class ResumeInformation {
     @TableField("file_url")
     private String fileUrl;
 
-    @TableField("parsed_content")
+    @TableField("content")
     private String paresedContent;
 
     @TableField("create_time")
