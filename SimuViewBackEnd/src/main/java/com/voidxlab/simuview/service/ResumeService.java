@@ -1,19 +1,15 @@
 package com.voidxlab.simuview.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.voidxlab.simuview.common.constants.PromptConstants;
 import com.voidxlab.simuview.common.context.BaseContext;
 import com.voidxlab.simuview.common.entity.ResumeInformation;
-import com.voidxlab.simuview.common.util.DocumentParser;
+import com.voidxlab.simuview.common.utils.DocumentParser;
 import com.voidxlab.simuview.mapper.ResumeInformationMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

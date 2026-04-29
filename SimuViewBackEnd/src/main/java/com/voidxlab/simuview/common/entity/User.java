@@ -15,20 +15,22 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("resume_information")
-public class ResumeInformation {
-
-    @TableId(value = "resume_id", type = IdType.AUTO)
-    private String resumeId;
-
-    @TableField("user_id")
+@TableName("users")
+public class User {
+    @TableId(value = "user_id", type = IdType.AUTO)
     private Long userId;
 
-    @TableField("file_url")
-    private String fileUrl;
+    @TableField("role")
+    private String role;
 
-    @TableField("content")
-    private String content;
+    @TableField("username")
+    private String username;
+
+    @TableField("password_hash")
+    private String passwordHash;
+
+    @TableField("name")
+    private String name;
 
     @TableField("create_time")
     private LocalDateTime createTime;

@@ -1,9 +1,7 @@
 package com.voidxlab.simuview;
 
-import com.voidxlab.simuview.common.util.DocumentParser;
+import com.voidxlab.simuview.common.utils.DocumentParser;
 import org.junit.jupiter.api.Test;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.InputStream;

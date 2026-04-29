@@ -1,8 +1,14 @@
 package com.voidxlab.simuview.interceptor;
 
+import com.voidxlab.simuview.common.constants.JwtClaimsConstant;
 import com.voidxlab.simuview.common.context.BaseContext;
+import com.voidxlab.simuview.common.properties.JwtProperties;
+import com.voidxlab.simuview.common.utils.JwtUtil;
+import io.jsonwebtoken.Claims;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,30 +16,34 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class LoginInterceptor implements HandlerInterceptor {
 
-    private static final Long DEFAULT_USER_ID = 1L;
-
+    private final JwtProperties jwtProperties;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String userIdStr = request.getHeader("X-User-Id");
-        
-        Long userId;
-        if (userIdStr != null && !userIdStr.isEmpty()) {
-            try {
-                userId = Long.parseLong(userIdStr);
-                log.debug("从请求头获取用户ID: {}", userId);
-            } catch (NumberFormatException e) {
-                log.warn("用户ID格式错误，使用默认值: {}", DEFAULT_USER_ID);
-                userId = DEFAULT_USER_ID;
-            }
-        } else {
-            log.debug("未提供用户ID，使用默认值: {}", DEFAULT_USER_ID);
-            userId = DEFAULT_USER_ID;
+        //判断当前拦截到的是Controller的方法还是其他资源
+        if (!(handler instanceof HandlerMethod)) {
+            //当前拦截到的不是动态方法，直接放行
+            return true;
         }
-        
-        BaseContext.setUserId(userId);
-        return true;
+        //1、从请求头中获取令牌
+        String token = request.getHeader(jwtProperties.getTokenName());
+        //2、校验令牌
+        try {
+            log.info("jwt校验:{}", token);
+            Claims claims = JwtUtil.parseJWT(jwtProperties.getSecretKey(), token);
+            Long userId = Long.valueOf(claims.get(JwtClaimsConstant.USER_ID).toString());
+            log.info("当前员工id：{}", userId);
+            BaseContext.setUserId(userId);
+            //3、通过，放行
+            return true;
+        } catch (Exception ex) {
+            //4、不通过，响应401状态码
+            response.setStatus(401);
+            return false;
+        }
+
     }
 
     @Override

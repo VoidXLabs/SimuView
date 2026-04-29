@@ -60,3 +60,9 @@ logging:
   level:
     org.springframework.ai: debug
     com.voidxlab.simuview: info
+
+simuview:
+  jwt:
+    secret-key: ${simuview.jwt.secret-key}
+    expiration: 86400000
+    token-name: token

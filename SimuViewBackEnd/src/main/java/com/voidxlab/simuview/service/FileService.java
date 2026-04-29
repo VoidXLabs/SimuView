@@ -1,7 +1,7 @@
 package com.voidxlab.simuview.service;
 
 import com.voidxlab.simuview.common.context.BaseContext;
-import com.voidxlab.simuview.common.util.FileUploadUtil;
+import com.voidxlab.simuview.common.utils.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

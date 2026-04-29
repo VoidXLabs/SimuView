@@ -1,4 +1,4 @@
-package com.voidxlab.simuview.common.util;
+package com.voidxlab.simuview.common.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -9,7 +9,6 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.InputStream;
 
 @Slf4j

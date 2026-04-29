@@ -1,4 +1,4 @@
-package com.voidxlab.simuview.config;
+package com.voidxlab.simuview.common.properties;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "aliyun.oss")
-public class OssConfig {
+public class AliOssProperties {
 
     private String endpoint;
     private String accessKeyId;
