@@ -28,7 +28,7 @@ public class ResumeInformation {
     private String fileUrl;
 
     @TableField("parsed_content")
-    private String paresedContent;
+    private String content;
 
     @TableField("create_time")
     private LocalDateTime createTime;

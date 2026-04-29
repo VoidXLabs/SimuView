@@ -16,20 +16,22 @@ spring:
     password: ${spring.datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   ai:
-    ollama:
-      base-url: http://localhost:11434
-      chat:
-        model: llama3.1:8b
+#    ollama:
+#      base-url: http://localhost:11434
+#      chat:
+#        model: llama3.1:8b
+
     openai:
       base-url: https://dashscope.aliyuncs.com/compatible-mode
       api-key: ${spring.ai.openai.api-key}
       chat:
         options:
-          model: qwen-max-latest
-      embedding:
-        options:
-          model: text-embedding-v3
-          dimensions: 1024
+          model: glm-5.1
+          temperature: 0.7
+#      embedding:
+#        options:
+#          model: text-embedding-v3
+#          dimensions: 1024
 
 aliyun:
   oss:
@@ -46,3 +48,15 @@ mybatis-plus:
     db-config:
       id-type: auto
       table-underline: true
+
+# 应用配置不能
+app:
+  ai:
+    structured-max-attempts: 3              # 结构化输出最大重试次数
+    structured-include-last-error: true     # 重试时是否包含错误信息
+
+
+logging:
+  level:
+    org.springframework.ai: debug
+    com.voidxlab.simuview: info

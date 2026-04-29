@@ -10,14 +10,11 @@ import java.io.InputStream;
 
 @SpringBootTest
 public class ParseTest {
-    @Autowired
-    ChatClient resumeParserChatClient;
 
     @Test
     public void parseTest(){
         InputStream file = this.getClass().getClassLoader().getResourceAsStream("resume.pdf");
         String s = DocumentParser.extractText(file);
-        String content = resumeParserChatClient.prompt(s).call().content();
-        System.out.println(content);
+        System.out.println(s);
     }
 }

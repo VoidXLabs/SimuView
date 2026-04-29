@@ -25,7 +25,6 @@ public class ResumeService {
 
     private final FileService fileService;
     private final ResumeInformationMapper resumeInformationMapper;
-    private final ChatClient resumeParserChatClient;
 
     public ResumeInformation uploadResume(MultipartFile file) {
         log.info("开始处理简历上传: userId={}, fileName={}", BaseContext.getUserId(), file.getOriginalFilename());
@@ -34,12 +33,12 @@ public class ResumeService {
 
         Long userId = BaseContext.getUserId();
 
-        String parsedContent = parseResumeContent(file);
+        String content = parseResumeContent(file);
 
         ResumeInformation resume = ResumeInformation.builder()
                 .userId(userId)
                 .fileUrl(fileUrl)
-                .paresedContent(parsedContent)
+                .content(content)
                 .createTime(LocalDateTime.now())
                 .build();
 
@@ -75,19 +74,11 @@ public class ResumeService {
     private String parseResumeContent(MultipartFile file) {
         try {
             String content = DocumentParser.extractText(file);
-            log.info("开始解析简历内容，长度: {} 字符", content.length());
-
-            String prompt = PromptConstants.buildResumeParsePrompt(content);
-            String response = resumeParserChatClient.prompt()
-                    .user(prompt)
-                    .call()
-                    .content();
-
-            log.info("简历解析完成:{}", response);
-            return response;
+            log.info("简历解析完成，内容：{}", content);
+            return content;
         } catch (Exception e) {
-            log.error("AI解析简历失败: {}", e.getMessage());
-            throw new RuntimeException("AI解析简历失败: " + e.getMessage());
+            log.error("解析简历失败: {}", e.getMessage());
+            throw new RuntimeException("解析简历失败: " + e.getMessage());
         }
     }
 }
