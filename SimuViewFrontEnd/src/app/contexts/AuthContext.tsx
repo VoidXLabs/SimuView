@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { getAuthCookie, clearAuthCookie } from "../api/apiClient";
+import { getAuthCookie, clearAuthCookie, apiClient } from "../api/apiClient";
 
 export interface User {
   id: string;
@@ -12,7 +12,7 @@ interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
   setUser: (user: User | null) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,9 +45,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    clearAuthCookie();
-    handleSetUser(null);
+  const logout = async () => {
+    try {
+      await apiClient.post('/api/v1/auth/logout');
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    } finally {
+      clearAuthCookie();
+      handleSetUser(null);
+    }
   };
 
   return (

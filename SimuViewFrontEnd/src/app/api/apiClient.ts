@@ -1,16 +1,40 @@
 import axios from 'axios';
 
 // 创建axios实例，配置baseURL和withCredentials
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: 'http://localhost:8080',
   withCredentials: true, // 自动携带Cookie
   timeout: 30000, // 30秒超时
 });
 
+// 获取用户ID
+const getUserId = (): string | null => {
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      return user.id || null;
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
 // 请求拦截器
 apiClient.interceptors.request.use(
   (config) => {
-    // 可以在这里添加请求头，比如Authorization等
+    // 登录请求不需要携带X-User-Id
+    const isLoginRequest = config.url?.includes('/api/v1/auth/login');
+    
+    if (!isLoginRequest) {
+      const userId = getUserId();
+      if (userId) {
+        config.headers = config.headers || {};
+        config.headers['X-User-Id'] = userId;
+      }
+    }
+    
     return config;
   },
   (error) => {
