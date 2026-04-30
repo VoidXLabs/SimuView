@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { getAuthCookie, clearAuthCookie, apiClient } from "../api/apiClient";
 
 export interface User {
   id: string;
@@ -12,7 +11,7 @@ interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
   setUser: (user: User | null) => void;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,12 +19,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  // 检查是否已登录（Cookie 中是否有 session）
-  const isLoggedIn = getAuthCookie("session") !== null;
+  // 检查是否已登录（localStorage 中是否有用户数据）
+  const isLoggedIn = localStorage.getItem("user") !== null;
 
   // 组件挂载时检查登录状态
   useEffect(() => {
-    // 从 localStorage 恢复用户数据
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       try {
@@ -45,15 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = async () => {
-    try {
-      await apiClient.post('/api/v1/auth/logout');
-    } catch (error) {
-      console.error('Logout request failed:', error);
-    } finally {
-      clearAuthCookie();
-      handleSetUser(null);
-    }
+  const logout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
   };
 
   return (

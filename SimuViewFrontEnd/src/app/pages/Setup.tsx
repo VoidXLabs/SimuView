@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Upload, Link as LinkIcon, Loader2, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowLeft, Upload, Link as LinkIcon, Loader2, CheckCircle2, Sparkles, FileText, Edit3 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -14,17 +14,33 @@ export default function Setup() {
   const [view_id] = useState(() => uuidv4());
   
   const navigate = useNavigate();
+  
+  // 模式切换：url 或 form
+  const [mode, setMode] = useState<'url' | 'form'>('url');
+  
+  // URL模式状态
   const [jobUrl, setJobUrl] = useState("");
+  const [isParsingJd, setIsParsingJd] = useState(false);
+  
+  // 表单模式状态
+  const [formData, setFormData] = useState({
+    title: "",
+    jd_content: "",
+    salary_range: "",
+    work_experience: "",
+    education: ""
+  });
+  
+  // 简历相关状态
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isJdReady, setIsJdReady] = useState(false);
   const [isResumeReady, setIsResumeReady] = useState(false);
-  const [isParsingJd, setIsParsingJd] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
 
   const [jdId, setJdId] = useState("");
   const [resumeId, setResumeId] = useState("");
 
-  // 解析招聘信息
+  // 解析招聘信息（URL模式）
   const analysisJobUrl = async () => {
     if (!jobUrl.trim()) {
       toast.error("Please enter job URL!");
@@ -50,6 +66,46 @@ export default function Setup() {
     } catch (error: any) {
       console.error("Failed to parse job description", error);
       toast.error(error.response?.data?.message || "Failed to parse job description");
+    } finally {
+      setIsParsingJd(false);
+    }
+  };
+
+  // 提交岗位信息（表单模式）
+  const submitJobForm = async () => {
+    if (!formData.title.trim()) {
+      toast.error("Please enter job title!");
+      return;
+    }
+    if (!formData.jd_content.trim()) {
+      toast.error("Please enter job description!");
+      return;
+    }
+
+    setIsParsingJd(true);
+
+    try {
+      const response = await apiClient.post('/api/v1/preview/job-parse', {
+        view_id: view_id,
+        title: formData.title,
+        jd_content: formData.jd_content,
+        jd_url: "",
+        salary_range: formData.salary_range,
+        work_experience: formData.work_experience,
+        education: formData.education
+      });
+
+      const data = response.data;
+      if (data.success && data.data?.jd_id) {
+        setJdId(data.data.jd_id);
+        setIsJdReady(true);
+        toast.success("Job information saved successfully!");
+      } else {
+        toast.error(data.message || "Failed to save job information");
+      }
+    } catch (error: any) {
+      console.error("Failed to save job information", error);
+      toast.error(error.response?.data?.message || "Failed to save job information");
     } finally {
       setIsParsingJd(false);
     }
@@ -112,6 +168,19 @@ export default function Setup() {
     }
   };
 
+  const resetJd = () => {
+    setIsJdReady(false);
+    setJdId("");
+    setJobUrl("");
+    setFormData({
+      title: "",
+      jd_content: "",
+      salary_range: "",
+      work_experience: "",
+      education: ""
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
       {/* 背景装饰 */}
@@ -141,40 +210,170 @@ export default function Setup() {
             </p>
           </div>
 
+          {/* 模式切换 */}
+          <div className="mb-8">
+            <div className="flex bg-neutral-700/50 rounded-xl p-1">
+              <button
+                onClick={() => { setMode('url'); resetJd(); }}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold transition-all ${
+                  mode === 'url' 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <LinkIcon className="w-5 h-5" />
+                <span>Paste Job URL</span>
+              </button>
+              <button
+                onClick={() => { setMode('form'); resetJd(); }}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold transition-all ${
+                  mode === 'form' 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Edit3 className="w-5 h-5" />
+                <span>Fill Form</span>
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-10">
-            {/* 岗位URL输入区 */}
-            <div className="space-y-3">
-              <Label htmlFor="job-url" className="text-neutral-300 font-semibold ml-1">
-                Job Posting URL
-              </Label>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1 group">
-                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-blue-400 transition-colors" />
+            {/* URL模式 - 岗位URL输入区 */}
+            {mode === 'url' && (
+              <div className="space-y-3">
+                <Label htmlFor="job-url" className="text-neutral-300 font-semibold ml-1">
+                  Job Posting URL
+                </Label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1 group">
+                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-blue-400 transition-colors" />
+                    <Input
+                      id="job-url"
+                      type="url"
+                      placeholder="Paste job link: https://www.zhipin.com/job_detail/..."
+                      value={jobUrl}
+                      onChange={(e) => setJobUrl(e.target.value)}
+                      className="pl-12 h-14 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-2xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-base"
+                    />
+                  </div>
+                  <Button 
+                    onClick={analysisJobUrl}
+                    disabled={isParsingJd || isJdReady}
+                    className={`h-14 px-8 text-base font-semibold rounded-2xl transition-all shadow-lg active:scale-95 ${
+                      isJdReady 
+                        ? 'bg-green-500 hover:bg-green-500 text-white shadow-green-500/20'
+                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-blue-500/20'
+                    }`}
+                  >
+                    {isJdReady ? 'Ready ✅' : (isParsingJd ? 'Parsing...' : 'Parse')}
+                  </Button>
+                </div>
+                <p className="text-xs text-neutral-500 ml-1">
+                  Currently optimized for Zhipin platform
+                </p>
+              </div>
+            )}
+
+            {/* 表单模式 - 岗位信息填写 */}
+            {mode === 'form' && (
+              <div className="space-y-6">
+                {/* 岗位名称 */}
+                <div className="space-y-2">
+                  <Label htmlFor="job-title" className="text-neutral-300 font-semibold flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Job Title <span className="text-red-400">*</span>
+                  </Label>
                   <Input
-                    id="job-url"
-                    type="url"
-                    placeholder="Paste job link: https://www.zhipin.com/job_detail/..."
-                    value={jobUrl}
-                    onChange={(e) => setJobUrl(e.target.value)}
-                    className="pl-12 h-14 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-2xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-base"
+                    id="job-title"
+                    type="text"
+                    placeholder="e.g., Java Senior Engineer"
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    className="h-14 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-2xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-base"
                   />
                 </div>
-                <Button 
-                  onClick={analysisJobUrl}
-                  disabled={isParsingJd || isJdReady}
-                  className={`h-14 px-8 text-base font-semibold rounded-2xl transition-all shadow-lg active:scale-95 ${
-                    isJdReady 
-                      ? 'bg-green-500 hover:bg-green-500 text-white shadow-green-500/20'
-                      : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-blue-500/20'
-                  }`}
-                >
-                  {isJdReady ? 'Ready ✅' : (isParsingJd ? 'Parsing...' : 'Parse')}
-                </Button>
+
+                {/* 岗位描述 */}
+                <div className="space-y-2">
+                  <Label htmlFor="job-content" className="text-neutral-300 font-semibold flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Job Description <span className="text-red-400">*</span>
+                  </Label>
+                  <textarea
+                    id="job-content"
+                    placeholder="Please enter the detailed job description..."
+                    value={formData.jd_content}
+                    onChange={(e) => setFormData({...formData, jd_content: e.target.value})}
+                    rows={4}
+                    className="w-full h-32 bg-neutral-700/50 border border-neutral-600 text-white placeholder:text-neutral-500 rounded-2xl px-4 py-3 focus:border-blue-500 focus:ring-blue-500/20 transition-all text-base resize-none"
+                  />
+                </div>
+
+                {/* 其他字段 - 三列布局 */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* 薪资范围 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="salary-range" className="text-neutral-400 font-medium">
+                      Salary Range
+                    </Label>
+                    <Input
+                      id="salary-range"
+                      type="text"
+                      placeholder="e.g., 15K-25K"
+                      value={formData.salary_range}
+                      onChange={(e) => setFormData({...formData, salary_range: e.target.value})}
+                      className="h-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-sm"
+                    />
+                  </div>
+
+                  {/* 工作经验 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="work-experience" className="text-neutral-400 font-medium">
+                      Work Experience
+                    </Label>
+                    <Input
+                      id="work-experience"
+                      type="text"
+                      placeholder="e.g., 3-5 years"
+                      value={formData.work_experience}
+                      onChange={(e) => setFormData({...formData, work_experience: e.target.value})}
+                      className="h-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-sm"
+                    />
+                  </div>
+
+                  {/* 学历要求 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="education" className="text-neutral-400 font-medium">
+                      Education
+                    </Label>
+                    <Input
+                      id="education"
+                      type="text"
+                      placeholder="e.g., Bachelor"
+                      value={formData.education}
+                      onChange={(e) => setFormData({...formData, education: e.target.value})}
+                      className="h-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* 提交按钮 */}
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={submitJobForm}
+                    disabled={isParsingJd || isJdReady}
+                    className={`h-12 px-8 text-base font-semibold rounded-xl transition-all shadow-lg active:scale-95 ${
+                      isJdReady 
+                        ? 'bg-green-500 hover:bg-green-500 text-white shadow-green-500/20'
+                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-blue-500/20'
+                    }`}
+                  >
+                    {isJdReady ? 'Ready ✅' : (isParsingJd ? 'Saving...' : 'Save Job Info')}
+                  </Button>
+                </div>
               </div>
-              <p className="text-xs text-neutral-500 ml-1">
-                Currently optimized for Zhipin platform
-              </p>
-            </div>
+            )}
 
             {/* 简历上传 */}
             <div className="space-y-3">

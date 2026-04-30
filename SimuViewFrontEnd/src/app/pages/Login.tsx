@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Brain, Mail, Lock, Eye, EyeOff, ArrowRight, Github, Linkedin } from "lucide-react";
+import { Brain, User, Lock, Eye, EyeOff, ArrowRight, Github, Linkedin } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -11,7 +11,7 @@ import { useAuth } from "../contexts/AuthContext";
 export default function Login() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,16 +25,16 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error("Please fill in both email and password");
+    if (!username || !password) {
+      toast.error("Please fill in both username and password");
       return;
     }
 
     setIsLoading(true);
     
     try {
-      const response = await apiClient.post('/api/v1/auth/login', {
-        email: email,
+      const response = await apiClient.post('/api/v1/user/login', {
+        username: username,
         password: password
       });
 
@@ -42,7 +42,15 @@ export default function Login() {
 
       if (response.status === 200 && data.success) {
         if (data.data) {
-          setUser(data.data);
+          setUser({
+            id: String(data.data.userId),
+            email: data.data.username,
+            name: data.data.name
+          });
+          // 保存 token 到 localStorage
+          if (data.data.token) {
+            localStorage.setItem('token', data.data.token);
+          }
         }
 
         toast.success("Login successful!");
@@ -61,7 +69,7 @@ export default function Login() {
         const message = error.response.data?.message || 'Login failed';
         
         if (status === 401) {
-          toast.error("Invalid email or password");
+          toast.error("Invalid username or password");
         } else if (status === 403) {
           toast.error("Account is disabled");
         } else {
@@ -78,7 +86,7 @@ export default function Login() {
   };
 
   const handleDemoLogin = () => {
-    setEmail("demo@example.com");
+    setUsername("demo");
     setPassword("password123");
   };
 
@@ -108,19 +116,19 @@ export default function Login() {
           </h2>
 
           <form onSubmit={handleLogin} className="space-y-6">
-            {/* 邮箱输入 */}
+            {/* 用户名输入 */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-neutral-300 font-medium">
-                Email Address
+              <Label htmlFor="username" className="text-neutral-300 font-medium">
+                Username
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 focus:border-blue-500 focus:ring-blue-500/20"
                 />
               </div>
@@ -205,10 +213,31 @@ export default function Login() {
             </div>
           </div>
 
+          {/* 社交登录按钮 */}
+          {/* <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full h-12 border-neutral-600 hover:border-neutral-500 hover:bg-neutral-700/50 text-white"
+            >
+              <Github className="mr-3 w-5 h-5" />
+              Continue with GitHub
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-12 border-neutral-600 hover:border-neutral-500 hover:bg-neutral-700/50 text-white"
+            >
+              <Linkedin className="mr-3 w-5 h-5" />
+              Continue with LinkedIn
+            </Button>
+          </div> */}
+
           {/* 注册链接 */}
           <p className="text-center text-neutral-400 mt-8">
             Don't have an account?{" "}
-            <button className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+            <button 
+              onClick={() => navigate("/register")}
+              className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+            >
               Sign up
             </button>
           </p>
