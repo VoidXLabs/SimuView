@@ -2,6 +2,7 @@ package com.voidxlab.simuview.controller;
 
 import com.voidxlab.simuview.common.constants.JwtClaimsConstant;
 import com.voidxlab.simuview.common.dto.UserLoginDTO;
+import com.voidxlab.simuview.common.dto.UserRegisterDTO;
 import com.voidxlab.simuview.common.entity.User;
 import com.voidxlab.simuview.common.properties.JwtProperties;
 import com.voidxlab.simuview.common.utils.JwtUtil;
@@ -43,5 +44,12 @@ public class UserController {
                 .name(user.getName())
                 .build();
         return Result.success(userLoginVO);
+    }
+
+    @PostMapping("/register")
+    public Result<User> register(@RequestBody UserRegisterDTO user){
+        log.info("用户注册：{}", user);
+        userService.register(user);
+        return Result.success();
     }
 }

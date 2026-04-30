@@ -2,6 +2,7 @@ package com.voidxlab.simuview.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.voidxlab.simuview.common.dto.UserLoginDTO;
+import com.voidxlab.simuview.common.dto.UserRegisterDTO;
 import com.voidxlab.simuview.common.entity.User;
 import com.voidxlab.simuview.common.exception.BusinessException;
 import com.voidxlab.simuview.common.exception.ErrorCode;
@@ -37,8 +38,23 @@ public class UserService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户名或密码错误");
         }
 
-
         //3、返回实体对象
         return user;
+    }
+
+    public void register(UserRegisterDTO user) {
+        String username = user.getUsername();
+        String password = user.getPassword();
+        User duplicateUser =  userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
+        if(duplicateUser != null){
+            throw new BusinessException("账户重复");
+        }
+        User newUser = User.builder()
+                .username(user.getUsername())
+                .passwordHash(DigestUtils.md5DigestAsHex(password.getBytes()))
+                .role("candidate")
+                .name(user.getName())
+                .build();
+        userMapper.insert(newUser);
     }
 }
