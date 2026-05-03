@@ -14,11 +14,11 @@ interface Message {
 
 // 模拟AI面试问题库
 const mockQuestions = [
-  "Hello, welcome to this interview. First, please introduce yourself briefly, including your educational background and work experience.",
-  "I noticed you mentioned relevant project experience in your resume. Can you elaborate on your specific responsibilities and contributions in this project?",
-  "What was the biggest technical challenge you encountered during project development? How did you solve it?",
-  "Why do you want to apply for this position? What advantages do you think you have?",
-  "What are your career plans for the next three to five years?",
+  "您好，欢迎参加本次面试。首先，请简单介绍一下您自己，包括您的教育背景和工作经验。",
+  "我看到您的简历中提到了相关项目经验。能详细讲讲您在这个项目中的具体职责和贡献吗？",
+  "在项目开发过程中，您遇到过最大的技术挑战是什么？您是如何解决的？",
+  "您为什么想要应聘这个岗位？您认为自己有哪些优势？",
+  "您对未来三到五年的职业规划是什么？",
 ];
 
 export default function Interview() {
@@ -51,7 +51,7 @@ export default function Interview() {
   const speakText = (text: string) => {
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
+      utterance.lang = 'zh-CN';
       utterance.rate = 0.9;
       utterance.pitch = 1;
       
@@ -85,7 +85,7 @@ export default function Interview() {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'en-US';
+      recognitionRef.current.lang = 'zh-CN';
 
       recognitionRef.current.onresult = (event: any) => {
         let interimTranscript = '';
@@ -110,11 +110,11 @@ export default function Interview() {
         if (event.error === 'not-allowed') {
           setMicPermissionDenied(true);
           setUseTextInput(true);
-          toast.error('Microphone permission denied, switched to text input mode');
+          toast.error('麦克风权限被拒绝，已切换到文本输入模式');
         } else if (event.error === 'no-speech') {
-          toast.error('No speech detected, please try again');
+          toast.error('没有检测到语音，请重试');
         } else {
-          toast.error(`Speech recognition error: ${event.error}`);
+          toast.error(`语音识别错误: ${event.error}`);
         }
       };
     }
@@ -129,7 +129,7 @@ export default function Interview() {
   // 提交答案的通用函数
   const submitAnswer = (answerText: string) => {
     if (!answerText.trim()) {
-      toast.error('Please enter your answer');
+      toast.error('请输入回答内容');
       return;
     }
 
@@ -160,7 +160,7 @@ export default function Interview() {
         speakText(nextQuestion);
       } else {
         // 面试结束
-        const endMessage = "Thank you for participating in this interview. Our AI system is generating a detailed evaluation report for you. Good luck with your job search!";
+        const endMessage = "感谢您参加本次面试，我们的AI系统正在为您生成详细的评估报告。祝您求职顺利！";
         setMessages(prev => [...prev, {
           role: "ai",
           content: endMessage,
@@ -176,7 +176,7 @@ export default function Interview() {
   // 开始/停止录音
   const toggleRecording = async () => {
     if (!recognitionRef.current) {
-      toast.error('Your browser does not support speech recognition. Please use text input mode');
+      toast.error('您的浏览器不支持语音识别功能，请使用文本输入模式');
       setUseTextInput(true);
       return;
     }
@@ -203,7 +203,7 @@ export default function Interview() {
         console.error('Microphone permission error:', error);
         setMicPermissionDenied(true);
         setUseTextInput(true);
-        toast.error('Unable to access microphone. Please allow microphone permission in browser settings.');
+        toast.error('无法访问麦克风，已切换到文本输入模式。请在浏览器设置中允许麦克风权限。');
       }
     }
   };
@@ -216,7 +216,7 @@ export default function Interview() {
   // 切换输入模式
   const toggleInputMode = () => {
     if (!useTextInput && micPermissionDenied) {
-      toast.error('Microphone permission not granted, cannot use voice mode');
+      toast.error('麦克风权限未授予，无法使用语音模式');
       return;
     }
     setUseTextInput(!useTextInput);
@@ -225,56 +225,74 @@ export default function Interview() {
   const progress = ((currentQuestionIndex + 1) / mockQuestions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex flex-col">
+    <div className="flex flex-col h-screen bg-slate-900 relative overflow-hidden font-sans">
+      {/* 复杂的背景装饰层 */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        <div className="absolute left-0 top-0 -z-10 h-[500px] w-[500px] -translate-x-[20%] -translate-y-[20%] rounded-full bg-emerald-500 opacity-10 blur-[120px]"></div>
+        <div className="absolute right-0 bottom-0 -z-10 h-[500px] w-[500px] translate-x-[20%] translate-y-[20%] rounded-full bg-teal-500 opacity-10 blur-[120px]"></div>
+      </div>
+
       {/* 顶部进度条 */}
-      <div className="bg-neutral-900/80 backdrop-blur-md border-b border-neutral-700/50 p-5 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center gap-6">
+      <div className="relative z-10 bg-slate-900/40 backdrop-blur-xl border-b border-white/5 p-5 sticky top-0 shadow-2xl">
+        <div className="max-w-4xl mx-auto flex items-center gap-8">
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-neutral-400 tracking-wider">
-                Progress {currentQuestionIndex + 1} / {mockQuestions.length}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-black text-emerald-400 tracking-[0.2em] uppercase">
+                Progress: Question {currentQuestionIndex + 1} of {mockQuestions.length}
               </span>
               {interviewComplete && (
-                <span className="text-sm font-bold text-green-400 flex items-center gap-1.5 animate-in fade-in slide-in-from-right-2">
+                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 animate-in fade-in slide-in-from-right-2">
                   <CheckCircle2 className="w-4 h-4" />
-                  Interview Complete
+                  SESSION COMPLETE
                 </span>
               )}
             </div>
-            <Progress value={progress} className="h-2 bg-neutral-700" />
+            <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden border border-white/5 shadow-inner">
+              <div 
+                className="h-full bg-gradient-to-r from-emerald-500 via-emerald-500 to-teal-500 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-neutral-800/50 rounded-full border border-neutral-700/50">
-            <div className={`w-2 h-2 rounded-full ${isAiSpeaking ? 'bg-blue-500 animate-pulse' : 'bg-neutral-500'}`}></div>
-            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-tighter">AI INTERVIEWER</span>
+          <div className="hidden sm:flex items-center gap-3 px-5 py-2.5 bg-white/5 rounded-2xl border border-white/10 shadow-xl">
+            <div className="relative">
+              <div className={`w-2.5 h-2.5 rounded-full ${isAiSpeaking ? 'bg-emerald-500' : 'bg-slate-500'}`}></div>
+              {isAiSpeaking && <div className="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-75"></div>}
+            </div>
+            <span className="text-[10px] font-black text-neutral-300 uppercase tracking-widest">AI Interviewer</span>
           </div>
         </div>
       </div>
 
       {/* 对话区域 */}
-      <div className="flex-1 overflow-y-auto px-6 py-10">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 py-12 scrollbar-hide">
+        <div className="max-w-4xl mx-auto space-y-10">
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-4 duration-500`}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-6 duration-700`}
             >
               <div
-                className={`group max-w-[85%] sm:max-w-[75%] rounded-[1.75rem] px-6 py-5 shadow-lg transition-all hover:shadow-xl ${
+                className={`group relative max-w-[85%] sm:max-w-[75%] rounded-[2rem] px-8 py-6 shadow-2xl transition-all ${
                   message.role === "user"
-                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-tr-none shadow-blue-500/20"
-                    : "bg-neutral-800/80 border border-neutral-700/50 text-white rounded-tl-none shadow-neutral-800/50"
+                    ? "bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-tr-none shadow-emerald-900/20"
+                    : "bg-slate-800/80 backdrop-blur-md border border-white/10 text-neutral-100 rounded-tl-none"
                 }`}
               >
-                <div className="flex flex-col gap-1.5">
-                  <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-60 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                    {message.role === "ai" && <Sparkles className="w-3 h-3 text-blue-400" />}
-                    {message.role === "ai" ? "AI Interviewer" : "Candidate"}
+                {/* 装饰性背景 */}
+                <div className={`absolute inset-0 opacity-10 pointer-events-none ${message.role === "user" ? "bg-[radial-gradient(circle_at_top_right,white,transparent)]" : "bg-[radial-gradient(circle_at_top_left,white,transparent)]"}`}></div>
+                
+                <div className="flex flex-col gap-2 relative z-10">
+                  <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                    {message.role === "ai" && <Sparkles className="w-3 h-3 text-emerald-400" />}
+                    {message.role === "ai" ? "Assistant" : "You"}
                   </div>
-                  <p className="leading-relaxed text-[15px] sm:text-base font-medium">
+                  <p className="leading-relaxed text-[15px] sm:text-lg font-medium tracking-tight">
                     {message.content}
                   </p>
-                  <div className={`text-[9px] opacity-40 mt-1 font-mono ${message.role === "user" ? "text-right" : "text-left"}`}>
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <div className={`text-[9px] font-mono opacity-30 mt-2 ${message.role === "user" ? "text-right" : "text-left"}`}>
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </div>
                 </div>
               </div>
@@ -283,15 +301,15 @@ export default function Interview() {
 
           {/* AI思考状态 */}
           {isAiThinking && (
-            <div className="flex justify-start animate-in fade-in slide-in-from-left-4">
-              <div className="bg-neutral-800/80 border border-neutral-700/50 rounded-full px-6 py-3 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-blue-500/60 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                    <span className="w-1.5 h-1.5 bg-blue-500/60 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                    <span className="w-1.5 h-1.5 bg-blue-500/60 rounded-full animate-bounce"></span>
+            <div className="flex justify-start animate-in fade-in slide-in-from-left-6">
+              <div className="bg-slate-800/50 border border-white/5 rounded-3xl px-8 py-4 shadow-xl backdrop-blur-sm">
+                <div className="flex items-center gap-4">
+                  <div className="flex gap-1.5">
+                    <span className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                    <span className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                    <span className="w-2 h-2 bg-emerald-500/60 rounded-full animate-bounce"></span>
                   </div>
-                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">AI Thinking</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">AI is processing</span>
                 </div>
               </div>
             </div>
@@ -302,26 +320,26 @@ export default function Interview() {
       </div>
 
       {/* 底部控制区 */}
-      <div className="bg-neutral-900/80 backdrop-blur-xl border-t border-neutral-700/50 p-8">
+      <div className="relative z-10 bg-slate-900/60 backdrop-blur-2xl border-t border-white/5 p-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
         <div className="max-w-3xl mx-auto">
           {!interviewComplete ? (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* 切换输入模式按钮 */}
               <div className="flex justify-center">
                 <button
                   onClick={toggleInputMode}
-                  className="px-5 py-2 rounded-full bg-neutral-800 hover:bg-neutral-700 text-[11px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2.5 transition-all active:scale-95 border border-neutral-700/50"
+                  className="px-6 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-[10px] font-black text-slate-300 hover:text-white uppercase tracking-[0.2em] flex items-center gap-3 transition-all active:scale-95 shadow-lg"
                   disabled={micPermissionDenied && !useTextInput}
                 >
                   {useTextInput ? (
                     <>
-                      <Mic className="w-3.5 h-3.5" />
-                      <span>{micPermissionDenied ? 'MIC BLOCKED' : 'Switch to Voice'}</span>
+                      <Mic className="w-4 h-4 text-emerald-400" />
+                      <span>{micPermissionDenied ? 'MIC BLOCKED' : 'Switch to Voice Mode'}</span>
                     </>
                   ) : (
                     <>
-                      <Keyboard className="w-3.5 h-3.5" />
-                      <span>Switch to Text</span>
+                      <Keyboard className="w-4 h-4 text-teal-400" />
+                      <span>Switch to Text Input</span>
                     </>
                   )}
                 </button>
@@ -329,93 +347,102 @@ export default function Interview() {
 
               {useTextInput ? (
                 /* 文本输入模式 */
-                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                  <Textarea
-                    value={textAnswer}
-                    onChange={(e) => setTextAnswer(e.target.value)}
-                    placeholder="Enter your answer..."
-                    className="min-h-[140px] bg-neutral-800/50 border-neutral-700 text-white placeholder:text-neutral-500 rounded-[1.5rem] p-5 focus:border-blue-500/50 focus:ring-blue-500/10 resize-none text-base transition-all"
-                    disabled={isAiThinking || isAiSpeaking}
-                  />
+                <div className="space-y-5 animate-in fade-in zoom-in-95 duration-500">
+                  <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-3xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
+                    <Textarea
+                      value={textAnswer}
+                      onChange={(e) => setTextAnswer(e.target.value)}
+                      placeholder="Type your response here..."
+                      className="relative min-h-[160px] bg-slate-800/80 border-white/10 rounded-3xl p-6 focus:border-emerald-500/50 focus:ring-0 resize-none text-lg text-white placeholder:text-slate-500 transition-all shadow-inner leading-relaxed"
+                      disabled={isAiThinking || isAiSpeaking}
+                    />
+                  </div>
                   <Button
                     onClick={handleTextSubmit}
                     disabled={isAiThinking || isAiSpeaking || !textAnswer.trim()}
-                    className="w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:bg-neutral-700 disabled:text-neutral-500 text-white rounded-[1.25rem] text-base font-bold shadow-lg shadow-blue-500/20 transition-all"
+                    className="w-full h-16 bg-white text-black hover:bg-neutral-200 disabled:bg-slate-700 disabled:text-slate-500 rounded-2xl text-lg font-black shadow-2xl transition-all hover:scale-[1.01] active:scale-95"
                   >
-                    <Send className="w-4 h-4 mr-2.5" />
-                    Send Answer
+                    <Send className="w-5 h-5 mr-3" />
+                    Submit Answer
                   </Button>
                 </div>
               ) : (
                 /* 语音输入模式 */
-                <div className="animate-in fade-in zoom-in-95 duration-300">
+                <div className="animate-in fade-in zoom-in-95 duration-500">
                   {/* 实时转录文本 */}
-                  <div className={`transition-all duration-500 ${isRecording && transcript ? 'mb-8 opacity-100 translate-y-0' : 'h-0 opacity-0 translate-y-4 overflow-hidden'}`}>
-                    <div className="bg-blue-500/10 rounded-3xl p-6 border border-blue-500/20 relative">
-                      <div className="absolute -top-2 left-6 px-2 bg-neutral-800 text-[10px] font-bold text-blue-400 tracking-widest uppercase border border-blue-500/20 rounded">LIVE TRANSCRIPT</div>
-                      <p className="text-white font-medium leading-relaxed">{transcript}</p>
+                  <div className={`transition-all duration-700 ${isRecording && transcript ? 'mb-10 opacity-100 translate-y-0' : 'h-0 opacity-0 translate-y-6 overflow-hidden'}`}>
+                    <div className="bg-emerald-500/5 rounded-[2rem] p-8 border border-emerald-500/20 relative shadow-inner">
+                      <div className="absolute -top-3 left-8 px-3 py-1 bg-emerald-500 text-[10px] font-black text-white tracking-[0.2em] uppercase rounded-lg shadow-lg">LIVE TRANSCRIPT</div>
+                      <p className="text-neutral-200 font-medium text-lg leading-relaxed italic">"{transcript}"</p>
                     </div>
                   </div>
 
                   {/* 录音按钮 */}
-                  <div className="flex flex-col items-center gap-6">
-                    <div className="relative">
+                  <div className="flex flex-col items-center gap-8">
+                    <div className="relative group">
                       {isRecording && (
                         <>
-                          <div className="absolute inset-0 bg-red-500/20 rounded-full animate-ping"></div>
-                          <div className="absolute -inset-4 border-2 border-red-500/10 rounded-full animate-[spin_4s_linear_infinite]"></div>
+                          <div className="absolute -inset-8 bg-emerald-500/20 rounded-full animate-ping"></div>
+                          <div className="absolute -inset-4 border-2 border-emerald-500/20 rounded-full animate-[spin_3s_linear_infinite]"></div>
+                          <div className="absolute -inset-12 border border-emerald-500/10 rounded-full animate-[spin_6s_linear_reverse_infinite]"></div>
                         </>
                       )}
                       <Button
                         onClick={toggleRecording}
                         disabled={isAiThinking || isAiSpeaking}
                         size="lg"
-                        className={`relative w-24 h-24 rounded-full transition-all duration-500 shadow-2xl ${
+                        className={`relative w-28 h-28 rounded-full transition-all duration-500 shadow-[0_0_50px_-10px_rgba(0,0,0,0.3)] ${
                           isRecording
-                            ? "bg-red-500 hover:bg-red-600 scale-110 shadow-red-500/30"
-                            : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-blue-500/30 hover:scale-105"
-                        } ${isAiThinking || isAiSpeaking ? "opacity-30 grayscale cursor-not-allowed" : ""}`}
+                            ? "bg-red-500 hover:bg-red-600 scale-110 shadow-red-900/40"
+                            : "bg-white hover:bg-neutral-100 shadow-emerald-900/20 hover:scale-105"
+                        } ${isAiThinking || isAiSpeaking ? "opacity-20 grayscale cursor-not-allowed" : ""}`}
                       >
                         {isRecording ? (
-                          <MicOff className="w-10 h-10 text-white" />
+                          <MicOff className="w-12 h-12 text-white" />
                         ) : (
-                          <Mic className="w-10 h-10 text-white" />
+                          <Mic className="w-12 h-12 text-black" />
                         )}
                       </Button>
                     </div>
 
-                    <div className="text-center space-y-1">
-                      <p className={`text-sm font-bold uppercase tracking-widest transition-colors ${isRecording ? 'text-red-400' : 'text-neutral-400'}`}>
+                    <div className="text-center space-y-2">
+                      <p className={`text-xs font-black uppercase tracking-[0.3em] transition-all duration-500 ${isRecording ? 'text-red-400' : 'text-slate-400'}`}>
                         {isAiSpeaking
                           ? "AI is speaking..."
                           : isRecording
-                          ? "Recording... Tap to stop"
-                          : "Tap to answer"}
+                          ? "Listening... Tap to end"
+                          : "Tap to begin speaking"}
                       </p>
-                      {!isRecording && !isAiSpeaking && !isAiThinking && (
-                        <p className="text-[10px] text-neutral-500 font-medium uppercase tracking-tighter">Your turn to speak</p>
-                      )}
+                      <div className="flex justify-center gap-1">
+                        {!isRecording && !isAiSpeaking && !isAiThinking && (
+                          <span className="text-[9px] text-emerald-500/60 font-bold uppercase tracking-tighter animate-pulse">Your turn to participate</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-center space-y-6 py-4 animate-in fade-in zoom-in-95">
-              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle2 className="w-10 h-10 text-green-400" />
+            <div className="text-center space-y-8 py-6 animate-in fade-in zoom-in-95 duration-700">
+              <div className="relative w-24 h-24 mx-auto mb-4">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse"></div>
+                <div className="relative w-full h-full bg-emerald-500/10 border-2 border-emerald-500/30 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="w-12 h-12 text-emerald-400" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">Interview Completed</h3>
-                <p className="text-neutral-400 font-medium max-w-sm mx-auto leading-relaxed">
-                  Thank you for your participation. Your interview report is being generated. You can return home or wait for system notification.
+              <div className="space-y-3">
+                <h3 className="text-3xl font-black text-white tracking-tight">Interview Completed</h3>
+                <p className="text-slate-300 font-medium max-w-sm mx-auto leading-relaxed text-lg">
+                  Excellent work. Your comprehensive performance report is being generated by our AI.
                 </p>
               </div>
               <Button
                 onClick={() => navigate("/")}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-10 h-14 rounded-2xl text-base font-bold shadow-xl shadow-blue-500/20 transition-all hover:scale-105 active:scale-95"
+                className="bg-white text-black hover:bg-neutral-200 px-12 h-16 rounded-2xl text-lg font-black shadow-2xl transition-all hover:scale-105 active:scale-95"
               >
-                Return Home
+                View Detailed Report
               </Button>
             </div>
           )}
