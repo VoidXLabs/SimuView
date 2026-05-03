@@ -7,6 +7,7 @@ import com.voidxlab.simuview.common.dto.InterviewRecordPageQueryDTO;
 import com.voidxlab.simuview.common.entity.InterviewRecord;
 import com.voidxlab.simuview.mapper.InterviewRecordMapper;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class InterviewRecordService {
     private final InterviewRecordMapper InterviewRecordMapper;
     /**

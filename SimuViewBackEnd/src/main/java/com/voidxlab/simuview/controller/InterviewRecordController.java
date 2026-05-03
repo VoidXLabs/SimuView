@@ -18,7 +18,7 @@ import java.util.List;
 public class InterviewRecordController {
 
     private final InterviewRecordService interviewRecordService;
-    @GetMapping("/page")
+    @PostMapping("/page")
     public Result<Page<InterviewRecord>> page(@RequestBody InterviewRecordPageQueryDTO queryDTO){
         log.info("分页查询面试记录：{}", queryDTO);
         return Result.success(interviewRecordService.pageQuery(queryDTO));

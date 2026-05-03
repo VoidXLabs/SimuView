@@ -1,6 +1,8 @@
 package com.voidxlab.simuview.common.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @TableName("interview_record")
 public class InterviewRecord {
-    @TableField("interview_id")
+    @TableId(value = "interview_id", type = IdType.AUTO)
     private Long interviewId;
     @TableField("user_id")
     private Long userId;

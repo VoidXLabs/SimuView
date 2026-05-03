@@ -8,6 +8,7 @@ import com.voidxlab.simuview.common.exception.BusinessException;
 import com.voidxlab.simuview.common.exception.ErrorCode;
 import com.voidxlab.simuview.mapper.UserMapper;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -15,7 +16,7 @@ import org.springframework.util.DigestUtils;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
     private final UserMapper userMapper;
     public User login(UserLoginDTO userLoginDTO) {
