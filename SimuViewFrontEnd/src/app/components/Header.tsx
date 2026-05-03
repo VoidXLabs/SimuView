@@ -27,86 +27,90 @@ export function Header({ showNav = false }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-neutral-700/50 bg-neutral-900/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
-              <Brain className="h-5 w-5 text-white" />
+    <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-slate-900/60 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-900/40">
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+        <div className="flex items-center gap-10">
+          <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80 group">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_0_20px_rgba(59,130,246,0.3)] group-hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transition-shadow">
+              <Brain className="h-6 w-6 text-white" />
+              <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-slate-900"></div>
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">
+            <span className="text-2xl font-black tracking-tight text-white bg-clip-text">
               SimuView
             </span>
           </Link>
 
           {showNav && (
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/5">
               <Link 
                 to="/" 
-                className="px-4 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                className="px-5 py-2 text-sm font-semibold text-neutral-300 hover:text-white hover:bg-white/10 rounded-xl transition-all"
               >
-                Home
+                首页
               </Link>
               <Link 
                 to="/setup" 
-                className="px-4 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors flex items-center gap-1"
+                className="px-5 py-2 text-sm font-semibold text-neutral-300 hover:text-white hover:bg-white/10 rounded-xl transition-all flex items-center gap-2"
               >
-                Start Interview
+                模拟面试
+                <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/20">HOT</span>
               </Link>
             </nav>
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
           {isLoggedIn && user ? (
-            <>
-              <span className="text-sm text-neutral-400">{user.name}</span>
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-bold text-white leading-none">{user.name}</p>
+                <p className="text-xs text-slate-300 mt-1">免费计划</p>
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden border border-neutral-600 hover:border-neutral-500 transition-colors">
+                  <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0 overflow-hidden border-2 border-white/10 hover:border-emerald-500/50 transition-colors shadow-lg">
                     <Avatar className="h-full w-full">
                       {user.avatar ? (
                         <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
                       ) : null}
-                      <AvatarFallback className="bg-neutral-700 text-neutral-300">
+                      <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-neutral-200 font-bold text-lg">
                         {user.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 mt-2 bg-neutral-800 border-neutral-700" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
+                <DropdownMenuContent className="w-64 mt-2 bg-slate-800/95 backdrop-blur-xl border border-white/10 p-2 shadow-2xl rounded-2xl" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal p-3">
+                    <div className="flex flex-col space-y-1.5">
                       <p className="text-sm font-bold leading-none text-white">{user.name}</p>
-                      <p className="text-xs leading-none text-neutral-400">{user.email}</p>
+                      <p className="text-xs leading-none text-slate-300">{user.email}</p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-neutral-700" />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem className="cursor-pointer text-neutral-300 hover:bg-neutral-700 hover:text-white">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuGroup className="p-1">
+                    <DropdownMenuItem className="cursor-pointer rounded-xl text-neutral-300 hover:bg-white/10 hover:text-white p-3 transition-colors">
+                      <User className="mr-3 h-4 w-4 text-emerald-400" />
+                      <span className="font-medium">个人资料</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="bg-neutral-700" />
+                  <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem 
-                    className="cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-500/10"
+                    className="cursor-pointer rounded-xl text-red-400 focus:text-red-400 focus:bg-red-500/10 p-3 transition-colors m-1"
                     onClick={handleLogout}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
+                    <LogOut className="mr-3 h-4 w-4" />
+                    <span className="font-medium">退出登录</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </>
+            </div>
           ) : (
             <Button
               onClick={() => navigate("/login")}
-              variant="outline"
-              size="sm"
-              className="text-neutral-300 border-neutral-600 hover:border-neutral-500 hover:text-white hover:bg-neutral-800"
+              className="bg-white text-black hover:bg-neutral-200 px-6 py-5 rounded-xl font-bold shadow-lg transition-transform hover:scale-105 active:scale-95"
             >
-              Login
+              登录
             </Button>
           )}
         </div>

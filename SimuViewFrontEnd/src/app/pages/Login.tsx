@@ -91,45 +91,45 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 flex items-center justify-center p-6">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20 mb-4">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20 mb-4">
             <Brain className="h-6 w-6 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">SimuView</h1>
-          <p className="text-neutral-400">AI-powered interview practice platform</p>
+          <p className="text-slate-300">AI 驱动的面试练习平台</p>
         </div>
 
         {/* 登录卡片 */}
-        <div className="rounded-3xl bg-neutral-800/50 backdrop-blur-md border border-neutral-700/30 p-8 shadow-2xl">
+        <div className="rounded-3xl bg-slate-700/50 backdrop-blur-md border border-slate-600/30 p-8 shadow-2xl">
           <h2 className="text-2xl font-bold text-white text-center mb-8">
-            Welcome Back
+            欢迎回来
           </h2>
 
           <form onSubmit={handleLogin} className="space-y-6">
             {/* 用户名输入 */}
             <div className="space-y-2">
               <Label htmlFor="username" className="text-neutral-300 font-medium">
-                Username
+                用户名
               </Label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Enter your username"
+                  placeholder="请输入您的用户名"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 focus:border-blue-500 focus:ring-blue-500/20"
+                  className="h-12 pl-12 bg-slate-600/50 border-slate-500 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
                 />
               </div>
             </div>
@@ -138,30 +138,30 @@ export default function Login() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-neutral-300 font-medium">
-                  Password
+                  密码
                 </Label>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? "隐藏" : "显示"}
                 </button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="请输入您的密码"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pl-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 focus:border-blue-500 focus:ring-blue-500/20"
+                  className="h-12 pl-12 bg-slate-600/50 border-slate-500 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
                 />
                 {showPassword ? (
-                  <Eye className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 cursor-pointer" />
+                  <Eye className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 cursor-pointer" />
                 ) : (
-                  <EyeOff className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 cursor-pointer" />
+                  <EyeOff className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 cursor-pointer" />
                 )}
               </div>
             </div>
@@ -171,15 +171,15 @@ export default function Login() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 rounded border-neutral-600 bg-neutral-700 text-blue-500 focus:ring-blue-500/20"
+                  className="w-4 h-4 rounded border-slate-500 bg-slate-600 text-emerald-500 focus:ring-emerald-500/20"
                 />
-                <span className="text-sm text-neutral-400">Remember me</span>
+                <span className="text-sm text-slate-300">记住我</span>
               </label>
               <button
                 type="button"
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
               >
-                Forgot password?
+                忘记密码？
               </button>
             </div>
 
@@ -187,16 +187,16 @@ export default function Login() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full h-14 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Signing in...
+                  登录中...
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  Sign In
+                  登录
                   <ArrowRight className="w-4 h-4" />
                 </span>
               )}
@@ -206,10 +206,10 @@ export default function Login() {
           {/* 分隔线 */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-neutral-600"></div>
+              <div className="w-full border-t border-slate-500"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-neutral-800 text-neutral-400">Or continue with</span>
+              <span className="px-4 bg-slate-700 text-slate-300">或通过以下方式继续</span>
             </div>
           </div>
 
@@ -217,14 +217,14 @@ export default function Login() {
           {/* <div className="space-y-3">
             <Button
               variant="outline"
-              className="w-full h-12 border-neutral-600 hover:border-neutral-500 hover:bg-neutral-700/50 text-white"
+              className="w-full h-12 border-slate-500 hover:border-slate-400 hover:bg-slate-600/50 text-white"
             >
               <Github className="mr-3 w-5 h-5" />
               Continue with GitHub
             </Button>
             <Button
               variant="outline"
-              className="w-full h-12 border-neutral-600 hover:border-neutral-500 hover:bg-neutral-700/50 text-white"
+              className="w-full h-12 border-slate-500 hover:border-slate-400 hover:bg-slate-600/50 text-white"
             >
               <Linkedin className="mr-3 w-5 h-5" />
               Continue with LinkedIn
@@ -232,25 +232,25 @@ export default function Login() {
           </div> */}
 
           {/* 注册链接 */}
-          <p className="text-center text-neutral-400 mt-8">
-            Don't have an account?{" "}
+          <p className="text-center text-slate-300 mt-8">
+            还没有账号？{" "}
             <button 
               onClick={() => navigate("/register")}
-              className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+              className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
             >
-              Sign up
+              立即注册
             </button>
           </p>
 
           {/* 演示账号提示 */}
-          <div className="mt-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-            <p className="text-sm text-blue-300">
-              <span className="font-semibold">Demo Account: </span>
+          <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <p className="text-sm text-emerald-300">
+              <span className="font-semibold">演示账号：</span>
               <button
                 onClick={handleDemoLogin}
-                className="text-blue-400 hover:text-blue-300 ml-1 underline underline-offset-2"
+                className="text-emerald-400 hover:text-emerald-300 ml-1 underline underline-offset-2"
               >
-                Fill demo credentials
+                一键填充测试凭据
               </button>
             </p>
           </div>
