@@ -56,8 +56,9 @@ export default function Setup() {
       });
 
       const data = response.data;
-      if (data.success && data.data?.jd_id) {
-        setJdId(data.data.jd_id);
+      if ((data.success && data.data?.jd_id) || data.code === 200 || data.code === 0) {
+        const id = data.data?.jd_id || data.data || "";
+        setJdId(id.toString());
         setIsJdReady(true);
         toast.success("Job description parsed successfully!");
       } else {
@@ -85,19 +86,18 @@ export default function Setup() {
     setIsParsingJd(true);
 
     try {
-      const response = await apiClient.post('/api/v1/preview/job-parse', {
-        view_id: view_id,
+      const response = await apiClient.post('/api/v1/jd-information', {
         title: formData.title,
-        jd_content: formData.jd_content,
-        jd_url: "",
-        salary_range: formData.salary_range,
-        work_experience: formData.work_experience,
+        jdContent: formData.jd_content,
+        jdUrl: "",
+        salaryRange: formData.salary_range,
+        workExperience: formData.work_experience,
         education: formData.education
       });
 
       const data = response.data;
-      if (data.success && data.data?.jd_id) {
-        setJdId(data.data.jd_id);
+      if (data.code === 200 || data.code === 0 || data.data !== undefined) {
+        setJdId(data.data ? data.data.toString() : "");
         setIsJdReady(true);
         toast.success("Job information saved successfully!");
       } else {
@@ -139,8 +139,9 @@ export default function Setup() {
       });
 
       const data = response.data;
-      if (data.success && data.data?.id) {
-        setResumeId(data.data.id);
+      if (data.code === 200 || data.code === 0 || data.data) {
+        const extractedId = data.data?.resumeId || data.data?.resume_id || data.data?.id || "";
+        setResumeId(extractedId.toString());
         setIsResumeReady(true);
         toast.success("Resume uploaded successfully!");
       } else {
@@ -326,27 +327,42 @@ export default function Setup() {
 
                 {/* 其他字段 - 三列布局 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                  <Input
-                    type="text"
-                    placeholder="Salary Range (e.g., 15K-25K)"
+                  <select
                     value={formData.salary_range}
                     onChange={(e) => setFormData({...formData, salary_range: e.target.value})}
-                    className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm"
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Experience (e.g., 3-5 years)"
+                    className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm outline-none"
+                  >
+                    <option value="" disabled>Select Salary Range</option>
+                    <option value="Under 5K">Under 5K</option>
+                    <option value="5K-10K">5K-10K</option>
+                    <option value="10K-20K">10K-20K</option>
+                    <option value="20K-50K">20K-50K</option>
+                    <option value="Above 50K">Above 50K</option>
+                  </select>
+                  <select
                     value={formData.work_experience}
                     onChange={(e) => setFormData({...formData, work_experience: e.target.value})}
-                    className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm"
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Education (e.g., Bachelor)"
+                    className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm outline-none"
+                  >
+                    <option value="" disabled>Select Experience</option>
+                    <option value="No Experience">No Experience</option>
+                    <option value="1-3 years">1-3 years</option>
+                    <option value="3-5 years">3-5 years</option>
+                    <option value="5-10 years">5-10 years</option>
+                    <option value="More than 10 years">More than 10 years</option>
+                  </select>
+                  <select
                     value={formData.education}
                     onChange={(e) => setFormData({...formData, education: e.target.value})}
-                    className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm"
-                  />
+                    className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm outline-none"
+                  >
+                    <option value="" disabled>Select Education</option>
+                    <option value="High School or below">High School or below</option>
+                    <option value="Associate Degree">Associate Degree</option>
+                    <option value="Bachelor's Degree">Bachelor's Degree</option>
+                    <option value="Master's Degree">Master's Degree</option>
+                    <option value="Ph.D. or higher">Ph.D. or higher</option>
+                  </select>
                 </div>
 
                 {/* 提交按钮 */}

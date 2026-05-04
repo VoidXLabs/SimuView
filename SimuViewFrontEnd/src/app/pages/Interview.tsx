@@ -24,6 +24,15 @@ const mockQuestions = [
 export default function Interview() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { view_id, jdId, resumeId } = location.state || {};
+
+  useEffect(() => {
+    console.log("Interview Session Initialized:");
+    console.log("View ID:", view_id);
+    console.log("JD ID:", jdId);
+    console.log("Resume ID:", resumeId);
+  }, [view_id, jdId, resumeId]);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isAiThinking, setIsAiThinking] = useState(true);
