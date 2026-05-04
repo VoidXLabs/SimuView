@@ -73,3 +73,4 @@ CREATE TABLE `interview_evaluation` (
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '报告生成时间', /* */
   CONSTRAINT `fk_evaluation_interview` FOREIGN KEY (`interview_id`) REFERENCES `interview_record` (`interview_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试评估报告表';
+
