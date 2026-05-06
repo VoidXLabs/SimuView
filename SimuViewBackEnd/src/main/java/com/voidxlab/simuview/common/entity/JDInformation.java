@@ -21,6 +21,8 @@ public class JDInformation {
     private String title;
     @TableField("jd_url")
     private String jdUrl;
+    @TableField("jd_content")
+    private String jdContent;
     @TableField("salary_range")
     private String salaryRange;
     @TableField("work_experience")
