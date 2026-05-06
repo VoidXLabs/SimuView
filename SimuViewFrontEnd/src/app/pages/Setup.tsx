@@ -12,16 +12,16 @@ import { toast } from "sonner";
 export default function Setup() {
   // 生成当前会话的view_id
   const [view_id] = useState(() => uuidv4());
-  
+
   const navigate = useNavigate();
-  
+
   // 模式切换：url 或 form
   const [mode, setMode] = useState<'url' | 'form'>('url');
-  
+
   // URL模式状态
   const [jobUrl, setJobUrl] = useState("");
   const [isParsingJd, setIsParsingJd] = useState(false);
-  
+
   // 表单模式状态
   const [formData, setFormData] = useState({
     title: "",
@@ -30,7 +30,7 @@ export default function Setup() {
     work_experience: "",
     education: ""
   });
-  
+
   // 简历相关状态
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isJdReady, setIsJdReady] = useState(false);
@@ -149,8 +149,8 @@ export default function Setup() {
       }
     } catch (error: any) {
       console.error("Failed to upload resume", error);
-      const errorMsg = error.response?.data?.message || 
-                      (error.response?.status === 400 ? "Invalid file format" : "Failed to upload resume");
+      const errorMsg = error.response?.data?.message ||
+        (error.response?.status === 400 ? "Invalid file format" : "Failed to upload resume");
       toast.error(errorMsg);
     } finally {
       setIsUploadingResume(false);
@@ -223,28 +223,26 @@ export default function Setup() {
 
           {/* 模式切换 */}
           <div className="mb-10 bg-slate-900/50 p-1.5 rounded-2xl border border-white/5 flex">
-              <button
-                onClick={() => { setMode('url'); resetJd(); }}
-                className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold transition-all ${
-                  mode === 'url' 
-                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-600 text-white shadow-lg shadow-emerald-900/20' 
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+            <button
+              onClick={() => { setMode('url'); resetJd(); }}
+              className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold transition-all ${mode === 'url'
+                ? 'bg-gradient-to-r from-emerald-600 to-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+                : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
-              >
-                <LinkIcon className="w-5 h-5" />
-                <span>Smart Parse (URL)</span>
-              </button>
-              <button
-                onClick={() => { setMode('form'); resetJd(); }}
-                className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold transition-all ${
-                  mode === 'form' 
-                    ? 'bg-gradient-to-r from-teal-600 to-pink-600 text-white shadow-lg shadow-teal-900/20' 
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+            >
+              <LinkIcon className="w-5 h-5" />
+              <span>Smart Parse (URL)</span>
+            </button>
+            <button
+              onClick={() => { setMode('form'); resetJd(); }}
+              className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold transition-all ${mode === 'form'
+                ? 'bg-gradient-to-r from-teal-600 to-pink-600 text-white shadow-lg shadow-teal-900/20'
+                : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
-              >
-                <Edit3 className="w-5 h-5" />
-                <span>Manual Entry</span>
-              </button>
+            >
+              <Edit3 className="w-5 h-5" />
+              <span>Manual Entry</span>
+            </button>
           </div>
 
           <div className="space-y-12">
@@ -268,14 +266,13 @@ export default function Setup() {
                       className="relative pl-14 h-16 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-2xl focus:border-emerald-500 focus:ring-0 transition-all text-base shadow-inner"
                     />
                   </div>
-                  <Button 
+                  <Button
                     onClick={analysisJobUrl}
                     disabled={isParsingJd || isJdReady}
-                    className={`h-16 px-8 text-base font-bold rounded-2xl transition-all active:scale-95 min-w-[140px] ${
-                      isJdReady 
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                        : 'bg-white text-black hover:bg-neutral-200 shadow-xl'
-                    }`}
+                    className={`h-16 px-8 text-base font-bold rounded-2xl transition-all active:scale-95 min-w-[140px] ${isJdReady
+                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                      : 'bg-white text-black hover:bg-neutral-200 shadow-xl'
+                      }`}
                   >
                     {isJdReady ? (
                       <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5" /> Ready</span>
@@ -298,7 +295,7 @@ export default function Setup() {
                   <div className="w-2 h-2 rounded-full bg-teal-500"></div>
                   <h3 className="text-neutral-200 font-bold text-base">Job Details</h3>
                 </div>
-                
+
                 {/* 岗位名称 */}
                 <div className="space-y-2 relative group">
                   <div className="absolute -inset-0.5 bg-teal-500/20 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
@@ -307,7 +304,7 @@ export default function Setup() {
                     type="text"
                     placeholder="Job Title (e.g., Senior Frontend Engineer) *"
                     value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="relative h-14 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-400 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-base shadow-inner"
                   />
                 </div>
@@ -319,7 +316,7 @@ export default function Setup() {
                     id="job-content"
                     placeholder="Detailed Job Description *"
                     value={formData.jd_content}
-                    onChange={(e) => setFormData({...formData, jd_content: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, jd_content: e.target.value })}
                     rows={5}
                     className="relative w-full bg-slate-800/80 border border-white/10 text-white placeholder:text-slate-400 rounded-xl px-4 py-4 focus:border-teal-500 focus:ring-0 outline-none transition-all text-base resize-none shadow-inner leading-relaxed"
                   />
@@ -329,7 +326,7 @@ export default function Setup() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                   <select
                     value={formData.salary_range}
-                    onChange={(e) => setFormData({...formData, salary_range: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, salary_range: e.target.value })}
                     className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm outline-none"
                   >
                     <option value="" disabled>Select Salary Range</option>
@@ -341,7 +338,7 @@ export default function Setup() {
                   </select>
                   <select
                     value={formData.work_experience}
-                    onChange={(e) => setFormData({...formData, work_experience: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, work_experience: e.target.value })}
                     className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm outline-none"
                   >
                     <option value="" disabled>Select Experience</option>
@@ -353,7 +350,7 @@ export default function Setup() {
                   </select>
                   <select
                     value={formData.education}
-                    onChange={(e) => setFormData({...formData, education: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, education: e.target.value })}
                     className="h-12 bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-0 transition-all text-sm outline-none"
                   >
                     <option value="" disabled>Select Education</option>
@@ -367,14 +364,13 @@ export default function Setup() {
 
                 {/* 提交按钮 */}
                 <div className="flex justify-end pt-4">
-                  <Button 
+                  <Button
                     onClick={submitJobForm}
                     disabled={isParsingJd || isJdReady}
-                    className={`h-14 px-8 text-base font-bold rounded-xl transition-all active:scale-95 ${
-                      isJdReady 
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                        : 'bg-white text-black hover:bg-neutral-200 shadow-xl'
-                    }`}
+                    className={`h-14 px-8 text-base font-bold rounded-xl transition-all active:scale-95 ${isJdReady
+                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                      : 'bg-white text-black hover:bg-neutral-200 shadow-xl'
+                      }`}
                   >
                     {isJdReady ? (
                       <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5" /> Saved</span>
@@ -390,14 +386,13 @@ export default function Setup() {
                 <div className="w-2 h-2 rounded-full bg-pink-500"></div>
                 Your Resume
               </Label>
-              <div 
-                className={`group relative border border-dashed rounded-[1.5rem] p-12 text-center transition-all duration-300 overflow-hidden ${
-                  isUploadingResume 
-                    ? "border-emerald-500/50 bg-emerald-500/5 cursor-not-allowed"
-                    : isResumeReady
+              <div
+                className={`group relative border border-dashed rounded-[1.5rem] p-12 text-center transition-all duration-300 overflow-hidden ${isUploadingResume
+                  ? "border-emerald-500/50 bg-emerald-500/5 cursor-not-allowed"
+                  : isResumeReady
                     ? "border-emerald-500/50 bg-emerald-500/5"
                     : "border-white/20 bg-slate-800/50 hover:border-emerald-400/50 hover:bg-emerald-500/5 cursor-pointer"
-                }`}
+                  }`}
               >
                 {/* 悬浮背景光晕 */}
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-transparent to-teal-500/0 group-hover:from-emerald-500/10 group-hover:to-teal-500/10 transition-colors duration-500"></div>
@@ -410,16 +405,15 @@ export default function Setup() {
                   className="hidden"
                   disabled={isUploadingResume}
                 />
-                
+
                 <label
                   htmlFor={isUploadingResume ? "" : "resume-upload"}
                   className={`block relative z-10 ${isUploadingResume ? "cursor-not-allowed" : "cursor-pointer"}`}
                 >
                   <div className="flex flex-col items-center gap-6">
-                    <div className={`w-20 h-20 rounded-[1.5rem] flex items-center justify-center transition-all duration-500 shadow-2xl ${
-                      isUploadingResume ? "bg-emerald-500 text-white" : 
+                    <div className={`w-20 h-20 rounded-[1.5rem] flex items-center justify-center transition-all duration-500 shadow-2xl ${isUploadingResume ? "bg-emerald-500 text-white" :
                       isResumeReady ? "bg-emerald-500 text-white scale-110 shadow-emerald-500/30" : "bg-slate-700 text-slate-300 border border-white/10 group-hover:scale-110 group-hover:text-emerald-400 group-hover:border-emerald-500/30 group-hover:shadow-emerald-500/20"
-                    }`}>
+                      }`}>
                       {isUploadingResume ? (
                         <Loader2 className="w-10 h-10 animate-spin" />
                       ) : isResumeReady ? (
@@ -430,10 +424,9 @@ export default function Setup() {
                     </div>
 
                     <div className="space-y-2">
-                      <p className={`text-xl font-bold transition-colors tracking-wide ${
-                        isUploadingResume ? "text-emerald-400" : 
+                      <p className={`text-xl font-bold transition-colors tracking-wide ${isUploadingResume ? "text-emerald-400" :
                         isResumeReady ? "text-emerald-400" : "text-white"
-                      }`}>
+                        }`}>
                         {resumeFile ? resumeFile.name : (isResumeReady ? "Upload Complete" : "Click to upload or drag and drop")}
                       </p>
                       <p className="text-slate-400 font-medium text-sm">
@@ -454,13 +447,13 @@ export default function Setup() {
               >
                 {/* 动态背景 */}
                 <div className={`absolute inset-0 ${isJdReady && isResumeReady ? 'bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600' : 'bg-transparent'}`}></div>
-                
+
                 {/* 发光扫过效果 */}
                 <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
 
                 <div className="relative flex items-center justify-center gap-3">
                   <Sparkles className={`w-6 h-6 ${isJdReady && isResumeReady ? 'animate-pulse' : 'opacity-50'}`} />
-                  <span>Start Mock Interview</span>
+                  <span>Create Mock Interview</span>
                   <ChevronRight className={`w-6 h-6 transition-transform duration-500 ${isJdReady && isResumeReady ? "translate-x-1 opacity-100" : "opacity-0 -translate-x-4"}`} />
                 </div>
               </Button>
