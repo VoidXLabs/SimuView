@@ -381,7 +381,7 @@ public class InterviewSessionService {
                     try {
                         emitter.send(SseEmitter.event().name("question.token")
                                 .data(Map.of("token", token)));
-                    } catch (Exception e) {
+                    } catch (IllegalStateException | IOException e) {
                         log.warn("Client disconnected during streaming, session {}", sessionId);
                     }
                 },
