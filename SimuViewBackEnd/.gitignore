@@ -34,3 +34,4 @@ build/
 ### VS Code ###
 .vscode/
 /src/test/
+/src/main/resources/sql/

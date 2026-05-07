@@ -25,6 +25,8 @@ public class InterviewRecord {
     private Long jdId;
     @TableField("resume_id")
     private Long resumeId;
+    @TableField("total_questions")
+    private Integer totalQuestions;
     @TableField("status")
     private Integer status;
     @TableField("start_time")
