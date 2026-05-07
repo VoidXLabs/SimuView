@@ -43,15 +43,13 @@ public class InterviewSessionController {
     }
 
     /**
-     * SSE stream for interview questions.
-     * Questions are generated one-at-a-time and streamed as SSE events.
-     * The connection stays open for the entire interview duration.
+     * SSE stream for the next interview question.
+     * Backend determines which question to generate next.
+     * Each question gets its own SSE connection — closes after streaming completes.
      */
-    @GetMapping(value = "/{id}/stream", produces = "text/event-stream;charset=utf-8")
-    public SseEmitter streamQuestions(
-            @PathVariable Long id,
-            @RequestParam(required = false) Integer lastSeq) {
-        return interviewSessionService.streamQuestions(id, lastSeq);
+    @GetMapping(value = "/{id}/questions/stream", produces = "text/event-stream;charset=utf-8")
+    public SseEmitter streamNextQuestion(@PathVariable Long id) {
+        return interviewSessionService.streamNextQuestion(id);
     }
 
     /**
