@@ -132,6 +132,9 @@ public class InterviewSessionService {
         if (question == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_QUESTION_NOT_FOUND);
         }
+        if (!question.getStatus().equals(QuestionStatus.PENDING.name())) {
+            throw new BusinessException(ErrorCode.INTERVIEW_QUESTION_ALREADY_ANSWERED);
+        }
 
         question.setUserAnswer(answer);
         question.setStatus(QuestionStatus.ANSWERED.name());
