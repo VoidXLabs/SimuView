@@ -2,6 +2,7 @@ package com.voidxlab.simuview.service;
 
 import com.voidxlab.simuview.common.ai.StructuredOutputInvoker;
 import com.voidxlab.simuview.common.dto.EvaluateReportDTO;
+import com.voidxlab.simuview.common.entity.EvaluationReport;
 import com.voidxlab.simuview.common.entity.InterviewQuestion;
 import com.voidxlab.simuview.common.entity.InterviewRecord;
 import com.voidxlab.simuview.common.entity.JDInformation;
@@ -11,6 +12,7 @@ import com.voidxlab.simuview.common.enums.QuestionStatus;
 import com.voidxlab.simuview.common.enums.QuestionType;
 import com.voidxlab.simuview.common.exception.BusinessException;
 import com.voidxlab.simuview.common.exception.ErrorCode;
+import com.voidxlab.simuview.mapper.EvaluationReportMapper;
 import com.voidxlab.simuview.mapper.InterviewQuestionMapper;
 import com.voidxlab.simuview.mapper.InterviewRecordMapper;
 import com.voidxlab.simuview.mapper.JDInformationMapper;
@@ -48,6 +50,7 @@ public class InterviewSessionService {
     private final JDInformationMapper jdInformationMapper;
     private final StructuredOutputInvoker structuredOutputInvoker;
     private final ChatClient chatClient;
+    private final EvaluationReportMapper evaluationReportMapper;
 
     private final ExecutorService sseExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
@@ -121,6 +124,7 @@ public class InterviewSessionService {
 
                 // 3) Generate the next question
                 int nextSeq = (int) answeredCount + 1;
+                boolean isLast = nextSeq >= record.getTotalQuestions();
 
                 ResumeInformation resume = resumeInformationMapper.selectById(record.getResumeId());
                 JDInformation jd = jdInformationMapper.selectById(record.getJdId());
@@ -129,7 +133,7 @@ public class InterviewSessionService {
                 String systemPrompt = renderPrompt(singleQuestionSystemResource, params);
                 String userPrompt = renderPrompt(singleQuestionUserResource, params);
 
-                streamAndSaveQuestion(emitter, sessionId, nextSeq, systemPrompt, userPrompt, existingQuestions);
+                streamAndSaveQuestion(emitter, sessionId, nextSeq, isLast, systemPrompt, userPrompt, existingQuestions);
 
                 updateRecordStatus(record, InterviewRecordStatus.IN_PROGRESS);
 
@@ -155,10 +159,10 @@ public class InterviewSessionService {
 
         return emitter;
     }
-
+    
     /**
-     * Submit an answer for a question. This triggers the SSE stream to continue
-     * with the next question (follow-up or next main question).
+     * Submit an answer for a question.
+     * If this is the last question, triggers async evaluation report generation.
      */
     public void submitAnswer(Long questionId, String answer) {
         InterviewQuestion question = interviewQuestionMapper.selectById(questionId);
@@ -173,101 +177,118 @@ public class InterviewSessionService {
         question.setStatus(QuestionStatus.ANSWERED.name());
         question.setAnsweredTime(LocalDateTime.now());
         interviewQuestionMapper.updateById(question);
+
+        // Check if all questions answered → trigger async evaluation
+
+        InterviewRecord record = interviewRecordMapper.selectById(question.getSessionId());
+        long answeredCount = question.getSeqNumber();
+        if (answeredCount >= record.getTotalQuestions()) {
+            record.setStatus(InterviewRecordStatus.COMPLETED);
+            record.setEndTime(LocalDateTime.now());
+            interviewRecordMapper.updateById(record);
+
+            // Async evaluation
+            sseExecutor.submit(() -> evaluateSession(question.getSessionId()));
+        }
     }
 
     /**
-     * Generate and stream the evaluation report via SSE.
+     * Get session status. Frontend polls this after submitting the last answer.
      */
-    public SseEmitter finishInterview(Long sessionId) {
-        SseEmitter emitter = new SseEmitter(0L);
+    public Map<String, Object> getSessionStatus(Long sessionId) {
+        InterviewRecord record = interviewRecordMapper.selectById(sessionId);
+        if (record == null) {
+            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("sessionId", sessionId);
+        result.put("status", record.getStatus());
+        return result;
+    }
 
-        sseExecutor.submit(() -> {
-            try {
-                // Send initial progress
-                emitter.send(SseEmitter.event().name("eval.progress")
-                        .data(Map.of("progress", 10, "phase", "正在分析面试记录...")));
+    /**
+     * Get the evaluation report for a session (only available when status is EVALUATED).
+     */
+    public EvaluationReport getReport(Long sessionId) {
+        InterviewRecord record = interviewRecordMapper.selectById(sessionId);
+        if (record == null) {
+            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
+        }
+        if (record.getStatus() != InterviewRecordStatus.EVALUATED) {
+            throw new BusinessException(ErrorCode.INTERVIEW_NOT_COMPLETED);
+        }
+        EvaluationReport report = evaluationReportMapper.findBySessionId(sessionId);
+        if (report == null) {
+            throw new BusinessException(ErrorCode.INTERVIEW_EVALUATION_FAILED);
+        }
+        return report;
+    }
 
-                InterviewRecord record = interviewRecordMapper.selectById(sessionId);
-                if (record == null) {
-                    throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
-                }
+    /**
+     * Evaluate a completed session and store results in DB.
+     */
+    private void evaluateSession(Long sessionId) {
+        try {
+            log.info("开始异步评估，sessionId: {}", sessionId);
 
-                ResumeInformation resume = resumeInformationMapper.selectById(record.getResumeId());
-                JDInformation jd = jdInformationMapper.selectById(record.getJdId());
-                List<InterviewQuestion> questions = interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId);
+            InterviewRecord record = interviewRecordMapper.selectById(sessionId);
+            ResumeInformation resume = resumeInformationMapper.selectById(record.getResumeId());
+            JDInformation jd = jdInformationMapper.selectById(record.getJdId());
+            List<InterviewQuestion> questions = interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId);
 
-                // Update status
-                record.setStatus(InterviewRecordStatus.COMPLETED);
-                interviewRecordMapper.updateById(record);
+            // Build prompt
+            Map<String, Object> params = new HashMap<>();
+            params.put("qaHistory", formatFullQaHistory(questions));
+            params.put("resumeText", resume != null ? resume.getContent() : "");
+            params.put("jdContent", jd != null ? jd.getJdContent() : "");
 
-                emitter.send(SseEmitter.event().name("eval.progress")
-                        .data(Map.of("progress", 30, "phase", "正在生成评估报告...")));
+            String systemPrompt = renderPrompt(evaluationSystemResource, params);
+            String userPrompt = renderPrompt(evaluationUserResource, params);
 
-                // Build prompt
-                Map<String, Object> params = new HashMap<>();
-                params.put("qaHistory", formatFullQaHistory(questions));
-                params.put("resumeText", resume != null ? resume.getContent() : "");
-                params.put("jdContent", jd != null ? jd.getJdContent() : "");
+            // Call AI for evaluation
+            BeanOutputConverter<EvaluateReportDTO> converter = new BeanOutputConverter<>(EvaluateReportDTO.class);
+            String systemPromptWithFormat = systemPrompt + "\n" + converter.getFormat();
 
-                String systemPrompt = renderPrompt(evaluationSystemResource, params);
-                String userPrompt = renderPrompt(evaluationUserResource, params);
+            EvaluateReportDTO report = structuredOutputInvoker.invoke(
+                    systemPromptWithFormat,
+                    userPrompt,
+                    converter,
+                    ErrorCode.AI_SERVICE_UNAVAILABLE,
+                    "评估报告生成"
+            );
 
-                // Call AI for evaluation
-                BeanOutputConverter<EvaluateReportDTO> converter = new BeanOutputConverter<>(EvaluateReportDTO.class);
-                String systemPromptWithFormat = systemPrompt + "\n" + converter.getFormat();
-
-                EvaluateReportDTO report = structuredOutputInvoker.invoke(
-                        systemPromptWithFormat,
-                        userPrompt,
-                        converter,
-                        ErrorCode.AI_SERVICE_UNAVAILABLE,
-                        "评估报告生成"
-                );
-
-                emitter.send(SseEmitter.event().name("eval.progress")
-                        .data(Map.of("progress", 80, "phase", "报告生成完成")));
-
-                // Update questions with scores
-                if (report.questionEvaluations() != null) {
-                    for (var qEval : report.questionEvaluations()) {
-                        InterviewQuestion q = questions.stream()
-                                .filter(x -> x.getSeqNumber().equals(qEval.questionIndex()))
-                                .findFirst().orElse(null);
-                        if (q != null) {
-                            q.setScore(qEval.score());
-                            q.setFeedback(qEval.feedback());
-                            q.setStatus(QuestionStatus.SCORED.name());
-                            interviewQuestionMapper.updateById(q);
-                        }
+            // Update questions with scores
+            if (report.questionEvaluations() != null) {
+                for (var qEval : report.questionEvaluations()) {
+                    InterviewQuestion q = questions.stream()
+                            .filter(x -> x.getSeqNumber().equals(qEval.questionIndex()))
+                            .findFirst().orElse(null);
+                    if (q != null) {
+                        q.setScore(qEval.score());
+                        q.setFeedback(qEval.feedback());
+                        q.setStatus(QuestionStatus.SCORED.name());
+                        interviewQuestionMapper.updateById(q);
                     }
                 }
-
-                // Update record status to EVALUATED
-                record.setStatus(InterviewRecordStatus.EVALUATED);
-                record.setEndTime(LocalDateTime.now());
-                interviewRecordMapper.updateById(record);
-
-                emitter.send(SseEmitter.event().name("eval.complete")
-                        .data(Map.of("fullReport", report)));
-                emitter.complete();
-
-            } catch (Exception e) {
-                log.error("Evaluation failed for session {}: {}", sessionId, e.getMessage());
-                try {
-                    int code = e instanceof BusinessException be
-                            ? be.getCode() : ErrorCode.INTERVIEW_EVALUATION_FAILED.getCode();
-                    emitter.send(SseEmitter.event().name("error")
-                            .data(Map.of("code", code, "message", "生成评估报告失败: " + e.getMessage())));
-                } catch (Exception ignored) {
-                }
-                try {
-                    emitter.completeWithError(e);
-                } catch (Exception ignored) {
-                }
             }
-        });
 
-        return emitter;
+            // Store report in evaluation_report table and update record status
+            String reportJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(report);
+            EvaluationReport evaluationReport = EvaluationReport.builder()
+                    .sessionId(sessionId)
+                    .reportJson(reportJson)
+                    .createdTime(LocalDateTime.now())
+                    .build();
+            evaluationReportMapper.insert(evaluationReport);
+
+            record.setStatus(InterviewRecordStatus.EVALUATED);
+            interviewRecordMapper.updateById(record);
+
+            log.info("异步评估完成，sessionId: {}", sessionId);
+
+        } catch (Exception e) {
+            log.error("异步评估失败，sessionId: {}: {}", sessionId, e.getMessage(), e);
+        }
     }
 
     // ========== Private Methods ==========
@@ -276,7 +297,7 @@ public class InterviewSessionService {
      * Stream question from AI token by token, pushing each to SSE.
      * Returns the clean question text (with type prefix removed).
      */
-    private String streamAndSaveQuestion(SseEmitter emitter, Long sessionId, int seq,
+    private String streamAndSaveQuestion(SseEmitter emitter, Long sessionId, int seq, boolean isLast,
                                           String systemPrompt, String userPrompt,
                                           List<InterviewQuestion> existingQuestions) throws Exception {
         // Send question.start
@@ -341,6 +362,7 @@ public class InterviewSessionService {
         endData.put("questionId", question.getQuestionId());
         endData.put("fullText", cleanText);
         endData.put("type", questionType.name());
+        endData.put("isLast", isLast);
         emitter.send(SseEmitter.event().name("question.end").data(endData));
 
         return cleanText;

@@ -3,6 +3,7 @@ package com.voidxlab.simuview.controller;
 import com.voidxlab.simuview.common.context.BaseContext;
 import com.voidxlab.simuview.common.dto.CreateSessionRequest;
 import com.voidxlab.simuview.common.dto.SubmitAnswerRequest;
+import com.voidxlab.simuview.common.entity.EvaluationReport;
 import com.voidxlab.simuview.common.vo.Result;
 import com.voidxlab.simuview.service.InterviewSessionService;
 import jakarta.validation.Valid;
@@ -54,7 +55,7 @@ public class InterviewSessionController {
 
     /**
      * Submit an answer for the current question.
-     * This is fast (no AI call) and triggers the SSE stream to continue.
+     * If this is the last question, evaluation report is generated asynchronously.
      */
     @PostMapping("/{id}/answer")
     public Result<Void> submitAnswer(
@@ -65,10 +66,21 @@ public class InterviewSessionController {
     }
 
     /**
-     * Finish the interview and generate evaluation report via SSE stream.
+     * Get interview session status.
+     * Frontend polls this endpoint after submitting the last answer to check
+     * if the async evaluation report has been generated.
      */
-    @PostMapping(value = "/{id}/finish", produces = "text/event-stream;charset=utf-8")
-    public SseEmitter finishInterview(@PathVariable Long id) {
-        return interviewSessionService.finishInterview(id);
+    @GetMapping("/{id}/status")
+    public Result<Map<String, Object>> getSessionStatus(@PathVariable Long id) {
+        return Result.success(interviewSessionService.getSessionStatus(id));
+    }
+
+    /**
+     * Get the evaluation report for a completed session.
+     * Only available when status is EVALUATED. Returns the full report JSON.
+     */
+    @GetMapping("/{id}/report")
+    public Result<EvaluationReport> getReport(@PathVariable Long id) {
+        return Result.success(interviewSessionService.getReport(id));
     }
 }
