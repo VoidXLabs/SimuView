@@ -1,6 +1,7 @@
 package com.voidxlab.simuview.common.exception;
 
 import com.voidxlab.simuview.common.vo.Result;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -58,9 +59,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IOException.class)
-    public Result<Void> handleIOException(IOException e) {
+    public void handleIOException(IOException e, HttpServletResponse response) {
+        if (response.isCommitted()) {
+            return;
+        }
         log.error("IO异常", e);
-        return Result.error("文件操作失败: " + e.getMessage());
+        try {
+            response.setStatus(500);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":500,\"message\":\"文件操作失败:" + e.getMessage() + "\"}");
+            response.getWriter().flush();
+        } catch (IOException ignored) {
+        }
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -70,8 +80,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public Result<Void> handleException(Exception e) {
+    public void handleException(Exception e, HttpServletResponse response) {
+        if (response.isCommitted()) {
+            return;
+        }
         log.error("系统异常", e);
-        return Result.error("系统内部错误");
+        try {
+            response.setStatus(500);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":500,\"message\":\"系统内部错误\"}");
+            response.getWriter().flush();
+        } catch (IOException ignored) {
+        }
     }
 }

@@ -156,7 +156,10 @@ public class InterviewSessionService {
 
                 updateRecordStatus(record, InterviewRecordStatus.IN_PROGRESS);
 
-                emitter.complete();
+                try {
+                    emitter.complete();
+                } catch (Exception ignored) {
+                }
 
 
             } catch (Exception e) {
@@ -378,9 +381,8 @@ public class InterviewSessionService {
                     try {
                         emitter.send(SseEmitter.event().name("question.token")
                                 .data(Map.of("token", token)));
-                    } catch (IOException e) {
-                        streamCompletion.completeExceptionally(
-                                new RuntimeException("SSE send failed during streaming", e));
+                    } catch (Exception e) {
+                        log.warn("Client disconnected during streaming, session {}", sessionId);
                     }
                 },
                 streamCompletion::completeExceptionally,
