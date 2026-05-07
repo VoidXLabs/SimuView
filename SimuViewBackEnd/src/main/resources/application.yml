@@ -63,6 +63,8 @@ logging:
     com.voidxlab.simuview: info
 
 simuview:
+  interview:
+    default-question-count: 5
   jwt:
     secret-key: ${simuview.jwt.secret-key}
     expiration: 86400000

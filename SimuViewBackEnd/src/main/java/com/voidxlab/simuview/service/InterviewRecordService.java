@@ -1,8 +1,8 @@
 package com.voidxlab.simuview.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.voidxlab.simuview.common.context.BaseContext;
 import com.voidxlab.simuview.common.dto.InterviewRecordPageQueryDTO;
 import com.voidxlab.simuview.common.entity.InterviewRecord;
 import com.voidxlab.simuview.mapper.InterviewRecordMapper;
@@ -24,7 +24,7 @@ public class InterviewRecordService {
      * @return
      */
     public Page<InterviewRecord> pageQuery(InterviewRecordPageQueryDTO queryDTO) {
-        Long userId = queryDTO.getUserId();
+        Long userId = BaseContext.getUserId();
         Integer pageNum = queryDTO.getPageNum();
         Integer pageSize = queryDTO.getPageSize();
         pageNum = pageNum == null ? 1 : pageNum;

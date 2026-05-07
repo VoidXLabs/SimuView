@@ -6,10 +6,4 @@ public record CreateSessionRequest(
     @NotNull Long jdId,
     @NotNull Long resumeId,
     Integer questionCount
-) {
-    public CreateSessionRequest {
-        if (questionCount == null || questionCount < 1) {
-            questionCount = 5;
-        }
-    }
-}
+) {}

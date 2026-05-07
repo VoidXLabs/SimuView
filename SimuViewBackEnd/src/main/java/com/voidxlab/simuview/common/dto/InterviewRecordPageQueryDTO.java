@@ -4,7 +4,6 @@ import lombok.Data;
 
 @Data
 public class InterviewRecordPageQueryDTO {
-    Long userId;
     Integer pageNum;
     Integer pageSize;
 }

@@ -6,6 +6,10 @@ import com.voidxlab.simuview.common.entity.InterviewQuestion;
 import com.voidxlab.simuview.common.entity.InterviewRecord;
 import com.voidxlab.simuview.common.entity.JDInformation;
 import com.voidxlab.simuview.common.entity.ResumeInformation;
+import com.voidxlab.simuview.common.enums.InterviewRecordStatus;
+import com.voidxlab.simuview.common.enums.QuestionStatus;
+import com.voidxlab.simuview.common.enums.QuestionType;
+import com.voidxlab.simuview.common.exception.BusinessException;
 import com.voidxlab.simuview.common.exception.ErrorCode;
 import com.voidxlab.simuview.mapper.InterviewQuestionMapper;
 import com.voidxlab.simuview.mapper.InterviewRecordMapper;
@@ -70,7 +74,7 @@ public class InterviewSessionService {
                 .jdId(jdId)
                 .resumeId(resumeId)
                 .totalQuestions(questionCount)
-                .status(0) // CREATED
+                .status(InterviewRecordStatus.CREATED)
                 .startTime(LocalDateTime.now())
                 .build();
         interviewRecordMapper.insert(record);
@@ -101,8 +105,10 @@ public class InterviewSessionService {
             } catch (Exception e) {
                 log.error("SSE stream error for session {}: {}", sessionId, e.getMessage());
                 try {
+                    int code = e instanceof BusinessException be
+                            ? be.getCode() : ErrorCode.INTERVIEW_QUESTION_GENERATION_FAILED.getCode();
                     Map<String, Object> errorData = new HashMap<>();
-                    errorData.put("code", 7001);
+                    errorData.put("code", code);
                     errorData.put("message", "生成面试题目失败: " + e.getMessage());
                     emitter.send(SseEmitter.event().name("error").data(errorData));
                 } catch (Exception ignored) {
@@ -124,11 +130,11 @@ public class InterviewSessionService {
     public void submitAnswer(Long questionId, String answer) {
         InterviewQuestion question = interviewQuestionMapper.selectById(questionId);
         if (question == null) {
-            throw new IllegalArgumentException("问题不存在: " + questionId);
+            throw new BusinessException(ErrorCode.INTERVIEW_QUESTION_NOT_FOUND);
         }
 
         question.setUserAnswer(answer);
-        question.setStatus("ANSWERED");
+        question.setStatus(QuestionStatus.ANSWERED.name());
         question.setAnsweredTime(LocalDateTime.now());
         interviewQuestionMapper.updateById(question);
 
@@ -153,7 +159,7 @@ public class InterviewSessionService {
 
                 InterviewRecord record = interviewRecordMapper.selectById(sessionId);
                 if (record == null) {
-                    throw new IllegalArgumentException("面试记录不存在: " + sessionId);
+                    throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
                 }
 
                 ResumeInformation resume = resumeInformationMapper.selectById(record.getResumeId());
@@ -161,7 +167,7 @@ public class InterviewSessionService {
                 List<InterviewQuestion> questions = interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId);
 
                 // Update status
-                record.setStatus(2); // COMPLETED
+                record.setStatus(InterviewRecordStatus.COMPLETED);
                 interviewRecordMapper.updateById(record);
 
                 emitter.send(SseEmitter.event().name("eval.progress")
@@ -200,14 +206,14 @@ public class InterviewSessionService {
                         if (q != null) {
                             q.setScore(qEval.score());
                             q.setFeedback(qEval.feedback());
-                            q.setStatus("SCORED");
+                            q.setStatus(QuestionStatus.SCORED.name());
                             interviewQuestionMapper.updateById(q);
                         }
                     }
                 }
 
                 // Update record status to EVALUATED
-                record.setStatus(3); // EVALUATED
+                record.setStatus(InterviewRecordStatus.EVALUATED);
                 record.setEndTime(LocalDateTime.now());
                 interviewRecordMapper.updateById(record);
 
@@ -218,8 +224,10 @@ public class InterviewSessionService {
             } catch (Exception e) {
                 log.error("Evaluation failed for session {}: {}", sessionId, e.getMessage());
                 try {
+                    int code = e instanceof BusinessException be
+                            ? be.getCode() : ErrorCode.INTERVIEW_EVALUATION_FAILED.getCode();
                     emitter.send(SseEmitter.event().name("error")
-                            .data(Map.of("code", 7001, "message", "生成评估报告失败: " + e.getMessage())));
+                            .data(Map.of("code", code, "message", "生成评估报告失败: " + e.getMessage())));
                 } catch (Exception ignored) {
                 }
                 try {
@@ -237,7 +245,7 @@ public class InterviewSessionService {
     private void generateQuestionsLoop(Long sessionId, SseEmitter emitter, Integer lastSeq) throws Exception {
         InterviewRecord record = interviewRecordMapper.selectById(sessionId);
         if (record == null) {
-            throw new IllegalArgumentException("面试记录不存在: " + sessionId);
+            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
         }
 
         ResumeInformation resume = resumeInformationMapper.selectById(record.getResumeId());
@@ -251,13 +259,13 @@ public class InterviewSessionService {
 
         // Check if there's a PENDING question to resend (on reconnection)
         InterviewQuestion pending = existingQuestions.stream()
-                .filter(q -> q.getSeqNumber().equals(effectiveStartSeq) && "PENDING".equals(q.getStatus()))
+                .filter(q -> q.getSeqNumber().equals(effectiveStartSeq) && QuestionStatus.PENDING.name().equals(q.getStatus()))
                 .findFirst().orElse(null);
 
         if (pending != null) {
             // Resend existing question (non-streaming, text already in DB)
             resendQuestion(emitter, pending);
-            updateRecordStatus(record, 1);
+            updateRecordStatus(record, InterviewRecordStatus.IN_PROGRESS);
             waitForAnswer(sessionId, pending);
             startSeq = pending.getSeqNumber() + 1;
         }
@@ -272,7 +280,7 @@ public class InterviewSessionService {
             // Stream question from AI, token by token
             String cleanText = streamAndSaveQuestion(emitter, sessionId, seq, systemPrompt, userPrompt, existingQuestions);
 
-            updateRecordStatus(record, 1);
+            updateRecordStatus(record, InterviewRecordStatus.IN_PROGRESS);
 
             // If not last question, wait for answer
             if (seq < record.getTotalQuestions()) {
@@ -329,10 +337,10 @@ public class InterviewSessionService {
         String rawText = streamCompletion.get(5, TimeUnit.MINUTES);
 
         // Parse type prefix from the raw text
-        String questionType = "MAIN";
+        QuestionType questionType = QuestionType.MAIN;
         String cleanText = rawText;
         if (rawText.startsWith("[FOLLOW_UP]")) {
-            questionType = "FOLLOW_UP";
+            questionType = QuestionType.FOLLOW_UP;
             cleanText = rawText.substring("[FOLLOW_UP]".length()).trim();
         } else if (rawText.startsWith("[MAIN]")) {
             cleanText = rawText.substring("[MAIN]".length()).trim();
@@ -343,10 +351,10 @@ public class InterviewSessionService {
         InterviewQuestion question = InterviewQuestion.builder()
                 .sessionId(sessionId)
                 .questionText(cleanText)
-                .questionType(questionType)
+                .questionType(questionType.name())
                 .seqNumber(seq)
-                .parentQuestionId("FOLLOW_UP".equals(questionType) ? parentId : null)
-                .status("PENDING")
+                .parentQuestionId(questionType == QuestionType.FOLLOW_UP ? parentId : null)
+                .status(QuestionStatus.PENDING.name())
                 .createdTime(LocalDateTime.now())
                 .build();
         interviewQuestionMapper.insert(question);
@@ -356,7 +364,7 @@ public class InterviewSessionService {
         Map<String, Object> endData = new HashMap<>();
         endData.put("questionId", question.getQuestionId());
         endData.put("fullText", cleanText);
-        endData.put("type", questionType);
+        endData.put("type", questionType.name());
         emitter.send(SseEmitter.event().name("question.end").data(endData));
 
         return cleanText;
@@ -391,7 +399,7 @@ public class InterviewSessionService {
                                                    JDInformation jd, Long sessionId) {
         List<InterviewQuestion> history = interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId);
         int answeredCount = (int) history.stream()
-                .filter(q -> "ANSWERED".equals(q.getStatus()))
+                .filter(q -> QuestionStatus.ANSWERED.name().equals(q.getStatus()))
                 .count();
 
         Map<String, Object> params = new HashMap<>();
@@ -409,7 +417,7 @@ public class InterviewSessionService {
         }
 
         InterviewQuestion lastAnswered = existingQuestions.stream()
-                .filter(q -> "ANSWERED".equals(q.getStatus()))
+                .filter(q -> QuestionStatus.ANSWERED.name().equals(q.getStatus()))
                 .max(Comparator.comparingInt(InterviewQuestion::getSeqNumber))
                 .orElse(null);
 
@@ -423,7 +431,7 @@ public class InterviewSessionService {
     private Long findLastMainQuestionId(List<InterviewQuestion> questions) {
         if (questions.isEmpty()) return null;
         InterviewQuestion lastMain = questions.stream()
-                .filter(q -> "MAIN".equals(q.getQuestionType()) && q.getQuestionId() != null)
+                .filter(q -> QuestionType.MAIN.name().equals(q.getQuestionType()) && q.getQuestionId() != null)
                 .reduce((first, second) -> second)
                 .orElse(null);
         return lastMain != null ? lastMain.getQuestionId() : null;
@@ -460,11 +468,11 @@ public class InterviewSessionService {
             String template = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             return new PromptTemplate(template).render(params);
         } catch (IOException e) {
-            throw new RuntimeException("加载提示词模板失败: " + resource.getFilename(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "加载提示词模板失败: " + resource.getFilename());
         }
     }
 
-    private void updateRecordStatus(InterviewRecord record, int status) {
+    private void updateRecordStatus(InterviewRecord record, InterviewRecordStatus status) {
         if (record.getStatus() != status) {
             record.setStatus(status);
             interviewRecordMapper.updateById(record);

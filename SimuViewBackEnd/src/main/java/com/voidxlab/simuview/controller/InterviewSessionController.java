@@ -7,6 +7,7 @@ import com.voidxlab.simuview.common.vo.Result;
 import com.voidxlab.simuview.service.InterviewSessionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -19,6 +20,9 @@ public class InterviewSessionController {
 
     private final InterviewSessionService interviewSessionService;
 
+    @Value("${simuview.interview.default-question-count:5}")
+    private int defaultQuestionCount;
+
     /**
      * Create a new interview session.
      * Returns immediately with sessionId, no AI call.
@@ -27,7 +31,8 @@ public class InterviewSessionController {
     @PostMapping
     public Result<Map<String, Object>> createSession(@Valid @RequestBody CreateSessionRequest request) {
         Long userId = BaseContext.getUserId();
-        int questionCount = request.questionCount() != null ? request.questionCount() : 5;
+        int questionCount = request.questionCount() != null && request.questionCount() >= 1
+                ? request.questionCount() : defaultQuestionCount;
         Long sessionId = interviewSessionService.createSession(
                 userId, request.jdId(), request.resumeId(), questionCount);
         return Result.success(Map.of(
