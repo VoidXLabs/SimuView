@@ -102,7 +102,8 @@ public class InterviewSessionService {
      * Each question gets its own SSE connection — closes after streaming completes.
      */
     public SseEmitter streamNextQuestion(Long sessionId) {
-        SseEmitter emitter = new SseEmitter(1800L);
+        Long currentUserId = BaseContext.getUserId();
+        SseEmitter emitter = new SseEmitter(TimeUnit.MINUTES.toMillis(30));
 
         sseExecutor.submit(() -> {
             try {
@@ -110,7 +111,7 @@ public class InterviewSessionService {
                 if (record == null) {
                     throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
                 }
-                checkSessionOwnership(record);
+                checkSessionOwnership(record, currentUserId);
 
                 // 1) Check for PENDING question first (dedicated query, no full list needed)
                 InterviewQuestion pending = interviewQuestionMapper.findPendingBySessionId(sessionId);
@@ -170,7 +171,7 @@ public class InterviewSessionService {
                 } catch (Exception ignored) {
                 }
                 try {
-                    emitter.completeWithError(e);
+                    emitter.complete();
                 } catch (Exception ignored) {
                 }
             } finally {
@@ -205,7 +206,7 @@ public class InterviewSessionService {
         if (record == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
         }
-        checkSessionOwnership(record);
+        checkSessionOwnership(record, BaseContext.getUserId());
         long answeredCount = question.getSeqNumber();
         if (answeredCount >= record.getTotalQuestions()) {
             record.setStatus(InterviewRecordStatus.COMPLETED);
@@ -225,7 +226,7 @@ public class InterviewSessionService {
         if (record == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
         }
-        checkSessionOwnership(record);
+        checkSessionOwnership(record, BaseContext.getUserId());
         Map<String, Object> result = new HashMap<>();
         result.put("sessionId", sessionId);
         result.put("status", record.getStatus());
@@ -240,7 +241,7 @@ public class InterviewSessionService {
         if (record == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
         }
-        checkSessionOwnership(record);
+        checkSessionOwnership(record, BaseContext.getUserId());
         if (record.getStatus() != InterviewRecordStatus.EVALUATED) {
             throw new BusinessException(ErrorCode.INTERVIEW_EVALUATION_NOT_READY);
         }
@@ -331,7 +332,7 @@ public class InterviewSessionService {
         if (record == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
         }
-        checkSessionOwnership(record);
+        checkSessionOwnership(record, BaseContext.getUserId());
         if (record.getStatus() != InterviewRecordStatus.EVALUATION_FAILED
                 && record.getStatus() != InterviewRecordStatus.COMPLETED) {
             throw new BusinessException(ErrorCode.INTERVIEW_ALREADY_COMPLETED);
@@ -344,9 +345,8 @@ public class InterviewSessionService {
 
     // ========== Private Methods ==========
 
-    private void checkSessionOwnership(InterviewRecord record) {
-        Long currentUserId = BaseContext.getUserId();
-        if (!record.getUserId().equals(currentUserId)) {
+    private void checkSessionOwnership(InterviewRecord record, Long userId) {
+        if (!record.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_OWNED);
         }
     }
