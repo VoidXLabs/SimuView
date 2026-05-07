@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.voidxlab.simuview.common.enums.QuestionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,7 +46,7 @@ public class InterviewQuestion {
     private String feedback;
 
     @TableField("status")
-    private String status;
+    private QuestionStatus status;
 
     @TableField("created_time")
     private LocalDateTime createdTime;

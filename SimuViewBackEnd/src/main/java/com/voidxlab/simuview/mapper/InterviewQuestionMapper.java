@@ -12,12 +12,7 @@ public interface InterviewQuestionMapper extends BaseMapper<InterviewQuestion> {
     @Select("SELECT * FROM interview_question WHERE session_id = #{sessionId} ORDER BY seq_number ASC")
     List<InterviewQuestion> findBySessionIdOrderBySeq(@Param("sessionId") Long sessionId);
 
-    @Select("SELECT * FROM interview_question WHERE session_id = #{sessionId} AND status = 'PENDING' ORDER BY seq_number ASC LIMIT 1")
+    @Select("SELECT * FROM interview_question WHERE session_id = #{sessionId} AND status = 0 LIMIT 1")
     InterviewQuestion findPendingBySessionId(@Param("sessionId") Long sessionId);
 
-    @Select("SELECT COUNT(*) FROM interview_question WHERE session_id = #{sessionId}")
-    int countBySessionId(@Param("sessionId") Long sessionId);
-
-    @Select("SELECT * FROM interview_question WHERE session_id = #{sessionId} AND status = 'ANSWERED' ORDER BY seq_number DESC LIMIT 1")
-    InterviewQuestion findLastAnsweredBySessionId(@Param("sessionId") Long sessionId);
 }

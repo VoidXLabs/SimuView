@@ -1,6 +1,8 @@
 package com.voidxlab.simuview.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voidxlab.simuview.common.ai.StructuredOutputInvoker;
+import com.voidxlab.simuview.common.context.BaseContext;
 import com.voidxlab.simuview.common.dto.EvaluateReportDTO;
 import com.voidxlab.simuview.common.entity.EvaluationReport;
 import com.voidxlab.simuview.common.entity.InterviewQuestion;
@@ -35,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -51,8 +54,13 @@ public class InterviewSessionService {
     private final StructuredOutputInvoker structuredOutputInvoker;
     private final ChatClient chatClient;
     private final EvaluationReportMapper evaluationReportMapper;
+    private final ObjectMapper objectMapper;
 
     private final ExecutorService sseExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    private final Set<Long> activeStreamingSessions = ConcurrentHashMap.newKeySet();
+
+    private static final long POLL_INTERVAL_MS = 1000;
+    private static final long POLL_TIMEOUT_MS = 60_000;
 
     @Value("classpath:prompts/single-question-system.st")
     private Resource singleQuestionSystemResource;
@@ -70,6 +78,12 @@ public class InterviewSessionService {
      * Create a new interview session (instant, no AI call).
      */
     public Long createSession(Long userId, Long jdId, Long resumeId, int questionCount) {
+        if(jdInformationMapper.selectById(jdId) == null){
+            throw new BusinessException(ErrorCode.JD_NOT_FOUND);
+        }
+        if(resumeInformationMapper.selectById(resumeId) == null){
+            throw new BusinessException(ErrorCode.RESUME_NOT_FOUND);
+        }
         InterviewRecord record = InterviewRecord.builder()
                 .userId(userId)
                 .jdId(jdId)
@@ -88,7 +102,7 @@ public class InterviewSessionService {
      * Each question gets its own SSE connection — closes after streaming completes.
      */
     public SseEmitter streamNextQuestion(Long sessionId) {
-        SseEmitter emitter = new SseEmitter(0L);
+        SseEmitter emitter = new SseEmitter(1800L);
 
         sseExecutor.submit(() -> {
             try {
@@ -96,13 +110,10 @@ public class InterviewSessionService {
                 if (record == null) {
                     throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
                 }
+                checkSessionOwnership(record);
 
-                List<InterviewQuestion> existingQuestions = interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId);
-
-                // 1) Check for PENDING question → resend on reconnect
-                InterviewQuestion pending = existingQuestions.stream()
-                        .filter(q -> QuestionStatus.PENDING.name().equals(q.getStatus()))
-                        .findFirst().orElse(null);
+                // 1) Check for PENDING question first (dedicated query, no full list needed)
+                InterviewQuestion pending = interviewQuestionMapper.findPendingBySessionId(sessionId);
                 if (pending != null) {
                     resendQuestion(emitter, pending);
                     updateRecordStatus(record, InterviewRecordStatus.IN_PROGRESS);
@@ -110,11 +121,9 @@ public class InterviewSessionService {
                     return;
                 }
 
-                // 2) Check if all questions completed
-                long answeredCount = existingQuestions.stream()
-                        .filter(q -> QuestionStatus.ANSWERED.name().equals(q.getStatus())
-                                || QuestionStatus.SCORED.name().equals(q.getStatus()))
-                        .count();
+                // 2) No PENDING — get full list for counting and prompt building
+                List<InterviewQuestion> existingQuestions = interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId);
+                long answeredCount = existingQuestions.size();
                 if (answeredCount >= record.getTotalQuestions()) {
                     emitter.send(SseEmitter.event().name("interview.complete")
                             .data(Map.of("totalQuestions", record.getTotalQuestions())));
@@ -122,14 +131,23 @@ public class InterviewSessionService {
                     return;
                 }
 
-                // 3) Generate the next question
+                // 3) Try to acquire generating lock
+                if (!activeStreamingSessions.add(sessionId)) {
+                    // Another thread is generating — poll DB for the result instead of error
+                    waitForQuestionByPolling(emitter, sessionId, record);
+                    emitter.complete();
+                    return;
+                }
+
+                // 4) Lock acquired, generate the next question
+
                 int nextSeq = (int) answeredCount + 1;
                 boolean isLast = nextSeq >= record.getTotalQuestions();
 
                 ResumeInformation resume = resumeInformationMapper.selectById(record.getResumeId());
                 JDInformation jd = jdInformationMapper.selectById(record.getJdId());
 
-                Map<String, Object> params = buildPromptParams(record, resume, jd, sessionId);
+                Map<String, Object> params = buildPromptParams(record, resume, jd, existingQuestions, sessionId);
                 String systemPrompt = renderPrompt(singleQuestionSystemResource, params);
                 String userPrompt = renderPrompt(singleQuestionUserResource, params);
 
@@ -138,6 +156,7 @@ public class InterviewSessionService {
                 updateRecordStatus(record, InterviewRecordStatus.IN_PROGRESS);
 
                 emitter.complete();
+
 
             } catch (Exception e) {
                 log.error("SSE stream error for session {}: {}", sessionId, e.getMessage());
@@ -154,6 +173,8 @@ public class InterviewSessionService {
                     emitter.completeWithError(e);
                 } catch (Exception ignored) {
                 }
+            } finally {
+                activeStreamingSessions.remove(sessionId);
             }
         });
 
@@ -169,18 +190,22 @@ public class InterviewSessionService {
         if (question == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_QUESTION_NOT_FOUND);
         }
-        if (!question.getStatus().equals(QuestionStatus.PENDING.name())) {
+        if (!question.getStatus().equals(QuestionStatus.PENDING)) {
             throw new BusinessException(ErrorCode.INTERVIEW_QUESTION_ALREADY_ANSWERED);
         }
 
         question.setUserAnswer(answer);
-        question.setStatus(QuestionStatus.ANSWERED.name());
+        question.setStatus(QuestionStatus.ANSWERED);
         question.setAnsweredTime(LocalDateTime.now());
         interviewQuestionMapper.updateById(question);
 
         // Check if all questions answered → trigger async evaluation
 
         InterviewRecord record = interviewRecordMapper.selectById(question.getSessionId());
+        if (record == null) {
+            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
+        }
+        checkSessionOwnership(record);
         long answeredCount = question.getSeqNumber();
         if (answeredCount >= record.getTotalQuestions()) {
             record.setStatus(InterviewRecordStatus.COMPLETED);
@@ -200,6 +225,7 @@ public class InterviewSessionService {
         if (record == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
         }
+        checkSessionOwnership(record);
         Map<String, Object> result = new HashMap<>();
         result.put("sessionId", sessionId);
         result.put("status", record.getStatus());
@@ -214,8 +240,9 @@ public class InterviewSessionService {
         if (record == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
         }
+        checkSessionOwnership(record);
         if (record.getStatus() != InterviewRecordStatus.EVALUATED) {
-            throw new BusinessException(ErrorCode.INTERVIEW_NOT_COMPLETED);
+            throw new BusinessException(ErrorCode.INTERVIEW_EVALUATION_NOT_READY);
         }
         EvaluationReport report = evaluationReportMapper.findBySessionId(sessionId);
         if (report == null) {
@@ -266,14 +293,14 @@ public class InterviewSessionService {
                     if (q != null) {
                         q.setScore(qEval.score());
                         q.setFeedback(qEval.feedback());
-                        q.setStatus(QuestionStatus.SCORED.name());
+                        q.setStatus(QuestionStatus.SCORED);
                         interviewQuestionMapper.updateById(q);
                     }
                 }
             }
 
             // Store report in evaluation_report table and update record status
-            String reportJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(report);
+            String reportJson = objectMapper.writeValueAsString(report);
             EvaluationReport evaluationReport = EvaluationReport.builder()
                     .sessionId(sessionId)
                     .reportJson(reportJson)
@@ -304,6 +331,7 @@ public class InterviewSessionService {
         if (record == null) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
         }
+        checkSessionOwnership(record);
         if (record.getStatus() != InterviewRecordStatus.EVALUATION_FAILED
                 && record.getStatus() != InterviewRecordStatus.COMPLETED) {
             throw new BusinessException(ErrorCode.INTERVIEW_ALREADY_COMPLETED);
@@ -316,11 +344,17 @@ public class InterviewSessionService {
 
     // ========== Private Methods ==========
 
+    private void checkSessionOwnership(InterviewRecord record) {
+        Long currentUserId = BaseContext.getUserId();
+        if (!record.getUserId().equals(currentUserId)) {
+            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_OWNED);
+        }
+    }
+
     /**
      * Stream question from AI token by token, pushing each to SSE.
-     * Returns the clean question text (with type prefix removed).
      */
-    private String streamAndSaveQuestion(SseEmitter emitter, Long sessionId, int seq, boolean isLast,
+    private void streamAndSaveQuestion(SseEmitter emitter, Long sessionId, int seq, boolean isLast,
                                           String systemPrompt, String userPrompt,
                                           List<InterviewQuestion> existingQuestions) throws Exception {
         // Send question.start
@@ -374,7 +408,7 @@ public class InterviewSessionService {
                 .questionType(questionType.name())
                 .seqNumber(seq)
                 .parentQuestionId(questionType == QuestionType.FOLLOW_UP ? parentId : null)
-                .status(QuestionStatus.PENDING.name())
+                .status(QuestionStatus.PENDING)
                 .createdTime(LocalDateTime.now())
                 .build();
         interviewQuestionMapper.insert(question);
@@ -387,8 +421,6 @@ public class InterviewSessionService {
         endData.put("type", questionType.name());
         endData.put("isLast", isLast);
         emitter.send(SseEmitter.event().name("question.end").data(endData));
-
-        return cleanText;
     }
 
     private void resendQuestion(SseEmitter emitter, InterviewQuestion question) throws IOException {
@@ -408,12 +440,54 @@ public class InterviewSessionService {
         emitter.send(SseEmitter.event().name("question.end").data(endData));
     }
 
+    /**
+     * Poll DB for the question being generated by another thread.
+     * Called when the generating lock is held — waits for the concurrent
+     * generation to finish, then reads the PENDING question from DB.
+     */
+    private void waitForQuestionByPolling(SseEmitter emitter, Long sessionId, InterviewRecord record) throws Exception {
+        // Notify the frontend that it's waiting for a concurrent generation to complete
+        emitter.send(SseEmitter.event().name("question.waiting")
+                .data(Map.of("message", "正在生成题目...")));
+
+        long deadline = System.currentTimeMillis() + POLL_TIMEOUT_MS;
+
+        while (System.currentTimeMillis() < deadline) {
+            Thread.sleep(POLL_INTERVAL_MS);
+
+            // Dedicated query — at most one PENDING question per session
+            InterviewQuestion pending = interviewQuestionMapper.findPendingBySessionId(sessionId);
+            if (pending != null) {
+                resendQuestion(emitter, pending);
+                updateRecordStatus(record, InterviewRecordStatus.IN_PROGRESS);
+                return;
+            }
+
+            // No PENDING and lock released — check if session was completed concurrently
+            if (!activeStreamingSessions.contains(sessionId)) {
+                List<InterviewQuestion> questions = interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId);
+                long answeredCount = questions.stream()
+                        .filter(q -> QuestionStatus.ANSWERED.equals(q.getStatus())
+                                || QuestionStatus.SCORED.equals(q.getStatus()))
+                        .count();
+                if (answeredCount >= record.getTotalQuestions()) {
+                    emitter.send(SseEmitter.event().name("interview.complete")
+                            .data(Map.of("totalQuestions", record.getTotalQuestions())));
+                    return;
+                }
+            }
+        }
+
+        log.warn("Polling timeout for session {}, no PENDING question within {}ms", sessionId, POLL_TIMEOUT_MS);
+        Map<String, Object> errorData = new HashMap<>();
+        errorData.put("code", ErrorCode.INTERVIEW_QUESTION_GENERATION_FAILED.getCode());
+        errorData.put("message", "题目生成超时，请稍后重试");
+        emitter.send(SseEmitter.event().name("error").data(errorData));
+    }
+
     private Map<String, Object> buildPromptParams(InterviewRecord record, ResumeInformation resume,
-                                                   JDInformation jd, Long sessionId) {
-        List<InterviewQuestion> history = interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId);
-        int answeredCount = (int) history.stream()
-                .filter(q -> QuestionStatus.ANSWERED.name().equals(q.getStatus()))
-                .count();
+                                                   JDInformation jd,List<InterviewQuestion> history, Long sessionId) {
+        int answeredCount = history.size();
 
         Map<String, Object> params = new HashMap<>();
         params.put("resumeText", resume != null ? resume.getContent() : "");
@@ -426,11 +500,14 @@ public class InterviewSessionService {
 
     private Long findLastMainQuestionId(List<InterviewQuestion> questions) {
         if (questions.isEmpty()) return null;
-        InterviewQuestion lastMain = questions.stream()
-                .filter(q -> QuestionType.MAIN.name().equals(q.getQuestionType()) && q.getQuestionId() != null)
-                .reduce((first, second) -> second)
-                .orElse(null);
-        return lastMain != null ? lastMain.getQuestionId() : null;
+        InterviewQuestion lastMain;
+        for(int i = questions.size() - 1; i >= 0; i--){
+            lastMain = questions.get(i);
+            if (QuestionType.MAIN.name().equals(lastMain.getQuestionType())) {
+                return lastMain.getQuestionId();
+            }
+        }
+        return null;
     }
 
     private String formatQaHistory(List<InterviewQuestion> questions) {

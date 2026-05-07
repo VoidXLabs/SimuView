@@ -37,6 +37,12 @@ public enum ErrorCode {
     INTERVIEW_QUESTION_GENERATION_FAILED(3006, "面试问题生成失败"),
     INTERVIEW_NOT_COMPLETED(3007, "面试尚未完成"),
     INTERVIEW_QUESTION_ALREADY_ANSWERED(3008, "面试问题已回答"),
+    INTERVIEW_SESSION_NOT_OWNED(3009, "无权访问该面试会话"),
+    INTERVIEW_EVALUATION_NOT_READY(3010, "面试评估结果未就绪"),
+    INTERVIEW_QUESTION_ALREADY_GENERATING(3011, "面试问题正在生成中，请勿重复请求"),
+
+    // ========== 职位描述模块错误 31xx ==========
+    JD_NOT_FOUND(3101, "职位描述不存在"),
 
 
     // ========== 存储模块错误 4xxx ==========
