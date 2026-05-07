@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("evaluation_report")
+@TableName("interview_evaluation")
 public class EvaluationReport {
     @TableId(value = "report_id", type = IdType.AUTO)
     private Long reportId;
