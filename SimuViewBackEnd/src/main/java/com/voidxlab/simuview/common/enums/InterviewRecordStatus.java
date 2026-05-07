@@ -6,7 +6,8 @@ public enum InterviewRecordStatus implements IEnum<Integer> {
     CREATED(0),
     IN_PROGRESS(1),
     COMPLETED(2),
-    EVALUATED(3);
+    EVALUATED(3),
+    EVALUATION_FAILED(4);
 
     private final int value;
 

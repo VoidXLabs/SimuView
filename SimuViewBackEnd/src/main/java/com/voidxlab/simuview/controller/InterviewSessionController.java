@@ -83,4 +83,13 @@ public class InterviewSessionController {
     public Result<EvaluationReport> getReport(@PathVariable Long id) {
         return Result.success(interviewSessionService.getReport(id));
     }
+
+    /**
+     * Retry evaluation for a session that previously failed (status = EVALUATION_FAILED).
+     */
+    @PostMapping("/{id}/evaluate")
+    public Result<Void> retryEvaluation(@PathVariable Long id) {
+        interviewSessionService.retryEvaluation(id);
+        return Result.success();
+    }
 }

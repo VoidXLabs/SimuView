@@ -288,7 +288,30 @@ public class InterviewSessionService {
 
         } catch (Exception e) {
             log.error("异步评估失败，sessionId: {}: {}", sessionId, e.getMessage(), e);
+            InterviewRecord r = interviewRecordMapper.selectById(sessionId);
+            if (r != null) {
+                r.setStatus(InterviewRecordStatus.EVALUATION_FAILED);
+                interviewRecordMapper.updateById(r);
+            }
         }
+    }
+
+    /**
+     * Retry evaluation for a session that previously failed.
+     */
+    public void retryEvaluation(Long sessionId) {
+        InterviewRecord record = interviewRecordMapper.selectById(sessionId);
+        if (record == null) {
+            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
+        }
+        if (record.getStatus() != InterviewRecordStatus.EVALUATION_FAILED
+                && record.getStatus() != InterviewRecordStatus.COMPLETED) {
+            throw new BusinessException(ErrorCode.INTERVIEW_ALREADY_COMPLETED);
+        }
+        record.setStatus(InterviewRecordStatus.COMPLETED);
+        interviewRecordMapper.updateById(record);
+
+        sseExecutor.submit(() -> evaluateSession(sessionId));
     }
 
     // ========== Private Methods ==========
