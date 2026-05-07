@@ -42,6 +42,7 @@ CREATE TABLE `interview_record` (
   `resume_id` BIGINT NOT NULL COMMENT '关联的简历 ID', /* */
   `status` TINYINT NOT NULL DEFAULT 0 COMMENT '面试状态 (0-待开始, 1-进行中, 2-已完成, 3-已出报告)', /* */
   `start_time` DATETIME DEFAULT NULL COMMENT '面试开始时间', /* */
+  `total_questions` INT NOT NULL DEFAULT 5 COMMENT '总问题数' AFTER `resume_id`,
   `end_time` DATETIME DEFAULT NULL COMMENT '面试结束时间', /* */
   CONSTRAINT `fk_record_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_record_jd` FOREIGN KEY (`jd_id`) REFERENCES `jd_information` (`jd_id`) ON DELETE CASCADE,
@@ -63,14 +64,27 @@ CREATE TABLE `interview_dialogue` (
 
 -- 6. 面试评估报告表 (AI 系统的核心新增)
 -- 面试结束后，AI 根据 interview_dialogue 生成的打分和评价。
-CREATE TABLE `interview_evaluation` (
-  `evaluation_id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '评估 ID', /* */
-  `interview_id` BIGINT NOT NULL UNIQUE COMMENT '关联的面试记录 ID (唯一约束)', /* */
-  `total_score` DECIMAL(5,2) DEFAULT NULL COMMENT '综合总分', /* */
-  `dimension_scores` JSON DEFAULT NULL COMMENT '各维度得分 (存 JSON，如沟通表达、技术深度等)', /* */
-  `ai_summary` TEXT DEFAULT NULL COMMENT 'AI 生成的综合评价总结', /* */
-  `improvement_advice` TEXT DEFAULT NULL COMMENT 'AI 给出的改进建议', /* */
-  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '报告生成时间', /* */
-  CONSTRAINT `fk_evaluation_interview` FOREIGN KEY (`interview_id`) REFERENCES `interview_record` (`interview_id`) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS `interview_evaluation` (
+  `report_id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '报告唯一标识',
+  `session_id` BIGINT NOT NULL COMMENT '关联的面试记录 ID',
+  `report_json` TEXT NOT NULL COMMENT '评估报告 JSON 内容',
+  `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '报告生成时间',
+  INDEX `idx_session_id` (`session_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试评估报告表';
 
+
+-- Interview question table for AI-powered interview sessions
+CREATE TABLE IF NOT EXISTS `interview_question` (
+  `question_id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '问题唯一标识',
+  `session_id` BIGINT NOT NULL COMMENT '关联的面试记录 ID',
+  `question_text` TEXT NOT NULL COMMENT '面试题目内容',
+  `question_type` VARCHAR(20) NOT NULL DEFAULT 'MAIN' COMMENT '题目类型: MAIN-主问题, FOLLOW_UP-追问',
+  `parent_question_id` BIGINT NULL COMMENT '追问的父问题 ID',
+  `seq_number` INT NOT NULL COMMENT '题目序号（从1开始）',
+  `user_answer` TEXT NULL COMMENT '用户的回答内容',
+  `score` INT NULL COMMENT '评分（0-100）',
+  `feedback` TEXT NULL COMMENT '评分反馈',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING-待回答, ANSWERED-已回答, SCORED-已评分',
+  `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '题目生成时间',
+  `answered_time` DATETIME NULL COMMENT '回答时间',
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试题目表';
