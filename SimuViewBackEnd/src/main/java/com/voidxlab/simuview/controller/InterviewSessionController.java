@@ -4,6 +4,7 @@ import com.voidxlab.simuview.common.context.BaseContext;
 import com.voidxlab.simuview.common.dto.CreateSessionRequest;
 import com.voidxlab.simuview.common.dto.SubmitAnswerRequest;
 import com.voidxlab.simuview.common.entity.EvaluationReport;
+import com.voidxlab.simuview.common.enums.InterviewStyle;
 import com.voidxlab.simuview.common.vo.Result;
 import com.voidxlab.simuview.service.InterviewSessionService;
 import jakarta.validation.Valid;
@@ -21,9 +22,10 @@ public class InterviewSessionController {
 
     private final InterviewSessionService interviewSessionService;
 
-    @Value("${simuview.interview.default-question-count:5}")
+    @Value("${simuview.interview.default-question-count}")
     private int defaultQuestionCount;
-
+    @Value("${simuview.interview.default-interview-style}")
+    private InterviewStyle defaultStyle;
     /**
      * Create a new interview session.
      * Returns immediately with sessionId, no AI call.
@@ -34,8 +36,10 @@ public class InterviewSessionController {
         Long userId = BaseContext.getUserId();
         int questionCount = request.questionCount() != null && request.questionCount() >= 1
                 ? request.questionCount() : defaultQuestionCount;
+        InterviewStyle style = request.style() != null
+                ? request.style() : defaultStyle;
         Long sessionId = interviewSessionService.createSession(
-                userId, request.jdId(), request.resumeId(), questionCount);
+                userId, request.jdId(), request.resumeId(), questionCount,style);
         return Result.success(Map.of(
                 "sessionId", sessionId,
                 "questionCount", questionCount,
@@ -64,6 +68,8 @@ public class InterviewSessionController {
         interviewSessionService.submitAnswer(request.questionId(), request.answer());
         return Result.success();
     }
+
+//    public Result<List<>>
 
     /**
      * Get interview session status.

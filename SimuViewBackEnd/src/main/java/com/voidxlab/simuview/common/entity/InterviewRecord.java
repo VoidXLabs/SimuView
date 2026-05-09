@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.voidxlab.simuview.common.enums.InterviewRecordStatus;
+import com.voidxlab.simuview.common.enums.InterviewStyle;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +31,8 @@ public class InterviewRecord {
     private Integer totalQuestions;
     @TableField("status")
     private InterviewRecordStatus status;
+    @TableField("style")
+    private InterviewStyle style;
     @TableField("start_time")
     private LocalDateTime startTime;
     @TableField("end_time")

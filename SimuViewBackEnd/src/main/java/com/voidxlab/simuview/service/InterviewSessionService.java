@@ -10,6 +10,7 @@ import com.voidxlab.simuview.common.entity.InterviewRecord;
 import com.voidxlab.simuview.common.entity.JDInformation;
 import com.voidxlab.simuview.common.entity.ResumeInformation;
 import com.voidxlab.simuview.common.enums.InterviewRecordStatus;
+import com.voidxlab.simuview.common.enums.InterviewStyle;
 import com.voidxlab.simuview.common.enums.QuestionStatus;
 import com.voidxlab.simuview.common.enums.QuestionType;
 import com.voidxlab.simuview.common.exception.BusinessException;
@@ -32,6 +33,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -77,7 +79,7 @@ public class InterviewSessionService {
     /**
      * Create a new interview session (instant, no AI call).
      */
-    public Long createSession(Long userId, Long jdId, Long resumeId, int questionCount) {
+    public Long createSession(Long userId, Long jdId, Long resumeId, int questionCount, InterviewStyle style) {
         if(jdInformationMapper.selectById(jdId) == null){
             throw new BusinessException(ErrorCode.JD_NOT_FOUND);
         }
@@ -90,6 +92,7 @@ public class InterviewSessionService {
                 .resumeId(resumeId)
                 .totalQuestions(questionCount)
                 .status(InterviewRecordStatus.CREATED)
+                .style(style)
                 .startTime(LocalDateTime.now())
                 .build();
         interviewRecordMapper.insert(record);
@@ -497,6 +500,7 @@ public class InterviewSessionService {
         params.put("qaHistory", formatQaHistory(history));
         params.put("answeredCount", answeredCount);
         params.put("totalCount", record.getTotalQuestions());
+        params.put("interviewStyle", record.getStyle().name());
         return params;
     }
 

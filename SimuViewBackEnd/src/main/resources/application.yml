@@ -65,6 +65,7 @@ logging:
 simuview:
   interview:
     default-question-count: 5
+    default-interview-style: "mild"
   jwt:
     secret-key: ${simuview.jwt.secret-key}
     expiration: 86400000
