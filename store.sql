@@ -8,6 +8,7 @@ CREATE TABLE `users` (
   `email` VARCHAR(255) NOT NULL COMMENT '邮箱', /* */
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间' /* */
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表';
+ALTER TABLE users ADD UNIQUE (username);
 
 -- 2. 岗位信息表
 -- 增加结构化字段，方便 AI 提取重点进行提问。
@@ -60,16 +61,6 @@ CREATE TABLE `interview_dialogue` (
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '发言时间', /* */
   CONSTRAINT `fk_dialogue_interview` FOREIGN KEY (`interview_id`) REFERENCES `interview_record` (`interview_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试对话流水表';
-
--- 6. 面试评估报告表 (AI 系统的核心新增)
--- 面试结束后，AI 根据 interview_dialogue 生成的打分和评价。
-CREATE TABLE IF NOT EXISTS `interview_evaluation` (
-  `report_id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '报告唯一标识',
-  `session_id` BIGINT NOT NULL COMMENT '关联的面试记录 ID',
-  `report_json` TEXT NOT NULL COMMENT '评估报告 JSON 内容',
-  `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '报告生成时间',
-  INDEX `idx_session_id` (`session_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试评估报告表';
 
 
 -- Interview question table for AI-powered interview sessions
