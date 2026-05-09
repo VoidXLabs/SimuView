@@ -5,6 +5,7 @@ CREATE TABLE `users` (
   `role` VARCHAR(50) NOT NULL COMMENT '角色 (如：candidate 候选人, admin 管理员)', /* */
   `username` VARCHAR(100) NOT NULL COMMENT '用户名/手机号', /* */
   `password_hash` VARCHAR(255) NOT NULL COMMENT '加密密码', /* */
+  `email` VARCHAR(255) NOT NULL COMMENT '邮箱', /* */
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间' /* */
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表';
 
@@ -15,10 +16,8 @@ CREATE TABLE `jd_information` (
   `title` VARCHAR(255) NOT NULL COMMENT '岗位名称 (例如：Java高级工程师)', /* */
   `jd_url` VARCHAR(500) DEFAULT NULL COMMENT '原始链接 (可选)', /* */
   `jd_content` TEXT NOT NULL COMMENT '岗位详细描述文本', /* */
-  `company_name` VARCHAR(255) NOT NULL COMMENT '企业名称', /* */
   `salary_range` VARCHAR(100) DEFAULT NULL COMMENT '薪资范围', /* */
   `work_experience` VARCHAR(100) DEFAULT NULL COMMENT '要求工作经验', /* */
-  `core_skills` JSON DEFAULT NULL COMMENT '核心技能要求 (建议存 JSON 格式，方便喂给大模型)', /* */
   `education` VARCHAR(100) DEFAULT NULL COMMENT '学历要求', /* */
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' /* */
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='岗位信息表';
@@ -42,7 +41,7 @@ CREATE TABLE `interview_record` (
   `resume_id` BIGINT NOT NULL COMMENT '关联的简历 ID', /* */
   `status` TINYINT NOT NULL DEFAULT 0 COMMENT '面试状态 (0-待开始, 1-进行中, 2-已完成, 3-已出报告)', /* */
   `start_time` DATETIME DEFAULT NULL COMMENT '面试开始时间', /* */
-  `total_questions` INT NOT NULL DEFAULT 5 COMMENT '总问题数' AFTER `resume_id`,
+  `total_questions` INT NOT NULL DEFAULT 5 COMMENT '总问题数',
   `end_time` DATETIME DEFAULT NULL COMMENT '面试结束时间', /* */
   CONSTRAINT `fk_record_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_record_jd` FOREIGN KEY (`jd_id`) REFERENCES `jd_information` (`jd_id`) ON DELETE CASCADE,

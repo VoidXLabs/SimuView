@@ -44,9 +44,9 @@ export default function Interview() {
   const [isPollingStatus, setIsPollingStatus] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const receivedQuestionIdsRef = useRef<Set<number>>(new Set());
+  const isLastQuestionRef = useRef<boolean>(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -117,34 +117,47 @@ export default function Interview() {
           const lines = buffer.split('\n\n');
           buffer = lines.pop() || '';
           
-          for (const line of lines) {
-            if (!line.trim()) continue;
+          for (const block of lines) {
+            if (!block.trim()) continue;
             
             try {
-              const dataMatch = line.match(/^data:\s*(.+)$/m);
+              const dataMatch = block.match(/^data:\s*(.+)$/m);
+              const eventMatch = block.match(/^event:\s*(.+)$/m);
+              
               if (dataMatch) {
                 const data = JSON.parse(dataMatch[1]);
-                console.log("SSE data received:", data);
+                const eventName = eventMatch ? eventMatch[1].trim() : '';
+                console.log("SSE data received:", { eventName, data });
                 
-                // 处理流式 token
-                if (data.token) {
-                  streamingQuestion += data.token;
-                  setMessages(prev => {
-                    const newMessages = [...prev];
-                    if (newMessages.length > 0 && 
-                        newMessages[newMessages.length - 1].role === 'ai' && 
-                        !newMessages[newMessages.length - 1].questionId) {
-                         newMessages[newMessages.length - 1].content = streamingQuestion;
-                    }
-                    return newMessages;
-                  });
-                }
-                
-                // 处理问题结束
-                if (data.type === "MAIN" || data.type === "FOLLOW_UP" || data.name === "question.end") {
+                if (eventName === 'question.start') {
+                   setMessages(prev => {
+                     if (prev.length === 0 || prev[prev.length-1].questionId) {
+                       return [...prev, { role: 'ai', content: '', timestamp: new Date() }];
+                     }
+                     return prev;
+                   });
+                } else if (eventName === 'question.token') {
+                  if (data.token) {
+                    streamingQuestion += data.token;
+                    setMessages(prev => {
+                      const newMessages = [...prev];
+                      if (newMessages.length > 0 && 
+                          newMessages[newMessages.length - 1].role === 'ai' && 
+                          !newMessages[newMessages.length - 1].questionId) {
+                           newMessages[newMessages.length - 1].content = streamingQuestion;
+                      }
+                      return newMessages;
+                    });
+                  }
+                } else if (eventName === 'question.end') {
                   const questionId = data.questionId;
                   const questionContent = data.fullText || streamingQuestion;
+                  const isLast = data.isLast;
                   
+                  if (isLast) {
+                    isLastQuestionRef.current = true;
+                  }
+
                   if (questionId && receivedQuestionIdsRef.current.has(questionId)) {
                     console.log(`Skipping duplicate questionId: ${questionId}`);
                     continue;
@@ -176,21 +189,6 @@ export default function Interview() {
                     }
                     streamingQuestion = '';
                   }
-                } 
-                // 处理面试结束事件
-                else if (data.name === "interview.complete") {
-                  console.log("Received interview.complete event");
-                  handleInterviewEnd();
-                  return;
-                }
-                // 处理开始信号
-                else if (data.name === "question.start") {
-                   setMessages(prev => {
-                     if (prev.length === 0 || prev[prev.length-1].questionId) {
-                       return [...prev, { role: 'ai', content: '', timestamp: new Date() }];
-                     }
-                     return prev;
-                   });
                 }
               }
             } catch (error) {
@@ -271,9 +269,10 @@ export default function Interview() {
           console.log(`Poll attempt ${attempts}: status = ${status}`);
           
           if (status === "EVALUATED") {
-            // 状态已变为已评估，获取报告
+            // 状态已变为已评估，跳转到主页
             setIsPollingStatus(false);
-            await fetchReport();
+            toast.success("评估报告生成完毕！");
+            navigate("/");
             return;
           } else if (status === "EVALUATION_FAILED") {
             toast.error("评估生成失败，请稍后重试");
@@ -294,6 +293,8 @@ export default function Interview() {
         console.error("Poll error:", error);
         if (attempts >= maxAttempts) {
           setIsPollingStatus(false);
+        } else {
+          setTimeout(poll, 2000);
         }
       }
     };
@@ -344,6 +345,12 @@ export default function Interview() {
     // 向后端发送用户回答
     setIsAiThinking(true);
 
+    // 主动关闭当前问题的 SSE 连接
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
     try {
       await apiClient.post(`/api/v1/sessions/${sessionId}/answer`, {
         questionId: currentQuestionId,
@@ -353,15 +360,12 @@ export default function Interview() {
       // 增加问题索引
       setCurrentQuestionIndex(prev => prev + 1);
       
-      // 关闭当前 SSE 连接，准备接收下一个问题
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-      
-      // 短暂延迟后重新连接 SSE
-      setTimeout(() => {
+      if (isLastQuestionRef.current) {
+        handleInterviewEnd();
+      } else {
+        // 提交回答后，立即请求下一个问题的数据流
         connectToQuestionStream();
-      }, 500);
+      }
       
     } catch (error) {
       console.error("Failed to submit answer:", error);
@@ -492,18 +496,41 @@ export default function Interview() {
   // 轮询状态界面
   if (isPollingStatus) {
     return (
-      <div className="flex flex-col h-screen bg-slate-900 items-center justify-center">
-        <div className="relative">
-          <Loader2 className="w-20 h-20 text-emerald-500 animate-spin" />
-          <div className="absolute inset-0 border-4 border-emerald-500/20 rounded-full"></div>
-        </div>
-        <h2 className="text-2xl font-bold text-white mt-8">Generating Report</h2>
-        <p className="text-slate-400 mt-4 text-center max-w-md">
-          Our AI is analyzing your interview responses. This may take a few moments...
-        </p>
-        <div className="flex items-center gap-2 mt-6 text-slate-500">
-          <Clock className="w-4 h-4" />
-          <span className="text-sm">Please don't close this page</span>
+      <div className="flex flex-col h-screen bg-slate-900 items-center justify-center p-6">
+        <div className="w-full max-w-md bg-slate-800/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center">
+          <div className="relative mb-8">
+            <Loader2 className="w-16 h-16 text-emerald-500 animate-spin" />
+            <div className="absolute inset-0 border-4 border-emerald-500/20 rounded-full"></div>
+          </div>
+          
+          <h2 className="text-2xl font-bold text-white mb-2">Generating Report</h2>
+          <p className="text-slate-400 text-center mb-8">
+            Our AI is analyzing your interview responses. This may take a few moments...
+          </p>
+          
+          {/* 进度条动画 */}
+          <div className="w-full space-y-2">
+            <div className="flex justify-between text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+              <span>Processing</span>
+              <span className="animate-pulse">Please Wait</span>
+            </div>
+            <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-white/5 shadow-inner">
+              <div className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 w-full origin-left animate-[progress-indeterminate_2s_ease-in-out_infinite]">
+                <style>{`
+                  @keyframes progress-indeterminate {
+                    0% { transform: translateX(-100%); }
+                    50% { transform: translateX(0); }
+                    100% { transform: translateX(100%); }
+                  }
+                `}</style>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 mt-8 text-slate-500 bg-slate-900/50 px-4 py-2 rounded-full border border-white/5">
+            <Clock className="w-4 h-4" />
+            <span className="text-xs font-medium">Please don't close this page</span>
+          </div>
         </div>
       </div>
     );

@@ -64,7 +64,7 @@ export function Header({ showNav = false }: HeaderProps) {
           {isLoggedIn && user ? (
             <div className="flex items-center gap-4">
               <div className="hidden sm:block text-right">
-                <p className="text-sm font-bold text-white leading-none">{user.name}</p>
+                <p className="text-sm font-bold text-white leading-none">{user.email}</p>
                 <p className="text-xs text-slate-300 mt-1">免费计划</p>
               </div>
               <DropdownMenu>
@@ -72,10 +72,10 @@ export function Header({ showNav = false }: HeaderProps) {
                   <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0 overflow-hidden border-2 border-white/10 hover:border-emerald-500/50 transition-colors shadow-lg">
                     <Avatar className="h-full w-full">
                       {user.avatar ? (
-                        <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                        <img src={user.avatar} alt={user.email} className="h-full w-full object-cover" />
                       ) : null}
                       <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-neutral-200 font-bold text-lg">
-                        {user.name.charAt(0).toUpperCase()}
+                        {user.email.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -83,7 +83,7 @@ export function Header({ showNav = false }: HeaderProps) {
                 <DropdownMenuContent className="w-64 mt-2 bg-slate-800/95 backdrop-blur-xl border border-white/10 p-2 shadow-2xl rounded-2xl" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal p-3">
                     <div className="flex flex-col space-y-1.5">
-                      <p className="text-sm font-bold leading-none text-white">{user.name}</p>
+                      <p className="text-sm font-bold leading-none text-white">{user.email}</p>
                       <p className="text-xs leading-none text-slate-300">{user.email}</p>
                     </div>
                   </DropdownMenuLabel>

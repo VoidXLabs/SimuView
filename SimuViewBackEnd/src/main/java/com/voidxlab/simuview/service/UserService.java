@@ -54,7 +54,7 @@ public class UserService {
                 .username(user.getUsername())
                 .passwordHash(DigestUtils.md5DigestAsHex(password.getBytes()))
                 .role("candidate")
-                .name(user.getName())
+                .email(user.getEmail())
                 .build();
         userMapper.insert(newUser);
     }

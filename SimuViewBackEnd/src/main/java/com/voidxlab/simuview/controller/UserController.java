@@ -41,7 +41,7 @@ public class UserController {
                 .userId(user.getUserId())
                 .username(user.getUsername())
                 .token(token)
-                .name(user.getName())
+                .email(user.getEmail())
                 .build();
         return Result.success(userLoginVO);
     }

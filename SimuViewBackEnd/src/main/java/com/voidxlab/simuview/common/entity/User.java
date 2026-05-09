@@ -29,8 +29,8 @@ public class User {
     @TableField("password_hash")
     private String passwordHash;
 
-    @TableField("name")
-    private String name;
+    @TableField("email")
+    private String email;
 
     @TableField("create_time")
     private LocalDateTime createTime;
