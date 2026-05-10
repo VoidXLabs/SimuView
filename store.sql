@@ -41,6 +41,7 @@ CREATE TABLE `interview_record` (
   `jd_id` BIGINT NOT NULL COMMENT '关联的岗位 ID', /* */
   `resume_id` BIGINT NOT NULL COMMENT '关联的简历 ID', /* */
   `status` TINYINT NOT NULL DEFAULT 0 COMMENT '面试状态 (0-待开始, 1-进行中, 2-已完成, 3-已出报告)', /* */
+  style tinyint default 0 not null comment '面试风格 0-温和，1-正常，2-压力',
   `start_time` DATETIME DEFAULT NULL COMMENT '面试开始时间', /* */
   `total_questions` INT NOT NULL DEFAULT 5 COMMENT '总问题数',
   `end_time` DATETIME DEFAULT NULL COMMENT '面试结束时间', /* */
