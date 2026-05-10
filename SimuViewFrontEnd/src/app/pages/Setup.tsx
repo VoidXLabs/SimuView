@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Upload, Link as LinkIcon, Loader2, CheckCircle2, Sparkles, FileText, Edit3 } from "lucide-react";
+import { ArrowLeft, Upload, Link as LinkIcon, Loader2, CheckCircle2, Sparkles, FileText, Edit3, Network, Fingerprint } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -40,6 +40,7 @@ export default function Setup() {
 
   const [jdId, setJdId] = useState("");
   const [resumeId, setResumeId] = useState("");
+  const [interviewStyle, setInterviewStyle] = useState<number>(1);
 
   // 解析招聘信息（URL模式）
   const analysisJobUrl = async () => {
@@ -191,6 +192,7 @@ export default function Setup() {
       const response = await apiClient.post('/api/v1/sessions', {
         jdId: parseInt(jdId),
         resumeId: parseInt(resumeId),
+        style: interviewStyle,
         questionCount: 5
       });
 
@@ -235,280 +237,311 @@ export default function Setup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
-      {/* 背景装饰 */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-[#030014] text-slate-200 font-sans relative">
+      {/* Background (Midnight Galaxy / Tech Innovation) */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[120px] mix-blend-screen"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-900/10 blur-[120px] mix-blend-screen"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] brightness-100 contrast-150"></div>
       </div>
 
-      <Header showNav />
+      <div className="relative z-10 border-b border-white/5 bg-[#030014]/50 backdrop-blur-xl">
+        <Header showNav />
+      </div>
 
-      <div className="relative z-10 max-w-3xl mx-auto p-6">
+      <main className="relative z-10 max-w-4xl mx-auto p-6 py-12">
         <button
           onClick={() => navigate("/")}
-          className="group flex items-center gap-2 text-neutral-400 hover:text-white mb-8 transition-colors"
+          className="group flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors text-sm font-medium tracking-wide uppercase"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-medium">Back to Home</span>
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          返回主控台
         </button>
 
-        <div className="rounded-3xl bg-neutral-800/50 backdrop-blur-md border border-neutral-700/30 p-8 md:p-12 shadow-2xl">
-          <div className="space-y-1 mb-10">
-            <h2 className="text-3xl font-bold text-white tracking-tight">
-              Interview Setup
-            </h2>
-            <p className="text-neutral-400 text-lg">
-              Enter job details and upload your resume for personalized interview questions
-            </p>
-          </div>
+        <div className="relative">
+          {/* Card background effect */}
+          <div className="absolute -inset-0.5 bg-gradient-to-b from-cyan-500/10 to-purple-600/10 rounded-[2.5rem] blur-xl opacity-50"></div>
+          
+          <div className="relative rounded-[2rem] bg-[#0a0a14]/90 backdrop-blur-2xl border border-white/10 p-8 md:p-14 shadow-2xl">
+            <div className="flex items-center gap-4 mb-12">
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                <Network className="w-6 h-6 text-cyan-400" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-white tracking-tight">
+                  初始化配置
+                </h2>
+                <p className="text-slate-400 text-sm mt-1 font-light">
+                  导入职位模型与能力图谱，建立面试神经连接
+                </p>
+              </div>
+            </div>
 
-          {/* 模式切换 */}
-          <div className="mb-8">
-            <div className="flex bg-neutral-700/50 rounded-xl p-1">
+            {/* Mode Switcher */}
+            <div className="mb-10 p-1.5 bg-[#030014] border border-white/5 rounded-2xl flex relative overflow-hidden">
+              <div 
+                className="absolute inset-y-1.5 w-[calc(50%-6px)] bg-white/10 rounded-xl border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-transform duration-500 ease-out"
+                style={{ transform: mode === 'url' ? 'translateX(0)' : 'translateX(calc(100% + 12px))', left: '6px' }}
+              ></div>
               <button
                 onClick={() => { setMode('url'); resetJd(); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold transition-all ${
-                  mode === 'url' 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
-                    : 'text-neutral-400 hover:text-white'
-                }`}
+                className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm transition-colors duration-300 ${mode === 'url' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
               >
-                <LinkIcon className="w-5 h-5" />
-                <span>Paste Job URL</span>
+                <LinkIcon className="w-4 h-4" />
+                URL 智能解析
               </button>
               <button
                 onClick={() => { setMode('form'); resetJd(); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold transition-all ${
-                  mode === 'form' 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
-                    : 'text-neutral-400 hover:text-white'
-                }`}
+                className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm transition-colors duration-300 ${mode === 'form' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
               >
-                <Edit3 className="w-5 h-5" />
-                <span>Fill Form</span>
+                <Edit3 className="w-4 h-4" />
+                手动构建模型
               </button>
             </div>
-          </div>
 
-          <div className="space-y-10">
-            {/* URL模式 - 岗位URL输入区 */}
-            {mode === 'url' && (
-              <div className="space-y-3">
-                <Label htmlFor="job-url" className="text-neutral-300 font-semibold ml-1">
-                  Job Posting URL
+            <div className="space-y-12">
+              {/* URL模式 - 岗位URL输入区 */}
+              {mode === 'url' && (
+                <div className="space-y-4">
+                  <Label htmlFor="job-url" className="text-slate-300 font-semibold text-sm uppercase tracking-wider ml-1 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400"></div>
+                    目标岗位链接
+                  </Label>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1 group">
+                      <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                      <Input
+                        id="job-url"
+                        type="url"
+                        placeholder="粘贴 Boss直聘 等平台岗位链接..."
+                        value={jobUrl}
+                        onChange={(e) => setJobUrl(e.target.value)}
+                        className="pl-12 h-14 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all text-base"
+                      />
+                    </div>
+                    <Button 
+                      onClick={analysisJobUrl}
+                      disabled={isParsingJd || isJdReady}
+                      className={`h-14 px-8 text-base font-semibold rounded-2xl transition-all shadow-lg active:scale-95 ${
+                        isJdReady 
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                          : 'bg-white text-black hover:bg-slate-200 shadow-[0_0_20px_rgba(255,255,255,0.1)]'
+                      }`}
+                    >
+                      {isJdReady ? '解析完成 ✅' : (isParsingJd ? '深度解构中...' : '开始解析')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* 表单模式 - 岗位信息填写 */}
+              {mode === 'form' && (
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="job-title" className="text-slate-300 font-semibold text-sm uppercase tracking-wider flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400"></div>
+                      岗位代号 <span className="text-rose-400">*</span>
+                    </Label>
+                    <Input
+                      id="job-title"
+                      type="text"
+                      placeholder="e.g. 高级前端架构师"
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      className="h-14 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all text-base"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="job-content" className="text-slate-300 font-semibold text-sm uppercase tracking-wider flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400"></div>
+                      核心诉求 (JD) <span className="text-rose-400">*</span>
+                    </Label>
+                    <textarea
+                      id="job-content"
+                      placeholder="详细描述候选人需要具备的能力图谱..."
+                      value={formData.jd_content}
+                      onChange={(e) => setFormData({...formData, jd_content: e.target.value})}
+                      rows={5}
+                      className="w-full bg-[#030014]/50 border border-white/10 text-white placeholder:text-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all text-base resize-none focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-3">
+                      <Label htmlFor="salary-range" className="text-slate-400 font-medium text-xs uppercase tracking-widest">薪资估值</Label>
+                      <Input
+                        id="salary-range"
+                        type="text"
+                        placeholder="e.g. 20K-40K"
+                        value={formData.salary_range}
+                        onChange={(e) => setFormData({...formData, salary_range: e.target.value})}
+                        className="h-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all text-sm"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="work-experience" className="text-slate-400 font-medium text-xs uppercase tracking-widest">经验阈值</Label>
+                      <Input
+                        id="work-experience"
+                        type="text"
+                        placeholder="e.g. 3-5年"
+                        value={formData.work_experience}
+                        onChange={(e) => setFormData({...formData, work_experience: e.target.value})}
+                        className="h-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all text-sm"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="education" className="text-slate-400 font-medium text-xs uppercase tracking-widest">学历底线</Label>
+                      <Input
+                        id="education"
+                        type="text"
+                        placeholder="e.g. 本科及以上"
+                        value={formData.education}
+                        onChange={(e) => setFormData({...formData, education: e.target.value})}
+                        className="h-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <Button 
+                      onClick={submitJobForm}
+                      disabled={isParsingJd || isJdReady}
+                      className={`h-12 px-8 text-sm font-bold rounded-xl transition-all shadow-lg active:scale-95 ${
+                        isJdReady 
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
+                          : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                      }`}
+                    >
+                      {isJdReady ? '已载入 ✅' : (isParsingJd ? '注入中...' : '提交配置')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* 简历上传 */}
+              <div className="space-y-4">
+                <Label htmlFor="resume-upload" className="text-slate-300 font-semibold text-sm uppercase tracking-wider ml-1 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                  载入候选人数据谱 (Resume)
                 </Label>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1 group">
-                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-blue-400 transition-colors" />
-                    <Input
-                      id="job-url"
-                      type="url"
-                      placeholder="Paste job link: https://www.zhipin.com/job_detail/..."
-                      value={jobUrl}
-                      onChange={(e) => setJobUrl(e.target.value)}
-                      className="pl-12 h-14 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-2xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-base"
-                    />
-                  </div>
-                  <Button 
-                    onClick={analysisJobUrl}
-                    disabled={isParsingJd || isJdReady}
-                    className={`h-14 px-8 text-base font-semibold rounded-2xl transition-all shadow-lg active:scale-95 ${
-                      isJdReady 
-                        ? 'bg-green-500 hover:bg-green-500 text-white shadow-green-500/20'
-                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-blue-500/20'
-                    }`}
-                  >
-                    {isJdReady ? 'Ready ✅' : (isParsingJd ? 'Parsing...' : 'Parse')}
-                  </Button>
-                </div>
-                <p className="text-xs text-neutral-500 ml-1">
-                  Currently optimized for Zhipin platform
-                </p>
-              </div>
-            )}
-
-            {/* 表单模式 - 岗位信息填写 */}
-            {mode === 'form' && (
-              <div className="space-y-6">
-                {/* 岗位名称 */}
-                <div className="space-y-2">
-                  <Label htmlFor="job-title" className="text-neutral-300 font-semibold flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Job Title <span className="text-red-400">*</span>
-                  </Label>
-                  <Input
-                    id="job-title"
-                    type="text"
-                    placeholder="e.g., Java Senior Engineer"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="h-14 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-2xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-base"
-                  />
-                </div>
-
-                {/* 岗位描述 */}
-                <div className="space-y-2">
-                  <Label htmlFor="job-content" className="text-neutral-300 font-semibold flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Job Description <span className="text-red-400">*</span>
-                  </Label>
-                  <textarea
-                    id="job-content"
-                    placeholder="Please enter the detailed job description..."
-                    value={formData.jd_content}
-                    onChange={(e) => setFormData({...formData, jd_content: e.target.value})}
-                    rows={4}
-                    className="w-full h-32 bg-neutral-700/50 border border-neutral-600 text-white placeholder:text-neutral-500 rounded-2xl px-4 py-3 focus:border-blue-500 focus:ring-blue-500/20 transition-all text-base resize-none"
-                  />
-                </div>
-
-                {/* 其他字段 - 三列布局 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* 薪资范围 */}
-                  <div className="space-y-2">
-                    <Label htmlFor="salary-range" className="text-neutral-400 font-medium">
-                      Salary Range
-                    </Label>
-                    <Input
-                      id="salary-range"
-                      type="text"
-                      placeholder="e.g., 15K-25K"
-                      value={formData.salary_range}
-                      onChange={(e) => setFormData({...formData, salary_range: e.target.value})}
-                      className="h-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-sm"
-                    />
-                  </div>
-
-                  {/* 工作经验 */}
-                  <div className="space-y-2">
-                    <Label htmlFor="work-experience" className="text-neutral-400 font-medium">
-                      Work Experience
-                    </Label>
-                    <Input
-                      id="work-experience"
-                      type="text"
-                      placeholder="e.g., 3-5 years"
-                      value={formData.work_experience}
-                      onChange={(e) => setFormData({...formData, work_experience: e.target.value})}
-                      className="h-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-sm"
-                    />
-                  </div>
-
-                  {/* 学历要求 */}
-                  <div className="space-y-2">
-                    <Label htmlFor="education" className="text-neutral-400 font-medium">
-                      Education
-                    </Label>
-                    <Input
-                      id="education"
-                      type="text"
-                      placeholder="e.g., Bachelor"
-                      value={formData.education}
-                      onChange={(e) => setFormData({...formData, education: e.target.value})}
-                      className="h-12 bg-neutral-700/50 border-neutral-600 text-white placeholder:text-neutral-500 rounded-xl focus:border-blue-500 focus:ring-blue-500/20 transition-all text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* 提交按钮 */}
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={submitJobForm}
-                    disabled={isParsingJd || isJdReady}
-                    className={`h-12 px-8 text-base font-semibold rounded-xl transition-all shadow-lg active:scale-95 ${
-                      isJdReady 
-                        ? 'bg-green-500 hover:bg-green-500 text-white shadow-green-500/20'
-                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-blue-500/20'
-                    }`}
-                  >
-                    {isJdReady ? 'Ready ✅' : (isParsingJd ? 'Saving...' : 'Save Job Info')}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* 简历上传 */}
-            <div className="space-y-3">
-              <Label htmlFor="resume-upload" className="text-neutral-300 font-semibold ml-1">
-                Upload Resume
-              </Label>
-              <div 
-                className={`group relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300 overflow-hidden ${
-                  isUploadingResume 
-                    ? "border-blue-500/20 bg-blue-500/5 cursor-not-allowed"
-                    : isResumeReady
-                    ? "border-green-500/30 bg-green-500/5"
-                    : "border-neutral-600 bg-neutral-700/30 hover:border-blue-500/30 hover:bg-neutral-700/50 cursor-pointer"
-                }`}
-              >
-                <input
-                  id="resume-upload"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={uploadResume}
-                  className="hidden"
-                  disabled={isUploadingResume}
-                />
-                
-                <label
-                  htmlFor={isUploadingResume ? "" : "resume-upload"}
-                  className={`block relative z-10 ${isUploadingResume ? "cursor-not-allowed" : "cursor-pointer"}`}
+                <div 
+                  className={`group relative border border-dashed rounded-3xl p-12 text-center transition-all duration-300 overflow-hidden ${
+                    isUploadingResume 
+                      ? "border-cyan-500/30 bg-cyan-500/5 cursor-not-allowed"
+                      : isResumeReady
+                      ? "border-emerald-500/30 bg-emerald-500/5 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+                      : "border-white/20 bg-white/[0.02] hover:border-cyan-500/50 hover:bg-white/[0.04] cursor-pointer"
+                  }`}
                 >
-                  <div className="flex flex-col items-center gap-5">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${
-                      isUploadingResume ? "bg-blue-500 text-white" : 
-                      isResumeReady ? "bg-green-500 text-white scale-110" : "bg-neutral-700 text-neutral-300 group-hover:scale-110 group-hover:shadow-md"
-                    }`}>
-                      {isUploadingResume ? (
-                        <Loader2 className="w-8 h-8 animate-spin" />
-                      ) : isResumeReady ? (
-                        <CheckCircle2 className="w-8 h-8" />
-                      ) : (
-                        <Upload className="w-8 h-8" />
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className={`text-xl font-bold transition-colors ${
-                        isUploadingResume ? "text-blue-400" : 
-                        isResumeReady ? "text-green-400" : "text-white"
+                  <input
+                    id="resume-upload"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={uploadResume}
+                    className="hidden"
+                    disabled={isUploadingResume}
+                  />
+                  
+                  <label
+                    htmlFor={isUploadingResume ? "" : "resume-upload"}
+                    className={`block relative z-10 ${isUploadingResume ? "cursor-not-allowed" : "cursor-pointer"}`}
+                  >
+                    <div className="flex flex-col items-center gap-5">
+                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 border ${
+                        isUploadingResume ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-400" : 
+                        isResumeReady ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400 scale-110 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-white/5 border-white/10 text-slate-400 group-hover:text-cyan-400 group-hover:border-cyan-500/30 group-hover:scale-110"
                       }`}>
-                        {resumeFile ? resumeFile.name : (isResumeReady ? "Upload Complete" : "Click or drag to upload resume")}
-                      </p>
-                      <p className="text-neutral-400 font-medium">
-                        {isResumeReady ? "✅ Resume uploaded successfully" : "PDF, DOCX formats supported (up to 10MB)"}
-                      </p>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
+                        {isUploadingResume ? (
+                          <Loader2 className="w-8 h-8 animate-spin" />
+                        ) : isResumeReady ? (
+                          <CheckCircle2 className="w-8 h-8" />
+                        ) : (
+                          <Fingerprint className="w-8 h-8" />
+                        )}
+                      </div>
 
-            {/* 开始面试按钮 */}
-            <div className="pt-6">
-              <Button
-                onClick={handleStartInterview}
-                disabled={!(isJdReady && isResumeReady) || isCreatingSession}
-                className="w-full h-16 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:bg-neutral-700 disabled:text-neutral-500 text-white rounded-[1.25rem] text-xl font-bold shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95 group"
-              >
-                {isCreatingSession ? (
-                  <>
-                    <Loader2 className="mr-2 w-6 h-6 animate-spin" />
-                    <span>Creating Session...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 w-6 h-6" />
-                    <span>Enter Interview Room</span>
-                    <CheckCircle2 className={`ml-3 w-6 h-6 transition-all duration-500 ${isJdReady && isResumeReady ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`} />
-                  </>
-                )}
-              </Button>
+                      <div className="space-y-2">
+                        <p className={`text-lg font-bold transition-colors ${
+                          isUploadingResume ? "text-cyan-400" : 
+                          isResumeReady ? "text-emerald-400" : "text-slate-200"
+                        }`}>
+                          {resumeFile ? resumeFile.name : (isResumeReady ? "数据谱载入完成" : "点击或拖拽上传简历")}
+                        </p>
+                        <p className="text-slate-500 text-sm font-light">
+                          {isResumeReady ? "生物特征比对通过" : "支持 PDF、DOCX 格式（MAX 10MB）"}
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* 面试风格选择 */}
+              <div className="space-y-4">
+                <Label className="text-slate-300 font-semibold text-sm uppercase tracking-wider ml-1 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                  系统运行模式 (Style)
+                </Label>
+                <div className="flex bg-[#030014] border border-white/5 rounded-2xl p-1.5 relative overflow-hidden">
+                  <div 
+                    className="absolute inset-y-1.5 rounded-xl border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all duration-500 ease-out"
+                    style={{
+                      width: 'calc((100% - 12px) / 3)',
+                      transform: `translateX(calc(${interviewStyle * 100}% + ${interviewStyle * 0}px))`,
+                      left: '6px',
+                      background: interviewStyle === 0 ? 'rgba(59, 130, 246, 0.2)' : interviewStyle === 1 ? 'rgba(168, 85, 247, 0.2)' : 'rgba(244, 63, 94, 0.2)',
+                      borderColor: interviewStyle === 0 ? 'rgba(59, 130, 246, 0.5)' : interviewStyle === 1 ? 'rgba(168, 85, 247, 0.5)' : 'rgba(244, 63, 94, 0.5)'
+                    }}
+                  />
+                  
+                  {[
+                    { label: 'Mild / 温和探索', desc: '引导式提问' },
+                    { label: 'Normal / 标准校准', desc: '全维度考核' },
+                    { label: 'Pressure / 高压测试', desc: '极致压力面' }
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setInterviewStyle(idx)}
+                      className={`flex-1 relative z-10 py-3 text-center rounded-xl transition-colors duration-300 flex flex-col items-center gap-1 ${
+                        interviewStyle === idx ? 'text-white' : 'text-slate-500 hover:text-slate-300'
+                      }`}
+                    >
+                      <span className="font-bold text-sm tracking-wide">{item.label}</span>
+                      <span className="text-[10px] font-light opacity-70">{item.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 开始面试按钮 */}
+              <div className="pt-8">
+                <Button
+                  onClick={handleStartInterview}
+                  disabled={!(isJdReady && isResumeReady) || isCreatingSession}
+                  className="w-full h-16 bg-white text-black hover:bg-slate-200 disabled:bg-white/5 disabled:text-slate-600 rounded-2xl text-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 flex items-center justify-center">
+                    {isCreatingSession ? (
+                      <>
+                        <Loader2 className="mr-3 w-6 h-6 animate-spin text-cyan-500" />
+                        <span>连接中枢网络...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-3 w-6 h-6 text-purple-600 group-hover:text-purple-700 transition-colors" />
+                        <span className="tracking-wider">启动模拟矩阵</span>
+                        <CheckCircle2 className={`ml-3 w-6 h-6 text-emerald-500 transition-all duration-500 ${isJdReady && isResumeReady ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`} />
+                      </>
+                    )}
+                  </div>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

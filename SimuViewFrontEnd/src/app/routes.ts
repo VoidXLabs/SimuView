@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Setup from "./pages/Setup";
 import Interview from "./pages/Interview";
 import InterviewDetail from "./pages/InterviewDetail";
+import MyInterviews from "./pages/MyInterviews";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { Layout } from "./components/Layout";
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
         path: "/interview-detail/:id",
         Component: InterviewDetail,
       },
+      {
+        path: "/my-interviews",
+        Component: MyInterviews,
+      }
     ],
   },
 ]);

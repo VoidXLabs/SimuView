@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Brain, User, Lock, Mail, ArrowRight, Github, Linkedin, Eye, EyeOff } from "lucide-react";
+import { Brain, User, Lock, Mail, ArrowRight, Eye, EyeOff, Network } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -49,74 +49,84 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 relative overflow-hidden flex items-center justify-center p-6 font-sans">
-      {/* Background decoration */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
-        <div className="absolute left-1/4 top-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-emerald-500 opacity-20 blur-[100px]"></div>
-        <div className="absolute right-1/4 bottom-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-teal-500 opacity-20 blur-[100px]"></div>
+    <div className="min-h-screen bg-[#030014] text-slate-200 relative overflow-hidden flex items-center justify-center p-6 font-sans selection:bg-cyan-500/30">
+      {/* 极光背景特效 */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[20%] left-[10%] w-[50%] h-[50%] rounded-full bg-cyan-900/10 blur-[150px] mix-blend-screen animate-[pulse_12s_ease-in-out_infinite]"></div>
+        <div className="absolute bottom-[10%] right-[10%] w-[40%] h-[40%] rounded-full bg-purple-900/10 blur-[150px] mix-blend-screen animate-[pulse_10s_ease-in-out_infinite_reverse]"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.10]"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-xl shadow-emerald-500/20 mb-6">
-            <Brain className="h-8 w-8 text-white" />
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.15)] mb-6 backdrop-blur-xl">
+            <Network className="h-7 w-7 text-purple-400" />
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tight mb-2">Join SimuView</h1>
-          <p className="text-slate-300 font-medium">Start your AI-powered interview journey</p>
+          <h1 className="text-4xl font-black text-white tracking-tight mb-2">节点注册</h1>
+          <p className="text-slate-400 font-light tracking-wide">在神经矩阵中创建您的独立标识</p>
         </div>
 
-        <div className="rounded-[2.5rem] bg-slate-800/60 backdrop-blur-xl border border-white/10 p-8 md:p-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-50"></div>
+        <div className="rounded-[2rem] bg-white/[0.02] backdrop-blur-2xl border border-white/10 p-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
           
-          <form onSubmit={handleRegister} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-neutral-300 font-bold ml-1">Username</Label>
+          <form onSubmit={handleRegister} className="space-y-6">
+            <div className="space-y-3">
+              <Label htmlFor="username" className="text-slate-300 font-semibold text-xs uppercase tracking-widest ml-1">
+                目标代号 (Username)
+              </Label>
               <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
                 <Input
                   id="username"
-                  placeholder="Choose a username"
+                  placeholder="Choose a unique identifier"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="h-14 pl-12 bg-slate-900/50 border-white/10 text-white placeholder:text-slate-500 rounded-2xl focus:border-emerald-500 focus:ring-0 transition-all shadow-inner"
+                  className="h-14 pl-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-neutral-300 font-bold ml-1">Email Address</Label>
+            <div className="space-y-3">
+              <Label htmlFor="email" className="text-slate-300 font-semibold text-xs uppercase tracking-widest ml-1">
+                通讯频段 (Email)
+              </Label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-purple-400 transition-colors" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder="Establish comm link"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-14 pl-12 bg-slate-900/50 border-white/10 text-white placeholder:text-slate-500 rounded-2xl focus:border-emerald-500 focus:ring-0 transition-all shadow-inner"
+                  className="h-14 pl-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-purple-500/50 focus:ring-purple-500/20 transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-neutral-300 font-bold ml-1">Password</Label>
+            <div className="space-y-3">
+              <Label htmlFor="password" className="text-slate-300 font-semibold text-xs uppercase tracking-widest ml-1">
+                加密序列 (Password)
+              </Label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create a strong password"
+                  placeholder="Generate secure sequence"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-14 pl-12 bg-slate-900/50 border-white/10 text-white placeholder:text-slate-500 rounded-2xl focus:border-emerald-500 focus:ring-0 transition-all shadow-inner"
+                  className="h-14 pl-12 pr-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-blue-500/50 focus:ring-blue-500/20 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 outline-none"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5 text-slate-400 hover:text-white transition-colors" />
+                  ) : (
+                    <Eye className="w-5 h-5 text-slate-400 hover:text-white transition-colors" />
+                  )}
                 </button>
               </div>
             </div>
@@ -125,22 +135,34 @@ export default function Register() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-16 bg-white text-black hover:bg-neutral-200 font-black rounded-2xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full h-14 bg-white text-black hover:bg-slate-200 disabled:bg-white/10 disabled:text-slate-500 font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden text-base tracking-widest uppercase"
               >
-                {isLoading ? "Creating Account..." : "Create Free Account"}
-                <ArrowRight className="ml-2 w-5 h-5" />
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10 flex items-center justify-center gap-2">
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                      初始化中...
+                    </>
+                  ) : (
+                    <>
+                      注入系统网格
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </div>
               </Button>
             </div>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-slate-400 font-medium">
-              Already have an account?{" "}
+          <div className="mt-8 text-center border-t border-white/5 pt-6">
+            <p className="text-slate-500 text-sm font-light">
+              节点已存在？{" "}
               <button 
                 onClick={() => navigate("/login")}
-                className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors ml-1"
+                className="text-purple-400 hover:text-purple-300 font-bold tracking-wide transition-colors uppercase ml-1"
               >
-                Sign In
+                请求接入
               </button>
             </p>
           </div>

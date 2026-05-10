@@ -4,3 +4,6 @@ node_modules/
 !application.yml
 **/resume.pdf
 **/test
+**/.env
+SimuViewFrontEnd/.env
+.env

@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { Brain, User, Lock, Eye, EyeOff, ArrowRight, Github, Linkedin } from "lucide-react";
+import { Brain, User, Lock, Eye, EyeOff, ArrowRight, Network } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -15,12 +15,114 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (user) {
       navigate("/");
     }
   }, [user, navigate]);
+
+  // Algorithmic Art Background: Emergent Synapses
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let particles: Particle[] = [];
+    let animationFrameId: number;
+
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (parent) {
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+        initParticles();
+      }
+    };
+
+    class Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+
+      constructor() {
+        if (!canvas) throw new Error("Canvas not initialized");
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 1.2;
+        this.vy = (Math.random() - 0.5) * 1.2;
+        this.radius = Math.random() * 1.5 + 0.5;
+      }
+
+      update() {
+        if (!canvas) return;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
+
+      draw() {
+        if (!ctx) return;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.6)'; // purple-500
+        ctx.fill();
+      }
+    }
+
+    const initParticles = () => {
+      particles = [];
+      if (!canvas) return;
+      const particleCount = Math.floor((canvas.width * canvas.height) / 12000);
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    };
+
+    const animate = () => {
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            // Gradient cyan to transparent based on distance
+            const opacity = 1 - dist / 120;
+            ctx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.4})`; // cyan-400
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('resize', resize);
+    resize();
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +149,6 @@ export default function Login() {
             email: data.data.username,
             name: data.data.name
           });
-          // 保存 token 到 localStorage
           if (data.data.token) {
             localStorage.setItem('token', data.data.token);
           }
@@ -91,169 +192,175 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 flex items-center justify-center p-6">
-      {/* 背景装饰 */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20 mb-4">
-            <Brain className="h-6 w-6 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">SimuView</h1>
-          <p className="text-slate-300">AI 驱动的面试练习平台</p>
+    <div className="min-h-screen bg-[#030014] text-slate-200 font-sans flex selection:bg-cyan-500/30">
+      {/* 左侧登录表单区 */}
+      <div className="w-full lg:w-[45%] flex items-center justify-center p-8 relative z-10">
+        
+        {/* 背景光效 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[120px] mix-blend-screen"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-900/10 blur-[120px] mix-blend-screen"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.10]"></div>
         </div>
 
-        {/* 登录卡片 */}
-        <div className="rounded-3xl bg-slate-700/50 backdrop-blur-md border border-slate-600/30 p-8 shadow-2xl">
-          <h2 className="text-2xl font-bold text-white text-center mb-8">
-            欢迎回来
-          </h2>
+        <div className="w-full max-w-md relative z-10">
+          {/* Logo */}
+          <div className="mb-10">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 shadow-[0_0_20px_rgba(34,211,238,0.15)] mb-6 backdrop-blur-xl">
+              <Network className="h-7 w-7 text-cyan-400" />
+            </div>
+            <h1 className="text-4xl font-black text-white tracking-tight mb-2">系统接入</h1>
+            <p className="text-slate-400 font-light tracking-wide">AI 驱动的面试练习平台网络中枢</p>
+          </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            {/* 用户名输入 */}
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-neutral-300 font-medium">
-                用户名
-              </Label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="请输入您的用户名"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="h-12 pl-12 bg-slate-600/50 border-slate-500 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
-                />
+          {/* 登录表单 */}
+          <div className="rounded-[2rem] bg-white/[0.02] backdrop-blur-2xl border border-white/10 p-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+            
+            <form onSubmit={handleLogin} className="space-y-6">
+              {/* 用户名 */}
+              <div className="space-y-3">
+                <Label htmlFor="username" className="text-slate-300 font-semibold text-xs uppercase tracking-widest ml-1">
+                  用户识别码
+                </Label>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="h-14 pl-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all"
+                  />
+                </div>
               </div>
+
+              {/* 密码 */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between ml-1">
+                  <Label htmlFor="password" className="text-slate-300 font-semibold text-xs uppercase tracking-widest">
+                    安全密钥
+                  </Label>
+                  <button
+                    type="button"
+                    className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium tracking-wide"
+                  >
+                    忘记密钥？
+                  </button>
+                </div>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-purple-400 transition-colors" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-14 pl-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-purple-500/50 focus:ring-purple-500/20 transition-all"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 outline-none"
+                  >
+                    {showPassword ? (
+                      <Eye className="w-5 h-5 text-slate-400 hover:text-white transition-colors" />
+                    ) : (
+                      <EyeOff className="w-5 h-5 text-slate-400 hover:text-white transition-colors" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center pt-2">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      className="peer sr-only"
+                    />
+                    <div className="w-5 h-5 rounded border border-white/20 bg-white/5 peer-checked:bg-cyan-500 peer-checked:border-cyan-400 transition-all flex items-center justify-center">
+                      <svg className="w-3 h-3 text-[#030014] opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">保持网络连接</span>
+                </label>
+              </div>
+
+              {/* 登录按钮 */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-14 mt-4 bg-white text-black hover:bg-slate-200 disabled:bg-white/10 disabled:text-slate-500 font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden text-base tracking-widest uppercase"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10 flex items-center justify-center gap-2">
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                      认证中...
+                    </>
+                  ) : (
+                    <>
+                      授权登入
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </div>
+              </Button>
+            </form>
+
+            {/* 注册链接 */}
+            <div className="mt-8 text-center">
+              <span className="text-slate-500 text-sm">新节点接入？ </span>
+              <button 
+                onClick={() => navigate("/register")}
+                className="text-cyan-400 hover:text-cyan-300 font-bold text-sm tracking-wide transition-colors uppercase"
+              >
+                创建标识
+              </button>
             </div>
 
-            {/* 密码输入 */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-neutral-300 font-medium">
-                  密码
-                </Label>
+            {/* 演示账号提示 */}
+            <div className="mt-8 pt-6 border-t border-white/5">
+              <div className="flex items-center justify-between text-xs text-slate-500 font-mono bg-[#030014]/50 p-3 rounded-xl border border-white/5">
+                <span>// 测试环境覆盖</span>
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+                  onClick={handleDemoLogin}
+                  className="text-purple-400 hover:text-purple-300 transition-colors uppercase font-bold tracking-widest"
                 >
-                  {showPassword ? "隐藏" : "显示"}
+                  [ 注入演示数据 ]
                 </button>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="请输入您的密码"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pl-12 bg-slate-600/50 border-slate-500 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
-                />
-                {showPassword ? (
-                  <Eye className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 cursor-pointer" />
-                ) : (
-                  <EyeOff className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 cursor-pointer" />
-                )}
-              </div>
-            </div>
-
-            {/* 记住我和忘记密码 */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-slate-500 bg-slate-600 text-emerald-500 focus:ring-emerald-500/20"
-                />
-                <span className="text-sm text-slate-300">记住我</span>
-              </label>
-              <button
-                type="button"
-                className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-              >
-                忘记密码？
-              </button>
-            </div>
-
-            {/* 登录按钮 */}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-14 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  登录中...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  登录
-                  <ArrowRight className="w-4 h-4" />
-                </span>
-              )}
-            </Button>
-          </form>
-
-          {/* 分隔线 */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-500"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-700 text-slate-300">或通过以下方式继续</span>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* 社交登录按钮 */}
-          {/* <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="w-full h-12 border-slate-500 hover:border-slate-400 hover:bg-slate-600/50 text-white"
-            >
-              <Github className="mr-3 w-5 h-5" />
-              Continue with GitHub
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full h-12 border-slate-500 hover:border-slate-400 hover:bg-slate-600/50 text-white"
-            >
-              <Linkedin className="mr-3 w-5 h-5" />
-              Continue with LinkedIn
-            </Button>
-          </div> */}
-
-          {/* 注册链接 */}
-          <p className="text-center text-slate-300 mt-8">
-            还没有账号？{" "}
-            <button 
-              onClick={() => navigate("/register")}
-              className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
-            >
-              立即注册
-            </button>
+      {/* 右侧动态算法背景区 */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#05030f] border-l border-white/5 items-center justify-center">
+        {/* Canvas 动画 */}
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+        
+        {/* 蒙层与光晕 */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#030014] via-transparent to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#030014_100%)] z-10 pointer-events-none opacity-80"></div>
+        
+        {/* 叠加文字层 */}
+        <div className="relative z-20 max-w-lg text-center p-8">
+          <div className="inline-block border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-md px-4 py-1.5 rounded-full mb-6">
+            <span className="text-cyan-400 font-mono text-xs uppercase tracking-[0.2em] font-bold">Algorithmic Emergence</span>
+          </div>
+          <h2 className="text-3xl font-black text-white mb-4 tracking-wide leading-snug">
+            神经网络晶化中...
+          </h2>
+          <p className="text-slate-400 font-light leading-relaxed text-sm">
+            这不仅仅是随机散布的粒子，这是遵循欧几里得距离阈值动态生长的突触。
+            每一次连线，都在隐喻候选人能力图谱与职位模型的精确匹配与共鸣。
           </p>
-
-          {/* 演示账号提示 */}
-          <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <p className="text-sm text-emerald-300">
-              <span className="font-semibold">演示账号：</span>
-              <button
-                onClick={handleDemoLogin}
-                className="text-emerald-400 hover:text-emerald-300 ml-1 underline underline-offset-2"
-              >
-                一键填充测试凭据
-              </button>
-            </p>
-          </div>
         </div>
       </div>
     </div>
