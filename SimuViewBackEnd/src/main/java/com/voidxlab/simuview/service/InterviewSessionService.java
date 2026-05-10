@@ -110,11 +110,7 @@ public class InterviewSessionService {
 
         sseExecutor.submit(() -> {
             try {
-                InterviewRecord record = interviewRecordMapper.selectById(sessionId);
-                if (record == null) {
-                    throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
-                }
-                checkSessionOwnership(record, currentUserId);
+                InterviewRecord record = getOwnedSession(sessionId, currentUserId);
 
                 // 1) Check for PENDING question first (dedicated query, no full list needed)
                 InterviewQuestion pending = interviewQuestionMapper.findPendingBySessionId(sessionId);
@@ -208,11 +204,7 @@ public class InterviewSessionService {
 
         // Check if all questions answered → trigger async evaluation
 
-        InterviewRecord record = interviewRecordMapper.selectById(question.getSessionId());
-        if (record == null) {
-            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
-        }
-        checkSessionOwnership(record, BaseContext.getUserId());
+        InterviewRecord record = getOwnedSession(question.getSessionId(), BaseContext.getUserId());
         long answeredCount = question.getSeqNumber();
         if (answeredCount >= record.getTotalQuestions()) {
             record.setStatus(InterviewRecordStatus.COMPLETED);
@@ -228,11 +220,7 @@ public class InterviewSessionService {
      * Get session status. Frontend polls this after submitting the last answer.
      */
     public Map<String, Object> getSessionStatus(Long sessionId) {
-        InterviewRecord record = interviewRecordMapper.selectById(sessionId);
-        if (record == null) {
-            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
-        }
-        checkSessionOwnership(record, BaseContext.getUserId());
+        InterviewRecord record = getOwnedSession(sessionId, BaseContext.getUserId());
         Map<String, Object> result = new HashMap<>();
         result.put("sessionId", sessionId);
         result.put("status", record.getStatus());
@@ -243,11 +231,7 @@ public class InterviewSessionService {
      * Get the evaluation report for a session (only available when status is EVALUATED).
      */
     public EvaluationReport getReport(Long sessionId) {
-        InterviewRecord record = interviewRecordMapper.selectById(sessionId);
-        if (record == null) {
-            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
-        }
-        checkSessionOwnership(record, BaseContext.getUserId());
+        InterviewRecord record = getOwnedSession(sessionId, BaseContext.getUserId());
         if (record.getStatus() != InterviewRecordStatus.EVALUATED) {
             throw new BusinessException(ErrorCode.INTERVIEW_EVALUATION_NOT_READY);
         }
@@ -331,14 +315,22 @@ public class InterviewSessionService {
     }
 
     /**
+     * Get answered question history for a session.
+     * Used by frontend to restore chat history when user re-enters a session.
+     */
+    public List<InterviewQuestion> getSessionHistory(Long sessionId) {
+        getOwnedSession(sessionId, BaseContext.getUserId());
+
+        return interviewQuestionMapper.findBySessionIdOrderBySeq(sessionId).stream()
+                .filter(q -> q.getStatus() == QuestionStatus.ANSWERED)
+                .toList();
+    }
+
+    /**
      * Retry evaluation for a session that previously failed.
      */
     public void retryEvaluation(Long sessionId) {
-        InterviewRecord record = interviewRecordMapper.selectById(sessionId);
-        if (record == null) {
-            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
-        }
-        checkSessionOwnership(record, BaseContext.getUserId());
+        InterviewRecord record = getOwnedSession(sessionId, BaseContext.getUserId());
         if (record.getStatus() != InterviewRecordStatus.EVALUATION_FAILED
                 && record.getStatus() != InterviewRecordStatus.COMPLETED) {
             throw new BusinessException(ErrorCode.INTERVIEW_ALREADY_COMPLETED);
@@ -351,10 +343,15 @@ public class InterviewSessionService {
 
     // ========== Private Methods ==========
 
-    private void checkSessionOwnership(InterviewRecord record, Long userId) {
+    private InterviewRecord getOwnedSession(Long sessionId, Long userId) {
+        InterviewRecord record = interviewRecordMapper.selectById(sessionId);
+        if (record == null) {
+            throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_FOUND);
+        }
         if (!record.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.INTERVIEW_SESSION_NOT_OWNED);
         }
+        return record;
     }
 
     /**

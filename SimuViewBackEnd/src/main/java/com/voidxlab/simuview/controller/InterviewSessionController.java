@@ -4,6 +4,7 @@ import com.voidxlab.simuview.common.context.BaseContext;
 import com.voidxlab.simuview.common.dto.CreateSessionRequest;
 import com.voidxlab.simuview.common.dto.SubmitAnswerRequest;
 import com.voidxlab.simuview.common.entity.EvaluationReport;
+import com.voidxlab.simuview.common.entity.InterviewQuestion;
 import com.voidxlab.simuview.common.enums.InterviewStyle;
 import com.voidxlab.simuview.common.vo.Result;
 import com.voidxlab.simuview.service.InterviewSessionService;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -69,7 +71,15 @@ public class InterviewSessionController {
         return Result.success();
     }
 
-//    public Result<List<>>
+    /**
+     * Get answered question history for a session.
+     * Returns already-answered questions with their answers, scores, and feedback.
+     * Used for restoring chat history when user re-enters a session.
+     */
+    @GetMapping("/{id}/history")
+    public Result<List<InterviewQuestion>> getSessionHistory(@PathVariable Long id) {
+        return Result.success(interviewSessionService.getSessionHistory(id));
+    }
 
     /**
      * Get interview session status.
