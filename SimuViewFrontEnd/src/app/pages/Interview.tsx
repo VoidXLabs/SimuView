@@ -193,10 +193,84 @@ export default function Interview() {
   }, [sessionId, navigate]);
 
   useEffect(() => {
+    if (!sessionId) {
+      toast.error("Session ID is missing");
+      navigate("/");
+      return;
+    }
+
+    const initInterview = async () => {
+      try {
+        const statusRes = await apiClient.get(`/api/v1/sessions/${sessionId}/status`);
+        const sessionStatus = statusRes.data?.data?.status;
+
+        if (sessionStatus === "EVALUATED" || sessionStatus === "COMPLETED") {
+          setInterviewComplete(true);
+          setHasStarted(true);
+          const response = await apiClient.get(`/api/v1/sessions/${sessionId}/report`);
+          const data = response.data;
+          if (data.success && data.data) {
+            setReport(data.data);
+            setShowReport(true);
+          }
+          return;
+        }
+
+        const historyRes = await apiClient.get(`/api/v1/sessions/${sessionId}/history`);
+        const historyList = historyRes.data?.data || [];
+
+        if (historyList.length > 0) {
+          const restoredMessages: Message[] = [];
+          let lastQuestionId = null;
+
+          historyList.forEach((item: any) => {
+            if (item.questionText) {
+              restoredMessages.push({
+                role: 'ai',
+                content: item.questionText,
+                timestamp: new Date(item.createdTime),
+                questionId: item.questionId
+              });
+              lastQuestionId = item.questionId;
+            }
+            if (item.userAnswer) {
+              restoredMessages.push({
+                role: 'user',
+                content: item.userAnswer,
+                timestamp: new Date(item.answeredTime),
+                questionId: item.questionId
+              });
+            }
+          });
+
+          setMessages(restoredMessages);
+          
+          const lastItem = historyList[historyList.length - 1];
+          setHasStarted(true);
+          
+          if (lastItem.userAnswer) {
+            setCurrentQuestionIndex(historyList.length);
+            connectToQuestionStream();
+          } else {
+            setCurrentQuestionIndex(historyList.length - 1);
+            setCurrentQuestionId(lastItem.questionId);
+            if (lastItem.questionId) {
+              receivedQuestionIdsRef.current.add(lastItem.questionId);
+            }
+            setIsInterviewActive(true);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to restore session", error);
+      }
+    };
+
+    initInterview();
+
     return () => {
       if (abortControllerRef.current) abortControllerRef.current.abort();
     };
-  }, []);
+  }, [sessionId, navigate, connectToQuestionStream]);
 
   const handleStartInterviewClick = () => {
     setHasStarted(true);

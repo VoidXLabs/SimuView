@@ -47,8 +47,13 @@ export default function MyInterviews() {
       });
 
       const data = response.data;
-      if (data.success && data.data?.records) {
-        setInterviews(data.data.records);
+      const records = data.data?.records || data.data?.content || data.data?.list || [];
+      if (data.success && records) {
+        setInterviews(records.map((r: any) => ({
+          ...r,
+          // 确保有一个唯一的 interviewId
+          interviewId: r.interviewId || r.id || r.sessionId
+        })));
       }
     } catch (error: any) {
       console.error("Failed to fetch interview records", error);
@@ -78,17 +83,18 @@ export default function MyInterviews() {
     }
   };
 
-  const getStatusInfo = (status: number) => {
-    switch (status) {
-      case 0:
-        return { text: 'PENDING', color: 'text-slate-400', bg: 'bg-white/5 border-white/10', icon: <Clock className="w-3.5 h-3.5" /> };
-      case 1:
-        return { text: 'ACTIVE', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', icon: <ActivityIcon className="w-3.5 h-3.5" /> };
-      case 2:
-        return { text: 'RESOLVED', color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20', icon: <CheckCircle2 className="w-3.5 h-3.5" /> };
-      default:
-        return { text: 'UNKNOWN', color: 'text-slate-500', bg: 'bg-white/5 border-white/10', icon: <AlertCircle className="w-3.5 h-3.5" /> };
+  const getStatusInfo = (status: number | string) => {
+    const s = String(status).toUpperCase();
+    if (s === '0' || s === 'PENDING') {
+      return { text: 'PENDING', color: 'text-slate-400', bg: 'bg-white/5 border-white/10', icon: <Clock className="w-3.5 h-3.5" /> };
     }
+    if (s === '1' || s === 'IN_PROGRESS' || s === 'ACTIVE' || s === 'STARTED') {
+      return { text: 'ACTIVE', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', icon: <ActivityIcon className="w-3.5 h-3.5" /> };
+    }
+    if (s === '2' || s === 'COMPLETED' || s === 'EVALUATED' || s === 'RESOLVED') {
+      return { text: 'RESOLVED', color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20', icon: <CheckCircle2 className="w-3.5 h-3.5" /> };
+    }
+    return { text: s || 'UNKNOWN', color: 'text-slate-500', bg: 'bg-white/5 border-white/10', icon: <AlertCircle className="w-3.5 h-3.5" /> };
   };
 
   // 简单的波形图标组件

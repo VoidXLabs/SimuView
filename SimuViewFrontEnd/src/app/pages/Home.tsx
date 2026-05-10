@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Brain, Target, Mic, BarChart3, ChevronRight, Sparkles } from "lucide-react";
+import { Brain, Target, Mic, BarChart3, ChevronRight, Sparkles, Activity } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Header } from "../components/Header";
 import apiClient from '../api/apiClient';
@@ -21,6 +21,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [interviews, setInterviews] = useState<InterviewRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeSession, setActiveSession] = useState<any>(null);
 
   // 获取用户ID
   const getUserId = (): string | null => {
@@ -48,8 +49,31 @@ export default function Home() {
       });
 
       const data = response.data;
-      if (data.success && data.data?.records) {
-        setInterviews(data.data.records);
+      const records = data.data?.records || data.data?.content || data.data?.list || [];
+      if (data.success && records.length > 0) {
+        setInterviews(records);
+        
+        // 自动检查最近的面试的状态
+        const latest = records[0];
+        const latestId = latest.interviewId || latest.id || latest.sessionId;
+        
+        if (latestId) {
+          try {
+            const statusRes = await apiClient.get(`/api/v1/sessions/${latestId}/status`);
+            const statusData = statusRes.data?.data;
+            const status = statusData?.status;
+            
+            // 如果最新会话不是已评估/失败等结束状态，则弹窗提示继续
+            if (status && status !== 'EVALUATED' && status !== 'COMPLETED' && status !== 'EVALUATION_FAILED') {
+              setActiveSession({
+                ...latest,
+                resolvedId: latestId
+              });
+            }
+          } catch (e) {
+            console.error("检查最近会话状态失败", e);
+          }
+        }
       }
     } catch (error: any) {
       console.error("Failed to fetch interview records", error);
@@ -116,6 +140,30 @@ export default function Home() {
       </div>
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-20 lg:py-32">
+        {/* 未完成会话提示栏 */}
+        {activeSession && (
+          <div className="mb-12 rounded-[2rem] bg-cyan-500/5 border border-cyan-500/20 p-6 flex flex-col sm:flex-row items-center justify-between gap-6 backdrop-blur-xl shadow-[0_0_30px_rgba(34,211,238,0.1)] relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                <Activity className="w-7 h-7 text-cyan-400 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-cyan-400 font-bold text-xl tracking-wide">检测到活跃中的神经链接</h3>
+                <p className="text-cyan-500/70 text-sm mt-1.5 font-light">
+                  系统记录显示您有一个未完成的面试会话 (标识码: #{activeSession.resolvedId})。
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate("/interview", { state: { sessionId: activeSession.resolvedId, jdId: activeSession.jdId, resumeId: activeSession.resumeId } })}
+              className="bg-cyan-500 text-black hover:bg-cyan-400 font-black px-8 h-12 rounded-xl shadow-[0_0_20px_rgba(34,211,238,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98] tracking-widest uppercase"
+            >
+              继续面试
+            </Button>
+          </div>
+        )}
+
         {/* 英雄区域 (Hero) */}
         <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
           <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-8">

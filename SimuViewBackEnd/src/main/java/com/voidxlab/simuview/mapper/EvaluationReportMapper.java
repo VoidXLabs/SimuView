@@ -7,6 +7,6 @@ import org.apache.ibatis.annotations.Select;
 
 public interface EvaluationReportMapper extends BaseMapper<EvaluationReport> {
 
-    @Select("SELECT * FROM evaluation_report WHERE session_id = #{sessionId} ORDER BY created_time DESC LIMIT 1")
+    @Select("SELECT * FROM interview_evaluation WHERE session_id = #{sessionId} ORDER BY created_time DESC LIMIT 1")
     EvaluationReport findBySessionId(@Param("sessionId") Long sessionId);
 }
