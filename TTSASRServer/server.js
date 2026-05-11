@@ -11,8 +11,8 @@ import tencentcloud from 'tencentcloud-sdk-nodejs-asr';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 加载前端的 .env 配置文件
-dotenv.config({ path: path.join(__dirname, '../SimuViewFrontEnd/.env') });
+// 加载本地的 .env 配置文件
+dotenv.config();
 
 const app = express();
 app.use(cors());
