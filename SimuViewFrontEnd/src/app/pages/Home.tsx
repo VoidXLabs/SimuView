@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Brain, Target, Mic, BarChart3, ChevronRight, Sparkles, Activity } from "lucide-react";
+import { Brain, Target, Mic, BarChart3, ChevronRight, ChevronLeft, Sparkles, Activity, FileSearch, Gauge, Radar, Archive, Network } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Header } from "../components/Header";
 import apiClient from '../api/apiClient';
@@ -22,8 +22,23 @@ export default function Home() {
   const [interviews, setInterviews] = useState<InterviewRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSession, setActiveSession] = useState<any>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const guideSlides = [
+    { id: 1, image: "/img/step_1_insert_information.png", title: "导入数据档案", desc: "解析简历与目标职位描述 (JD)，为您量身定制面试题库" },
+    { id: 2, image: "/img/step_2_interview.png", title: "全息语音交互", desc: "沉浸式拟真对答演练，直面高压核心问题，实时语音识别" },
+    { id: 3, image: "/img/step_3_chek_report.png", title: "量化评估报告", desc: "生成多维度能力图谱，精准复盘每次表现，助力快速提升" }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % guideSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [guideSlides.length]);
 
   // 获取用户ID
+
   const getUserId = (): string | null => {
     const userStr = localStorage.getItem('user');
     if (userStr) {
@@ -239,22 +254,180 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 特性展示区 (Features) */}
-        <div className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {[
-            { title: "精准 JD 匹配", desc: "极速解构职位要求，生成直击痛点的高频面试题", icon: Target, color: "text-cyan-400", shadow: "shadow-cyan-500/20" },
-            { title: "拟真语音对白", desc: "超低延迟语音交互，还原高压真实的线上面试场景", icon: Mic, color: "text-purple-400", shadow: "shadow-purple-500/20" },
-            { title: "全息雷达诊断", desc: "全景式能力评测报告，指出核心短板与制胜优势", icon: BarChart3, color: "text-blue-400", shadow: "shadow-blue-500/20" }
-          ].map((feature, idx) => (
-            <div key={idx} className="group p-8 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-500 backdrop-blur-sm relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className={`w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg ${feature.shadow}`}>
-                <feature.icon className={`w-7 h-7 ${feature.color}`} />
+        {/* 核心矩阵 Bento Box */}
+        <div className="mt-32">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 auto-rows-[250px]">
+            {/* 1. 大主块 - 核心宣言 */}
+            <div className="md:col-span-2 md:row-span-2 rounded-[2rem] bg-gradient-to-br from-[#0a0a14] to-cyan-950/30 border border-white/10 p-8 lg:p-12 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] group-hover:bg-cyan-400/20 transition-colors duration-700"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-[60px] group-hover:bg-purple-400/20 transition-colors duration-700"></div>
+              
+              <div className="relative z-10 h-full flex flex-col justify-between">
+                <div>
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 shadow-lg shadow-cyan-500/20">
+                    <Brain className="w-8 h-8 text-cyan-400" />
+                  </div>
+                  <h2 className="text-4xl lg:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
+                    重新定义<br />AI 面试标准
+                  </h2>
+                  <p className="text-slate-400 text-lg max-w-md leading-relaxed font-light">
+                    不仅仅是一个题库，而是一个拥有逻辑思考与情绪感知的数字孪生导师。
+                    通过全链路的数据流转，打破传统面试的局限，深度挖掘你的真实潜力。
+                  </p>
+                </div>
+                
+                <div className="flex gap-4 mt-8">
+                  <div className="flex items-center gap-2 text-sm text-cyan-400 font-mono tracking-widest">
+                    <Activity className="w-4 h-4 animate-pulse" />
+                    <span>SYSTEM ONLINE</span>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3 tracking-wide">{feature.title}</h3>
-              <p className="text-slate-400 leading-relaxed font-light relative z-10">{feature.desc}</p>
             </div>
-          ))}
+
+            {/* 2. 智能双向解析 */}
+            <div className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-8 relative overflow-hidden group hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 flex flex-col">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <FileSearch className="w-6 h-6 text-indigo-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">智能双向解析</h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-light mt-auto">
+                导入岗位 JD 与个人简历，毫秒级提取核心考点，告别千篇一律的通用题库。
+              </p>
+              
+              {/* 配图动画 */}
+              <div className="absolute right-[-20px] bottom-[-20px] opacity-20 group-hover:opacity-40 transition-opacity">
+                <Network className="w-32 h-32 text-indigo-400" strokeWidth={0.5} />
+              </div>
+            </div>
+
+            {/* 3. 沉浸式语音流 */}
+            <div className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-8 relative overflow-hidden group hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 flex flex-col">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <Mic className="w-6 h-6 text-cyan-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">沉浸式语音流</h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-light mt-auto">
+                真实还原线上面试场景。全双工语音交互，体验真人般的交互压迫感。
+              </p>
+              
+              {/* 配图动画 */}
+              <div className="absolute right-4 bottom-8 flex gap-1 items-end opacity-30 group-hover:opacity-60 transition-opacity">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-2 bg-cyan-400 rounded-full animate-bounce" style={{ height: `${Math.random() * 24 + 8}px`, animationDelay: `${i * 0.1}s` }} />
+                ))}
+              </div>
+            </div>
+
+            {/* 4. 多维压力场 */}
+            <div className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-8 relative overflow-hidden group hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 flex flex-col">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500/20 to-orange-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <Gauge className="w-6 h-6 text-rose-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">多维压力场</h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-light mt-auto">
+                温和引导、标准校准、极致高压。自定义 AI 严苛程度，匹配不同训练需求。
+              </p>
+              
+              {/* 配图动画 */}
+              <div className="absolute -right-4 -bottom-4 w-28 h-28 border-[8px] border-rose-500/10 rounded-full border-t-rose-500/40 rotate-45 group-hover:rotate-[225deg] transition-transform duration-1000"></div>
+            </div>
+
+            {/* 5. 专家级诊断流 */}
+            <div className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-8 relative overflow-hidden group hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 flex flex-col">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <Radar className="w-6 h-6 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">专家级诊断流</h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-light mt-auto">
+                拒绝只打分不指导。自动生成包含能力雷达图、薄弱点剖析及高分回答范例。
+              </p>
+              
+              {/* 配图动画 */}
+              <div className="absolute right-2 bottom-2 w-24 h-24 border border-blue-400/20 rounded-full opacity-50 group-hover:opacity-100 flex items-center justify-center">
+                 <div className="w-16 h-16 border border-blue-400/30 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-blue-400/10 rounded-full animate-ping"></div>
+                 </div>
+              </div>
+            </div>
+
+            {/* 6. 长条块 - 云端面试档案 */}
+            <div className="md:col-span-2 lg:col-span-4 rounded-[2rem] bg-gradient-to-r from-white/[0.02] to-transparent border border-white/5 p-8 md:p-10 relative overflow-hidden group hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+              <div className="flex-1">
+                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                  <Archive className="w-6 h-6 text-slate-300" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">云端面试档案</h3>
+                <p className="text-slate-400 text-base leading-relaxed font-light max-w-2xl">
+                  系统自动归档历史会话，随时回溯过往表现，见证每一次能力进阶。你的个人面霸成长史，每一行代码、每一次发音都被安全记录。
+                </p>
+              </div>
+              
+              <div className="shrink-0 flex gap-4 w-full md:w-auto overflow-hidden opacity-50 group-hover:opacity-100 transition-opacity">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-32 h-20 rounded-lg bg-white/5 border border-white/10 p-3 transform group-hover:-translate-y-2 transition-transform" style={{ transitionDelay: `${i * 100}ms` }}>
+                    <div className="w-1/2 h-2 bg-white/20 rounded-full mb-2"></div>
+                    <div className="w-full h-1.5 bg-white/10 rounded-full mb-1"></div>
+                    <div className="w-3/4 h-1.5 bg-white/10 rounded-full"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 操作导引轮播 (Guide Carousel) */}
+        <div className="mt-32 mb-10 relative z-10">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-black text-white tracking-wide mb-4">核心作业流程</h2>
+            <p className="text-slate-400 font-light">只需简单三步，重塑你的面试状态</p>
+          </div>
+          
+          <div className="relative w-full max-w-7xl mx-auto rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#0a0a14] backdrop-blur-xl shadow-2xl h-[500px] md:h-[600px] lg:h-[750px]">
+
+            {guideSlides.map((slide, idx) => (
+              <div 
+                key={slide.id}
+                className={`absolute inset-0 transition-opacity duration-1000 flex flex-col justify-between ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+              >
+                <div className="w-full h-full flex items-center justify-center relative">
+                  <img src={slide.image} alt={slide.title} className="w-full h-full object-cover md:object-contain opacity-50 md:opacity-80" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/60 to-transparent z-10"></div>
+                  
+                  <div className="absolute bottom-10 left-8 right-8 z-20 text-center">
+                     <span className="inline-block px-4 py-1.5 mb-4 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold tracking-widest backdrop-blur-md">STEP {slide.id}</span>
+                     <h3 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-wide">{slide.title}</h3>
+                     <p className="text-slate-300 font-light text-sm md:text-base max-w-xl mx-auto leading-relaxed">{slide.desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* 左右控制箭头 */}
+            <button 
+              onClick={() => setCurrentSlide((prev) => (prev - 1 + guideSlides.length) % guideSlides.length)}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 border border-white/10 text-white/50 hover:text-white hover:bg-black/60 hover:scale-110 backdrop-blur-md transition-all duration-300"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button 
+              onClick={() => setCurrentSlide((prev) => (prev + 1) % guideSlides.length)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 border border-white/10 text-white/50 hover:text-white hover:bg-black/60 hover:scale-110 backdrop-blur-md transition-all duration-300"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+
+            {/* 底部点状指示器 */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+              {guideSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentSlide ? 'w-10 bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]' : 'w-2 bg-white/20 hover:bg-white/40'}`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     </div>
