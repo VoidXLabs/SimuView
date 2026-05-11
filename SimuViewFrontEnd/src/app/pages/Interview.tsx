@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button";
 import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 import apiClient from "../api/apiClient";
+import { encodeWAV } from "../utils/audioUtils";
 
 interface Message {
   role: "ai" | "user";
@@ -34,6 +35,7 @@ export default function Interview() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(questionCount || 5);
   const [isAiThinking, setIsAiThinking] = useState(false);
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [isInterviewActive, setIsInterviewActive] = useState(false);
   const [interviewComplete, setInterviewComplete] = useState(false);
   const [textAnswer, setTextAnswer] = useState("");
@@ -45,12 +47,17 @@ export default function Interview() {
   const [isPollingStatus, setIsPollingStatus] = useState(false);
   const [isTypingMode, setIsTypingMode] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const receivedQuestionIdsRef = useRef<Set<number>>(new Set());
   const isLastQuestionRef = useRef<boolean>(false);
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,6 +66,124 @@ export default function Interview() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    };
+  }, []);
+
+  const playTTS = async (text: string) => {
+    try {
+      setIsAiSpeaking(true);
+      const response = await fetch('http://localhost:3001/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      
+      if (!response.ok) throw new Error('TTS Failed');
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      if (audioRef.current) {
+        URL.revokeObjectURL(audioRef.current.src);
+        audioRef.current.pause();
+      }
+      
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsAiSpeaking(false);
+        URL.revokeObjectURL(url);
+      };
+      
+      audio.onerror = () => {
+        setIsAiSpeaking(false);
+      };
+      
+      await audio.play();
+    } catch (err) {
+      console.error("TTS Error", err);
+      setIsAiSpeaking(false);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        processAndUploadAudio(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      toast.error("无法访问麦克风，请检查权限");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsTranscribing(true);
+    }
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      if (audioRef.current) audioRef.current.pause();
+      setIsAiSpeaking(false);
+      startRecording();
+    }
+  };
+
+  const processAndUploadAudio = async (blob: Blob) => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      const arrayBuffer = await blob.arrayBuffer();
+      const decoded = await audioContext.decodeAudioData(arrayBuffer);
+      const audioData = decoded.getChannelData(0);
+      
+      const wavBlob = encodeWAV(audioData, 16000);
+      const formData = new FormData();
+      formData.append('audio', wavBlob, 'record.wav');
+
+      const response = await fetch('http://localhost:3001/api/asr', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) throw new Error(data.error || '识别失败');
+
+      setTextAnswer(prev => prev + (prev ? " " : "") + data.text);
+    } catch (error: any) {
+      toast.error("识别失败: " + error.message);
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
 
   // 连接 SSE 获取下一个问题
   const connectToQuestionStream = useCallback(() => {
@@ -165,6 +290,10 @@ export default function Interview() {
                     setIsAiThinking(false);
                     setIsInterviewActive(true);
                     if (questionId) receivedQuestionIdsRef.current.add(questionId);
+                    
+                    // 触发语音播报
+                    playTTS(questionContent);
+                    
                     streamingQuestion = '';
                   }
                 }
@@ -258,6 +387,11 @@ export default function Interview() {
               receivedQuestionIdsRef.current.add(lastItem.questionId);
             }
             setIsInterviewActive(true);
+            
+            // 如果恢复时停留在待回答的问题上，也可以选择播报一遍
+            if (lastItem.questionText) {
+                playTTS(lastItem.questionText);
+            }
           }
         }
       } catch (error) {
@@ -283,12 +417,15 @@ export default function Interview() {
     setInterviewComplete(true);
     setIsPollingStatus(true);
     
+    const endMessageText = "系统检测到会话完毕。核心算力网正在分析您的生物与认知数据谱线，生成量化报告，请稍候...";
     const endMessage: Message = {
       role: "ai",
-      content: "系统检测到会话完毕。核心算力网正在分析您的生物与认知数据谱线，生成量化报告，请稍候...",
+      content: endMessageText,
       timestamp: new Date()
     };
     setMessages(prev => [...prev, endMessage]);
+    playTTS(endMessageText);
+    
     pollForReport();
   };
 
@@ -330,20 +467,6 @@ export default function Interview() {
     poll();
   };
 
-  const fetchReport = async () => {
-    if (!sessionId) return;
-    try {
-      const response = await apiClient.get(`/api/v1/sessions/${sessionId}/report`);
-      const data = response.data;
-      if (data.success && data.data) {
-        setReport(data.data);
-        setShowReport(true);
-      }
-    } catch (error) {
-      toast.error("Failed to load evaluation report");
-    }
-  };
-
   const submitAnswer = async () => {
     if (!textAnswer.trim()) {
       toast.error('请输入回答内容');
@@ -352,6 +475,11 @@ export default function Interview() {
     if (currentQuestionId === null) {
       toast.error('Question ID is missing');
       return;
+    }
+
+    if (audioRef.current) {
+        audioRef.current.pause();
+        setIsAiSpeaking(false);
     }
 
     const userMessage: Message = {
@@ -562,28 +690,28 @@ export default function Interview() {
         <div className="relative group flex flex-col items-center z-10 -mt-20">
           <div className="relative w-56 h-56 flex items-center justify-center">
             {/* 外围发光环 */}
-            <div className={`absolute inset-0 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-md transition-all duration-700 ${isAiThinking || (!isInterviewActive && !interviewComplete) ? 'scale-110 bg-white/[0.03] border-cyan-500/30' : ''}`}></div>
-            <div className={`absolute inset-4 rounded-full border border-dashed transition-all duration-[3s] linear infinite ${isAiThinking || (!isInterviewActive && !interviewComplete) ? 'border-purple-500/50 rotate-180 animate-[spin_10s_linear_infinite]' : 'border-white/10'}`}></div>
+            <div className={`absolute inset-0 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-md transition-all duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'scale-110 bg-white/[0.03] border-cyan-500/30' : ''}`}></div>
+            <div className={`absolute inset-4 rounded-full border border-dashed transition-all duration-[3s] linear infinite ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'border-purple-500/50 rotate-180 animate-[spin_10s_linear_infinite]' : 'border-white/10'}`}></div>
             
             {/* 核心发光体 */}
-            <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-700 shadow-2xl relative z-10 ${isAiThinking || (!isInterviewActive && !interviewComplete) ? 'bg-gradient-to-br from-cyan-400 to-purple-600 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-105' : 'bg-[#0a0a14] border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.8)]'}`}>
-              <BrainCircuit className={`w-12 h-12 transition-colors duration-700 ${isAiThinking || (!isInterviewActive && !interviewComplete) ? 'text-white' : 'text-slate-600'}`} />
+            <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-700 shadow-2xl relative z-10 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-gradient-to-br from-cyan-400 to-purple-600 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-105' : 'bg-[#0a0a14] border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.8)]'}`}>
+              <BrainCircuit className={`w-12 h-12 transition-colors duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'text-white' : 'text-slate-600'}`} />
             </div>
 
             {/* 呼吸脉冲 */}
-            {(isAiThinking || (latestAiMessage && !isInterviewActive && !interviewComplete)) && (
+            {(isAiThinking || isAiSpeaking || (latestAiMessage && !isInterviewActive && !interviewComplete)) && (
               <div className="absolute inset-0 rounded-full border-2 border-cyan-400 opacity-0 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
             )}
           </div>
           
-          {/* 发音波形图(占位) */}
+          {/* 发音波形图 */}
           <div className="mt-12 flex items-end gap-1.5 h-8">
             {[...Array(12)].map((_, i) => (
               <div 
                 key={i} 
-                className={`w-1.5 rounded-full transition-all duration-[50ms] ${isAiThinking || (!isInterviewActive && !interviewComplete) ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-700'}`}
+                className={`w-1.5 rounded-full transition-all duration-[50ms] ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-700'}`}
                 style={{ 
-                  height: isAiThinking || (!isInterviewActive && !interviewComplete) ? `${Math.random() * 24 + 8}px` : '4px',
+                  height: isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? `${Math.random() * 24 + 8}px` : '4px',
                 }}
               ></div>
             ))}
@@ -604,9 +732,10 @@ export default function Interview() {
 
             <div className="flex gap-5 items-start">
               <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 border border-white/10 text-slate-400 font-bold text-xs">ME</div>
-              <span className={`text-lg lg:text-xl leading-relaxed font-light tracking-wide ${textAnswer ? 'text-slate-300' : 'text-slate-600 italic'}`}>
-                {interviewComplete ? "-" : (isRecording ? "正在接收语音输入..." : (textAnswer || "等待指令输入..."))}
+              <span className={`flex-1 text-lg lg:text-xl leading-relaxed font-light tracking-wide ${textAnswer ? 'text-slate-300' : 'text-slate-600 italic'}`}>
+                {interviewComplete ? "-" : (isTranscribing ? "正在通过云端极速转写..." : (isRecording ? "正在接收语音输入..." : (textAnswer || "等待指令输入...")))}
               </span>
+              {isTranscribing && <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />}
             </div>
           </div>
         </div>
@@ -622,11 +751,11 @@ export default function Interview() {
               onChange={(e) => setTextAnswer(e.target.value)}
               placeholder="Input terminal commands / response..."
               className="flex-1 bg-white/5 border-white/10 text-white resize-none min-h-[60px] max-h-[150px] focus:border-cyan-500 focus:ring-cyan-500/20 rounded-xl font-mono text-sm placeholder:text-slate-600"
-              disabled={isAiThinking || !isInterviewActive}
+              disabled={isAiThinking || isTranscribing || !isInterviewActive}
             />
             <Button
               onClick={submitAnswer}
-              disabled={isAiThinking || !isInterviewActive || !textAnswer.trim()}
+              disabled={isAiThinking || isTranscribing || !isInterviewActive || !textAnswer.trim()}
               className="h-[60px] px-8 bg-white text-black hover:bg-slate-200 disabled:bg-white/5 disabled:text-slate-600 rounded-xl font-bold tracking-widest transition-transform active:scale-95 uppercase text-sm"
             >
               <Send className="w-4 h-4 md:mr-2" />
@@ -645,8 +774,8 @@ export default function Interview() {
           {!interviewComplete && (
             <div className="absolute left-1/2 -translate-x-1/2 -top-8">
               <Button 
-                onClick={() => setIsRecording(!isRecording)}
-                disabled={isAiThinking || !isInterviewActive}
+                onClick={toggleRecording}
+                disabled={isAiThinking || isTranscribing || !isInterviewActive}
                 className={`w-16 h-16 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-300 border-[3px] ${isRecording ? 'bg-rose-500 hover:bg-rose-600 border-rose-400/50 animate-pulse scale-110 shadow-[0_0_30px_rgba(244,63,94,0.5)]' : 'bg-[#030014] hover:bg-[#0a0a14] text-cyan-400 border-cyan-500/30 hover:border-cyan-400'} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isRecording ? <MicOff className="w-6 h-6 text-white" /> : <Mic className="w-6 h-6" />}

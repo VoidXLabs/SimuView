@@ -6,6 +6,8 @@ import InterviewDetail from "./pages/InterviewDetail";
 import MyInterviews from "./pages/MyInterviews";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import TtsTest from "./pages/TtsTest";
+import AsrTest from "./pages/AsrTest";
 import { Layout } from "./components/Layout";
 
 export const router = createBrowserRouter([
@@ -16,6 +18,14 @@ export const router = createBrowserRouter([
   {
     path: "/register",
     Component: Register,
+  },
+  {
+    path: "/tts-test",
+    Component: TtsTest,
+  },
+  {
+    path: "/asr-test",
+    Component: AsrTest,
   },
   {
     path: "/",
