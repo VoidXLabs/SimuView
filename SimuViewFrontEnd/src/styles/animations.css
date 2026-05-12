@@ -1,0 +1,177 @@
+@keyframes grid-move {
+  0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+  100% { transform: perspective(500px) rotateX(60deg) translateY(40px); }
+}
+
+@keyframes scan-ripple {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes sweep {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+.animate-grid-move {
+  animation: grid-move 20s linear infinite;
+}
+
+.animate-scan-ripple {
+  animation: scan-ripple 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-sweep {
+  animation: sweep 4s ease-in-out infinite;
+}
+
+.cyber-grid {
+  background-image: linear-gradient(rgba(34, 211, 238, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.2) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(to bottom right, rgba(34, 211, 238, 0.3), transparent, rgba(147, 51, 234, 0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.3);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(15px) rotate(-2deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+@keyframes radar-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 7s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+.animate-radar-spin {
+  animation: radar-spin 10s linear infinite;
+}
+
+@keyframes text-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes scan-line-horizontal {
+  0% { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(200%) skewX(-15deg); opacity: 0; }
+}
+
+@keyframes reveal-stagger {
+  0% { transform: translateY(20px); opacity: 0; filter: blur(10px); }
+  100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+
+.animate-text-flow {
+  background-size: 200% auto;
+  animation: text-flow 4s linear infinite;
+}
+
+.animate-scan-line-horizontal {
+  animation: scan-line-horizontal 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-reveal-stagger {
+  animation: reveal-stagger 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes scan-v {
+  0% { top: -10%; }
+  100% { top: 110%; }
+}
+
+@keyframes radar-pulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes text-scroll-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+@keyframes progress-circle {
+  from { stroke-dashoffset: 251.2; }
+  to { stroke-dashoffset: var(--offset); }
+}
+
+.animate-scan-v {
+  animation: scan-v 3s linear infinite;
+}
+
+.animate-radar-pulse {
+  animation: radar-pulse 2s ease-out infinite;
+}
+
+.animate-text-scroll-up {
+  animation: text-scroll-up 5s linear infinite;
+}
+
+.animate-progress-circle {
+  animation: progress-circle 1.5s ease-out forwards;
+}
+
+.scanning-mask {
+  mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+}

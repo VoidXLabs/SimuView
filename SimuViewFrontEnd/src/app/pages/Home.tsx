@@ -1,10 +1,148 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Brain, Target, Mic, BarChart3, ChevronRight, ChevronLeft, Sparkles, Activity, FileSearch, Gauge, Radar, Archive, Network } from "lucide-react";
+import { Brain, Target, Mic, BarChart3, ChevronRight, ChevronLeft, Sparkles, Activity, FileSearch, Gauge, Radar as RadarIcon, Archive, Network, MessageSquare, AudioLines, Award } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Header } from "../components/Header";
 import apiClient from '../api/apiClient';
 import { toast } from "sonner";
+import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, PolarRadiusAxis } from 'recharts';
+
+const radarData = [
+  { subject: '逻辑思维', A: 120, fullMark: 150 },
+  { subject: '沟通表达', A: 98, fullMark: 150 },
+  { subject: '专业知识', A: 86, fullMark: 150 },
+  { subject: '架构设计', A: 99, fullMark: 150 },
+  { subject: '压力承受', A: 85, fullMark: 150 },
+  { subject: '问题分析', A: 65, fullMark: 150 },
+];
+
+const HeroVisual = () => {
+  const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTab((prev) => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative w-full aspect-square flex items-center justify-center">
+      {/* 背景光晕 (Glow) */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-purple-600/10 blur-[120px] rounded-full animate-pulse-glow"></div>
+      
+      {/* 旋转同心圆/雷达扫描 */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-[110%] h-[110%] rounded-full border border-white/5 animate-radar-spin opacity-20"></div>
+        <div className="w-[85%] h-[85%] rounded-full border border-white/5 animate-[radar-spin_15s_linear_infinite_reverse] opacity-20"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[conic-gradient(from_0deg,transparent_0deg,rgba(34,211,238,0.1)_180deg,transparent_200deg)] animate-radar-spin rounded-full"></div>
+      </div>
+
+      {/* 核心卡片 */}
+      <div className="relative z-10 w-72 h-96 bg-[#0a0a14]/60 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-[0_32px_64px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col group transition-all duration-700 hover:border-cyan-500/40">
+        <div className="p-6 pb-2 border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+            <span className="text-[10px] font-mono tracking-widest text-cyan-500/70 uppercase">Matrix Evaluation</span>
+          </div>
+          <Award className="w-4 h-4 text-white/20" />
+        </div>
+
+        <div className="flex-1 p-6 flex flex-col items-center justify-center">
+          {activeTab === 0 && (
+            <div className="w-full h-full animate-in fade-in zoom-in-95 duration-700">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <PolarGrid stroke="rgba(255,255,255,0.05)" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} />
+                  <Radar
+                    name="Candidate"
+                    dataKey="A"
+                    stroke="#22d3ee"
+                    fill="#22d3ee"
+                    fillOpacity={0.3}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+              <div className="text-center mt-2">
+                <span className="text-xs font-bold text-white tracking-widest uppercase">能力图谱解析</span>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 1 && (
+            <div className="w-full space-y-4 animate-in fade-in slide-in-from-right-4 duration-700">
+              <div className="p-3 bg-white/5 border border-white/10 rounded-2xl rounded-tl-none mr-4">
+                <p className="text-[10px] text-cyan-300/70 font-mono mb-1">AI_SYSTEM_LOG:</p>
+                <p className="text-xs text-slate-300">正在分析您的架构设计逻辑...</p>
+              </div>
+              <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl rounded-tr-none ml-4 text-right">
+                <div className="flex items-center justify-end gap-2 mb-1">
+                  <span className="text-[10px] text-cyan-400 font-mono">STATUS:</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                </div>
+                <p className="text-xs text-white">逻辑清晰，方案闭环</p>
+              </div>
+              <div className="p-3 bg-white/5 border border-white/10 rounded-2xl rounded-tl-none mr-4">
+                <p className="text-xs text-slate-300">请深入阐述高并发下的优化策略。</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 2 && (
+            <div className="w-full flex flex-col items-center justify-center h-full animate-in fade-in zoom-in-110 duration-700">
+              <div className="flex gap-1.5 items-center h-24">
+                {[...Array(15)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="w-1 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.5)]" 
+                    style={{ 
+                      height: `${Math.random() * 60 + 20}%`,
+                      animationDelay: `${i * 0.1}s`
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="mt-6 px-4 py-1.5 rounded-full bg-white/5 border border-white/10">
+                <p className="text-[10px] font-mono tracking-[0.2em] text-cyan-400 uppercase flex items-center gap-2">
+                  <AudioLines className="w-3 h-3" /> Voice Syncing...
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 pt-0 flex gap-2 justify-center">
+          {[0, 1, 2].map((i) => (
+            <div 
+              key={i} 
+              className={`h-1 rounded-full transition-all duration-500 ${activeTab === i ? 'w-6 bg-cyan-500' : 'w-2 bg-white/10'}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 悬浮卫星组件 (Floating Badges) */}
+      <div className="absolute top-10 right-[-20px] p-3 glass-card rounded-2xl animate-float backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+          <span className="text-xs font-bold text-white tracking-widest uppercase">React / TS</span>
+        </div>
+      </div>
+
+      <div className="absolute bottom-20 left-[-40px] p-4 glass-card rounded-3xl animate-float-delayed backdrop-blur-md">
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] text-slate-500 font-black tracking-widest uppercase">综合评分</span>
+          <span className="text-xl font-black text-cyan-400">95.4</span>
+        </div>
+      </div>
+
+      <div className="absolute top-[20%] left-[-20px] w-10 h-10 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm flex items-center justify-center animate-float-delayed">
+        <MessageSquare className="w-5 h-5 text-cyan-500/50" />
+      </div>
+    </div>
+  );
+};
 
 // 面试记录类型定义
 interface InterviewRecord {
@@ -180,40 +318,61 @@ export default function Home() {
         )}
 
         {/* 英雄区域 (Hero) */}
-        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
-          <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm font-medium tracking-wide text-cyan-200">下一代 AI 面试引擎</span>
+        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24 relative">
+          {/* 背景大面积光斑 */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-purple-600/5 blur-[180px] rounded-full pointer-events-none z-0"></div>
+
+          <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-12 relative z-10">
+            {/* 文字背后的专属高光 */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.02)]">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[10px] font-black tracking-[0.3em] text-cyan-200/60 uppercase">Next-Gen AI Matrix</span>
             </div>
             
-            <h1 className="text-6xl lg:text-8xl font-black tracking-tighter leading-[1.1]">
-              <span className="text-white">重塑你的</span>
-              <br />
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                面试体验
-              </span>
+            <h1 className="flex flex-col items-center lg:items-start py-2">
+              <div className="flex items-center gap-4 animate-reveal-stagger [animation-delay:200ms]">
+                <div className="hidden lg:block w-12 h-px bg-gradient-to-r from-transparent via-white/20 to-white/40"></div>
+                <span className="text-4xl lg:text-5xl font-light tracking-widest text-white/70 uppercase">
+                  重塑你的
+                </span>
+              </div>
+              <div className="relative mt-4 animate-reveal-stagger [animation-delay:500ms]">
+                <span className="text-7xl lg:text-9xl font-black tracking-tighter leading-none bg-gradient-to-r from-cyan-400 via-blue-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent animate-text-flow drop-shadow-[0_0_30px_rgba(34,211,238,0.4)]">
+                  面试体验
+                </span>
+                
+                {/* 霓虹发光底色 */}
+                <span className="absolute inset-0 z-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 blur-3xl opacity-20 animate-text-flow"></span>
+                
+                {/* 数字化扫描线效果 */}
+                <div className="absolute inset-0 z-20 pointer-events-none">
+                  <div className="absolute top-0 bottom-0 w-32 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-scan-line-horizontal"></div>
+                  <div className="absolute top-0 bottom-0 w-[1px] bg-cyan-400/30 animate-scan-line-horizontal"></div>
+                </div>
+              </div>
             </h1>
             
-            <p className="text-lg lg:text-xl text-slate-400 max-w-2xl leading-relaxed font-light">
-              沉浸式 AI 模拟面试，结合深度职位解析与实时语音交互。
-              在星辰大海般的挑战中，精准定位你的核心竞争力。
+            <p className="text-lg lg:text-xl text-slate-400/80 max-w-xl leading-[1.8] font-light text-balance">
+              告别面试前的焦虑与紧张。通过 <span className="text-white font-medium">1:1 还原真实场景</span> 的 AI 语音对练，
+              深度剖析你的每一次作答，大幅提升 <span className="text-cyan-400/80">Offer 命中率</span>。
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-5 pt-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-6 pt-6 w-full sm:w-auto">
               <Button
                 onClick={handleStartInterview}
-                className="relative group h-14 px-8 rounded-full bg-white text-black hover:bg-slate-200 transition-all duration-300 overflow-hidden"
+                className="relative group h-16 px-12 rounded-2xl bg-white text-black hover:bg-slate-50 transition-all duration-500 overflow-hidden shadow-[0_8px_30px_rgba(34,211,238,0.15)]"
               >
-                <span className="relative z-10 flex items-center font-bold text-lg">
-                  开启智能模拟
+                <span className="relative z-10 flex items-center font-black text-lg tracking-widest uppercase">
+                  启动模拟矩阵
                   <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-300 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </Button>
               <Button
                 variant="outline"
-                className="h-14 px-8 rounded-full border-white/10 bg-white/5 hover:bg-white/10 text-white font-medium text-lg backdrop-blur-md transition-all duration-300"
+                className="h-16 px-10 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/30 text-white font-bold text-lg backdrop-blur-xl transition-all duration-500"
               >
                 查看分析报告
               </Button>
@@ -221,36 +380,8 @@ export default function Home() {
           </div>
 
           {/* 右侧视觉元素 */}
-          <div className="flex-1 w-full max-w-lg relative hidden lg:block">
-            <div className="relative aspect-square">
-              {/* 光晕与旋转边框 */}
-              <div className="absolute inset-0 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-3xl animate-[spin_60s_linear_infinite]"></div>
-              <div className="absolute inset-8 rounded-full border border-dashed border-white/20 animate-[spin_40s_linear_infinite_reverse]"></div>
-              <div className="absolute inset-16 rounded-full bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 blur-2xl animate-pulse"></div>
-              
-              {/* 核心卡片 */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-64 h-80 bg-[#0a0a14]/80 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden p-6 flex flex-col transform transition-transform hover:scale-105 duration-500 hover:border-cyan-500/30 hover:shadow-[0_0_40px_rgba(34,211,238,0.2)]">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/30">
-                    <Brain className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">AI 智能评估</h3>
-                  <p className="text-sm text-slate-400 mb-auto">深度解析你的每一个回答，构建多维度的能力图谱。</p>
-                  
-                  <div className="space-y-3 mt-6">
-                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 w-[85%] rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
-                    </div>
-                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-purple-500 w-[62%] rounded-full shadow-[0_0_10px_rgba(168,85,247,0.8)]"></div>
-                    </div>
-                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-400 w-[90%] rounded-full shadow-[0_0_10px_rgba(96,165,250,0.8)]"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex-1 w-full max-w-lg relative hidden lg:block z-10">
+            <HeroVisual />
           </div>
         </div>
 

@@ -1,11 +1,52 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { Loader2, CheckCircle2, Keyboard, Send, Sparkles, Clock, FileText, AlertCircle, Mic, MicOff, User, Activity, BrainCircuit } from "lucide-react";
+import { Loader2, CheckCircle2, Keyboard, Send, Sparkles, Clock, FileText, AlertCircle, Mic, MicOff, User, Activity, BrainCircuit, History } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 import apiClient from "../api/apiClient";
 import { encodeWAV } from "../utils/audioUtils";
+import Particles, { initParticlesEngine } from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+
+const TerminalLog = () => {
+  const [logs, setLogs] = useState<string[]>([]);
+  const possibleLogs = [
+    "[OK] Neural connection established...",
+    "[OK] Assessment matrix initialized",
+    "[OK] Syncing core profiles",
+    "[OK] LLM Model loaded successfully",
+    "[OK] Voice matrix sync in progress...",
+    "[OK] Building evaluation engine",
+    "[OK] Network status: STABLE",
+    "[OK] Simulation ready for input",
+    "[OK] Status code: 0x200",
+    "[OK] Core engine warm-up",
+    "[OK] Sampling rate: 120Hz",
+    "[OK] Encrypted channel active"
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLogs(prev => {
+        const nextLog = possibleLogs[Math.floor(Math.random() * possibleLogs.length)];
+        const newLogs = [...prev, nextLog];
+        return newLogs.slice(-4);
+      });
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="mt-6 font-mono text-[10px] text-cyan-500/40 text-left w-full space-y-1 overflow-hidden h-16">
+      {logs.map((log, i) => (
+        <div key={i} className="animate-in fade-in slide-in-from-left-1 duration-300">
+          {log}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 interface Message {
   role: "ai" | "user";
@@ -51,6 +92,7 @@ export default function Interview() {
   const [elapsedTime, setElapsedTime] = useState(0);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const historyEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const receivedQuestionIdsRef = useRef<Set<number>>(new Set());
   const isLastQuestionRef = useRef<boolean>(false);
@@ -58,6 +100,25 @@ export default function Interview() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  const [particlesInit, setParticlesInit] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    initParticlesEngine(async (engine) => {
+      await loadSlim(engine);
+    }).then(() => {
+      setParticlesInit(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (showHistory) {
+      setTimeout(() => {
+        historyEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [showHistory, messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -534,33 +595,89 @@ export default function Interview() {
   if (!hasStarted) {
     return (
       <div className="flex flex-col h-screen bg-[#030014] items-center justify-center relative overflow-hidden font-sans text-slate-200">
+        {/* 背景粒子 */}
+        {particlesInit && (
+          <Particles
+            id="tsparticles"
+            options={{
+              fpsLimit: 120,
+              interactivity: {
+                events: {
+                  onHover: { enable: true, mode: "grab" },
+                },
+                modes: {
+                  grab: { distance: 140, links: { opacity: 0.5 } },
+                },
+              },
+              particles: {
+                color: { value: "#22d3ee" },
+                links: {
+                  color: "#22d3ee",
+                  distance: 150,
+                  enable: true,
+                  opacity: 0.15,
+                  width: 1,
+                },
+                move: {
+                  enable: true,
+                  speed: 0.6,
+                },
+                number: {
+                  density: { enable: true, area: 800 },
+                  value: 60,
+                },
+                opacity: { value: 0.2 },
+                size: { value: { min: 1, max: 2 } },
+              },
+              detectRetina: true,
+            }}
+            className="absolute inset-0 z-0"
+          />
+        )}
+
+        {/* 极光模糊光斑 */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-900/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cyan-900/10 blur-[120px] rounded-full pointer-events-none"></div>
+
+        {/* 赛博网格 */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-cyan-900/10 blur-[150px] mix-blend-screen"></div>
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15]"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-[40%] cyber-grid animate-grid-move opacity-20 [mask-image:linear-gradient(to_top,black,transparent)]"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] mix-blend-overlay"></div>
         </div>
 
-        <div className="relative z-10 flex flex-col items-center max-w-lg text-center p-12 bg-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl">
-          <div className="relative w-24 h-24 mb-8">
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-cyan-400 to-purple-600 blur-xl opacity-50 animate-pulse"></div>
-            <div className="relative w-full h-full rounded-2xl bg-white/5 border border-white/20 flex items-center justify-center backdrop-blur-sm">
-              <BrainCircuit className="w-12 h-12 text-cyan-300" />
+        <div className="relative z-10 flex flex-col items-center max-w-lg text-center p-12 glass-card rounded-[2.5rem] shadow-2xl">
+          {/* 雷达扫描图标 */}
+          <div className="relative w-24 h-24 mb-10">
+            <div className="absolute inset-0 rounded-full border border-cyan-500/30 animate-scan-ripple"></div>
+            <div className="absolute inset-[-10px] rounded-full border border-cyan-500/10 animate-scan-ripple [animation-delay:1s]"></div>
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-cyan-400/20 to-purple-600/20 blur-xl opacity-50"></div>
+            <div className="relative w-full h-full rounded-2xl bg-white/5 border border-white/20 flex items-center justify-center backdrop-blur-sm shadow-inner">
+              <BrainCircuit className="w-12 h-12 text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
             </div>
           </div>
-          <h1 className="text-4xl font-black text-white mb-4 tracking-tight">网络已连接</h1>
-          <p className="text-slate-400 mb-10 leading-relaxed font-light">
+
+          <h1 className="text-4xl font-black text-white mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
+            网络已连接
+          </h1>
+          <p className="text-slate-400 mb-8 leading-relaxed font-light text-balance">
             AI 中枢已经针对您的核心档案构建了专属考核矩阵。调整呼吸，准备随时进入全息模拟。
           </p>
+
           <Button
             onClick={handleStartInterviewClick}
-            className="w-full h-16 bg-white text-black hover:bg-slate-200 rounded-2xl text-xl font-bold shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all hover:scale-105 active:scale-95 tracking-widest"
+            className="relative overflow-hidden w-full h-16 bg-white text-black hover:bg-slate-100 rounded-2xl text-xl font-bold shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-all hover:scale-[1.02] active:scale-[0.98] tracking-[0.2em]"
           >
-            接入会话
+            <span className="relative z-10">接入会话</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] animate-sweep pointer-events-none"></div>
           </Button>
+
+          <TerminalLog />
+
           <button
             onClick={() => navigate("/")}
-            className="mt-6 text-slate-500 hover:text-white transition-colors text-sm font-medium tracking-widest uppercase"
+            className="mt-8 text-slate-500 hover:text-cyan-400 transition-colors text-xs font-medium tracking-[0.3em] uppercase group"
           >
-            中止返回
+            <span className="opacity-60 group-hover:opacity-100 transition-opacity">中止返回 EXIT SESSION</span>
           </button>
         </div>
       </div>
@@ -651,6 +768,104 @@ export default function Interview() {
         <div className="absolute bottom-[10%] right-[20%] w-[50%] h-[50%] rounded-full bg-cyan-900/10 blur-[150px] mix-blend-screen animate-[pulse_12s_ease-in-out_infinite_reverse]"></div>
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15]"></div>
       </div>
+
+      {/* 历史记录触发按钮 - 左侧竖向文字 */}
+      <button
+        onClick={() => setShowHistory(true)}
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-30 bg-white/5 hover:bg-cyan-500/20 backdrop-blur-xl border border-l-0 border-white/10 rounded-r-2xl py-8 px-2 transition-all group shadow-[10px_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center gap-4 border-y-white/10"
+        title="查看对话历史"
+      >
+        <History className="w-5 h-5 text-cyan-400 group-hover:rotate-180 transition-transform duration-500" />
+        <div className="flex flex-col gap-1">
+          {"对话历史".split("").map((char, i) => (
+            <span key={i} className="text-[10px] font-black text-cyan-500/60 group-hover:text-cyan-400 tracking-tighter transition-colors uppercase">
+              {char}
+            </span>
+          ))}
+        </div>
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-0.5 h-12 bg-cyan-500/20 rounded-full group-hover:bg-cyan-400/50 transition-colors"></div>
+      </button>
+
+      {/* 对话历史侧边抽屉 - 浮动宽屏版 */}
+      <div 
+        className={`fixed inset-y-6 left-6 w-[450px] z-50 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] transform ${
+          showHistory ? 'translate-x-0 opacity-100' : '-translate-x-[120%] opacity-0'
+        }`}
+      >
+        <div className="h-full bg-[#05011a]/80 backdrop-blur-3xl border border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.8)] flex flex-col rounded-[2.5rem] overflow-hidden">
+          <div className="p-8 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-white/[0.02] to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                <History className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-black text-sm tracking-[0.3em] uppercase text-white">Neural History</span>
+                <span className="text-[9px] text-cyan-500/50 font-mono tracking-widest">RECORDING ACTIVE</span>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowHistory(false)}
+              className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors group"
+            >
+              <CheckCircle2 className="w-5 h-5 text-slate-500 group-hover:text-white rotate-45 transition-transform group-hover:scale-110" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar scroll-smooth">
+            {messages.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-slate-600 space-y-4">
+                <div className="w-16 h-16 rounded-full border border-dashed border-white/10 flex items-center justify-center animate-[pulse_4s_infinite]">
+                  <Activity className="w-8 h-8 opacity-20" />
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] tracking-[0.4em] uppercase font-bold">Waiting for input</p>
+                  <p className="text-[9px] opacity-40 mt-1 font-mono">NO LOGS DETECTED IN CURRENT BUFFER</p>
+                </div>
+              </div>
+            ) : (
+              messages.map((msg, index) => (
+                <div key={index} className={`flex flex-col ${msg.role === 'ai' ? 'items-start' : 'items-end'} group`}>
+                  <div className={`max-w-[85%] p-5 rounded-[1.5rem] text-sm leading-relaxed transition-all duration-300 ${
+                    msg.role === 'ai' 
+                      ? 'bg-white/[0.03] border border-white/10 text-cyan-50 rounded-tl-none hover:bg-white/[0.05] hover:border-cyan-500/20' 
+                      : 'bg-cyan-500/10 border border-cyan-500/20 text-slate-200 rounded-tr-none hover:bg-cyan-500/15'
+                  }`}>
+                    {msg.content}
+                  </div>
+                  <div className={`flex items-center gap-3 mt-3 px-2 ${msg.role === 'ai' ? 'flex-row' : 'flex-row-reverse'}`}>
+                    <span className="text-[10px] font-black text-slate-500 group-hover:text-slate-300 transition-colors tracking-widest uppercase">
+                      {msg.role === 'ai' ? 'Matrix AI' : 'Candidate'}
+                    </span>
+                    <div className="w-1 h-1 rounded-full bg-slate-800"></div>
+                    <span className="text-[9px] text-slate-600 font-mono">
+                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={historyEndRef} />
+          </div>
+
+          <div className="p-6 border-t border-white/5 bg-black/40 backdrop-blur-md flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">Secure Connection</span>
+            </div>
+            <p className="text-[9px] text-slate-600 font-mono uppercase tracking-tighter">
+              ID: {String(sessionId || '').slice(0, 12)}...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 遮罩层 */}
+      {showHistory && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity animate-in fade-in"
+          onClick={() => setShowHistory(false)}
+        />
+      )}
 
       {/* 顶部状态栏 Header */}
       <header className="h-16 shrink-0 border-b border-white/5 bg-[#030014]/50 backdrop-blur-xl flex items-center justify-between px-6 z-20 relative">
