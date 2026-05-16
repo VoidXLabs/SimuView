@@ -560,7 +560,59 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* 常见问题解答 (FAQ) */}
+        <div className="mt-32 mb-20 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-black text-white tracking-wide mb-4">常见问题解答</h2>
+            <p className="text-slate-400 font-light">如果您还有其他疑问，欢迎随时探索更多功能</p>
+          </div>
+
+          <div className="max-w-5xl mx-auto space-y-4">
+            <FAQItem 
+              question="这个平台是如何工作的？" 
+              answer="SimuView 通过分析您提供的简历和职位描述（JD），利用大模型生成针对性的面试问题。您可以进行实时的语音对练，系统会根据您的回答给出多维度的评估和改进建议。" 
+            />
+            <FAQItem 
+              question="AI 面试的评估准确吗？" 
+              answer="我们的 AI 引擎基于海量面试案例和行业标准构建，能够精准捕捉逻辑、表达和专业知识等多个维度的表现。虽然不能完全取代真人，但在模拟真实场景和发现潜在弱点方面非常高效。" 
+            />
+            <FAQItem 
+              question="支持哪些岗位的面试？" 
+              answer="由于我们采用了动态解析技术，只要您提供相应的职位描述（JD），平台可以支持几乎所有技术、管理、市场等岗位的面试模拟。" 
+            />
+            <FAQItem 
+              question="我的简历和面试记录会泄露吗？" 
+              answer="我们非常重视用户隐私。您的所有数据均经过加密处理，仅用于生成个性化的面试体验和报告，不会泄露给任何第三方。" 
+            />
+            <FAQItem 
+              question="语音识别不准确怎么办？" 
+              answer="平台集成了高精度的 ASR 引擎。如果您发现识别有误，可以尝试在安静环境下使用麦克风，或在面试过程中通过文本输入进行纠正。目前我们也在不断优化专业术语的识别效果。" 
+            />
+          </div>
+        </div>
       </main>
+    </div>
+  );
+}
+
+function FAQItem({ question, answer }: { question: string, answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className={`rounded-2xl border transition-all duration-500 overflow-hidden ${isOpen ? 'bg-white/[0.05] border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)]' : 'bg-white/[0.02] border-white/5 hover:border-white/10'}`}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-6 py-5 flex items-center justify-between text-left group"
+      >
+        <span className={`text-lg font-bold transition-colors duration-300 ${isOpen ? 'text-cyan-400' : 'text-slate-200 group-hover:text-white'}`}>{question}</span>
+        <ChevronRight className={`w-5 h-5 transition-transform duration-500 ${isOpen ? 'rotate-90 text-cyan-400' : 'text-slate-500'}`} />
+      </button>
+      <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="px-6 pb-6 pt-0 text-slate-400 font-light leading-relaxed border-t border-white/5 mt-1 pt-4">
+          {answer}
+        </div>
+      </div>
     </div>
   );
 }
