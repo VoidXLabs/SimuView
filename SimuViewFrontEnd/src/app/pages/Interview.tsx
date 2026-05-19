@@ -48,6 +48,45 @@ const TerminalLog = () => {
   );
 };
 
+const InterviewTips = () => {
+  const tips = [
+    { title: "保持自信", content: "相信自己的专业能力，沉着应对每一个问题。" },
+    { title: "STAR 法则", content: "用情境、任务、行动、结果来组织你的案例描述。" },
+    { title: "眼神交流", content: "保持注视摄像头，让 AI 也能感受到你的专注。" },
+    { title: "适度停顿", content: "遇到难题时，深呼吸 2 秒，理清思路后再回答。" },
+    { title: "保持亲和", content: "微笑和礼貌是沟通的润滑剂，展现你的职业素养。" }
+  ];
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center gap-3 px-2">
+        <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+        <span className="text-xs font-black tracking-[0.3em] uppercase text-white/70">Interview Tips</span>
+      </div>
+      
+      <div className="space-y-4">
+        {tips.map((tip, i) => (
+          <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-cyan-500/20 transition-all group">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-1 h-1 rounded-full bg-cyan-500 group-hover:animate-ping" />
+              <span className="text-[10px] font-black text-cyan-400/80 uppercase tracking-widest">{tip.title}</span>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed group-hover:text-slate-400 transition-colors">
+              {tip.content}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-cyan-500/5 to-purple-500/5 border border-white/5">
+        <p className="text-[10px] text-slate-500 italic leading-relaxed text-center">
+          "每一次模拟都是通向成功的一小步，加油！"
+        </p>
+      </div>
+    </div>
+  );
+};
+
 interface Message {
   role: "ai" | "user";
   content: string;
@@ -898,63 +937,70 @@ export default function Interview() {
         </div>
       </header>
 
-      {/* 核心主视区 Main Stage */}
-      <main className="flex-1 relative flex flex-col items-center justify-center overflow-hidden z-10">
-        
-        {/* AI 占位化身 */}
-        <div className="relative group flex flex-col items-center z-10 -mt-20">
-          <div className="relative w-56 h-56 flex items-center justify-center">
-            {/* 外围发光环 */}
-            <div className={`absolute inset-0 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-md transition-all duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'scale-110 bg-white/[0.03] border-cyan-500/30' : ''}`}></div>
-            <div className={`absolute inset-4 rounded-full border border-dashed transition-all duration-[3s] linear infinite ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'border-purple-500/50 rotate-180 animate-[spin_10s_linear_infinite]' : 'border-white/10'}`}></div>
-            
-            {/* 核心发光体 */}
-            <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-700 shadow-2xl relative z-10 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-gradient-to-br from-cyan-400 to-purple-600 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-105' : 'bg-[#0a0a14] border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.8)]'}`}>
-              <BrainCircuit className={`w-12 h-12 transition-colors duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'text-white' : 'text-slate-600'}`} />
-            </div>
-
-            {/* 呼吸脉冲 */}
-            {(isAiThinking || isAiSpeaking || (latestAiMessage && !isInterviewActive && !interviewComplete)) && (
-              <div className="absolute inset-0 rounded-full border-2 border-cyan-400 opacity-0 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
-            )}
-          </div>
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* 核心主视区 Main Stage */}
+        <main className="flex-1 relative flex flex-col items-center justify-center overflow-hidden z-10">
           
-          {/* 发音波形图 */}
-          <div className="mt-12 flex items-end gap-1.5 h-8">
-            {[...Array(12)].map((_, i) => (
-              <div 
-                key={i} 
-                className={`w-1.5 rounded-full transition-all duration-[50ms] ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-700'}`}
-                style={{ 
-                  height: isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? `${Math.random() * 24 + 8}px` : '4px',
-                }}
-              ></div>
-            ))}
-          </div>
-        </div>
+          {/* AI 占位化身 */}
+          <div className="relative group flex flex-col items-center z-10 -mt-20">
+            <div className="relative w-56 h-56 flex items-center justify-center">
+              {/* 外围发光环 */}
+              <div className={`absolute inset-0 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-md transition-all duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'scale-110 bg-white/[0.03] border-cyan-500/30' : ''}`}></div>
+              <div className={`absolute inset-4 rounded-full border border-dashed transition-all duration-[3s] linear infinite ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'border-purple-500/50 rotate-180 animate-[spin_10s_linear_infinite]' : 'border-white/10'}`}></div>
+              
+              {/* 核心发光体 */}
+              <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-700 shadow-2xl relative z-10 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-gradient-to-br from-cyan-400 to-purple-600 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-105' : 'bg-[#0a0a14] border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.8)]'}`}>
+                <BrainCircuit className={`w-12 h-12 transition-colors duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'text-white' : 'text-slate-600'}`} />
+              </div>
 
-        {/* 实时字幕悬浮层 Overlay */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-black/40 backdrop-blur-2xl rounded-3xl p-8 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] z-20">
-          <div className="space-y-6">
-            <div className="flex gap-5 items-start">
-              <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-xs">AI</div>
-              <span className="text-white text-lg lg:text-xl leading-relaxed font-light tracking-wide">
-                {interviewComplete ? "数据收集完毕。评估模块初始化..." : (isAiThinking ? "正在生成考核维度..." : (latestAiMessage?.content || "系统已准备就绪。"))}
-              </span>
+              {/* 呼吸脉冲 */}
+              {(isAiThinking || isAiSpeaking || (latestAiMessage && !isInterviewActive && !interviewComplete)) && (
+                <div className="absolute inset-0 rounded-full border-2 border-cyan-400 opacity-0 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+              )}
             </div>
             
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
-
-            <div className="flex gap-5 items-start">
-              <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 border border-white/10 text-slate-400 font-bold text-xs">ME</div>
-              <span className={`flex-1 text-lg lg:text-xl leading-relaxed font-light tracking-wide ${textAnswer ? 'text-slate-300' : 'text-slate-600 italic'}`}>
-                {interviewComplete ? "-" : (isTranscribing ? "正在通过云端极速转写..." : (isRecording ? "正在接收语音输入..." : (textAnswer || "等待指令输入...")))}
-              </span>
-              {isTranscribing && <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />}
+            {/* 发音波形图 */}
+            <div className="mt-12 flex items-end gap-1.5 h-8">
+              {[...Array(12)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className={`w-1.5 rounded-full transition-all duration-[50ms] ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-700'}`}
+                  style={{ 
+                    height: isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? `${Math.random() * 24 + 8}px` : '4px',
+                  }}
+                ></div>
+              ))}
             </div>
           </div>
-        </div>
-      </main>
+
+          {/* 实时字幕悬浮层 Overlay */}
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-black/40 backdrop-blur-2xl rounded-3xl p-8 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] z-20">
+            <div className="space-y-6">
+              <div className="flex gap-5 items-start">
+                <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-xs">AI</div>
+                <span className="text-white text-lg lg:text-xl leading-relaxed font-light tracking-wide">
+                  {interviewComplete ? "数据收集完毕。评估模块初始化..." : (isAiThinking ? "正在生成考核维度..." : (latestAiMessage?.content || "系统已准备就绪。"))}
+                </span>
+              </div>
+              
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+
+              <div className="flex gap-5 items-start">
+                <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 border border-white/10 text-slate-400 font-bold text-xs">ME</div>
+                <span className={`flex-1 text-lg lg:text-xl leading-relaxed font-light tracking-wide ${textAnswer ? 'text-slate-300' : 'text-slate-600 italic'}`}>
+                  {interviewComplete ? "-" : (isTranscribing ? "正在通过云端极速转写..." : (isRecording ? "正在接收语音输入..." : (textAnswer || "等待指令输入...")))}
+                </span>
+                {isTranscribing && <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />}
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* 右侧小贴士 Aside */}
+        <aside className="w-80 border-l border-white/5 bg-black/20 backdrop-blur-sm z-20 hidden xl:flex flex-col p-8 overflow-y-auto custom-scrollbar">
+          <InterviewTips />
+        </aside>
+      </div>
 
       {/* 底部控制台 Footer */}
       <footer className="shrink-0 bg-[#0a0a14]/80 backdrop-blur-2xl border-t border-white/5 z-30 flex flex-col relative pb-safe">
