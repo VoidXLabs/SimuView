@@ -62,8 +62,8 @@ export default function Register() {
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.15)] mb-6 backdrop-blur-xl">
             <Network className="h-7 w-7 text-purple-400" />
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tight mb-2">节点注册</h1>
-          <p className="text-slate-400 font-light tracking-wide">在神经矩阵中创建您的独立标识</p>
+          <h1 className="text-4xl font-black text-white tracking-tight mb-2">注册账号</h1>
+          <p className="text-slate-400 font-light tracking-wide">加入 SimuView，开启您的 AI 模拟面试之旅</p>
         </div>
 
         <div className="rounded-[2rem] bg-white/[0.02] backdrop-blur-2xl border border-white/10 p-8 shadow-2xl relative overflow-hidden">
@@ -72,13 +72,13 @@ export default function Register() {
           <form onSubmit={handleRegister} className="space-y-6">
             <div className="space-y-3">
               <Label htmlFor="username" className="text-slate-300 font-semibold text-xs uppercase tracking-widest ml-1">
-                目标代号 (Username)
+                用户名
               </Label>
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
                 <Input
                   id="username"
-                  placeholder="Choose a unique identifier"
+                  placeholder="请输入您的用户名"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="h-14 pl-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all"
@@ -88,14 +88,14 @@ export default function Register() {
 
             <div className="space-y-3">
               <Label htmlFor="email" className="text-slate-300 font-semibold text-xs uppercase tracking-widest ml-1">
-                通讯频段 (Email)
+                邮箱地址
               </Label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-purple-400 transition-colors" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Establish comm link"
+                  placeholder="请输入您的邮箱"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-14 pl-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-purple-500/50 focus:ring-purple-500/20 transition-all"
@@ -105,14 +105,14 @@ export default function Register() {
 
             <div className="space-y-3">
               <Label htmlFor="password" className="text-slate-300 font-semibold text-xs uppercase tracking-widest ml-1">
-                加密序列 (Password)
+                设置密码
               </Label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Generate secure sequence"
+                  placeholder="请设置您的登录密码"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-14 pl-12 pr-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-blue-500/50 focus:ring-blue-500/20 transition-all"
@@ -142,11 +142,11 @@ export default function Register() {
                   {isLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                      初始化中...
+                      正在注册...
                     </>
                   ) : (
                     <>
-                      注入系统网格
+                      立即注册
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
@@ -157,12 +157,12 @@ export default function Register() {
 
           <div className="mt-8 text-center border-t border-white/5 pt-6">
             <p className="text-slate-500 text-sm font-light">
-              节点已存在？{" "}
+              已有账号？{" "}
               <button 
                 onClick={() => navigate("/login")}
                 className="text-purple-400 hover:text-purple-300 font-bold tracking-wide transition-colors uppercase ml-1"
               >
-                请求接入
+                立即登录
               </button>
             </p>
           </div>

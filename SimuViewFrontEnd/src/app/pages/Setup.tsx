@@ -511,8 +511,8 @@ export default function Setup() {
                   <Network className="w-6 h-6 text-cyan-400" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-black text-white tracking-tight">初始化配置</h2>
-                  <p className="text-slate-500 text-xs mt-1 uppercase tracking-widest font-mono">Neural Link Setup v1.0</p>
+                  <h2 className="text-3xl font-black text-white tracking-tight">面试设置</h2>
+                  <p className="text-slate-500 text-xs mt-1 uppercase tracking-widest font-mono">Interview Setup v1.0</p>
                 </div>
               </div>
 
@@ -526,13 +526,13 @@ export default function Setup() {
                   onClick={() => { setMode('url'); resetJd(); }}
                   className={`relative z-10 flex-1 py-4 font-bold text-xs uppercase tracking-widest transition-colors duration-300 ${mode === 'url' ? 'text-white' : 'text-slate-500'}`}
                 >
-                  URL 智能解析
+                  粘贴职位链接
                 </button>
                 <button
                   onClick={() => { setMode('form'); resetJd(); }}
                   className={`relative z-10 flex-1 py-4 font-bold text-xs uppercase tracking-widest transition-colors duration-300 ${mode === 'form' ? 'text-white' : 'text-slate-500'}`}
                 >
-                  手动构建模型
+                  手动输入岗位
                 </button>
               </div>
 
@@ -541,14 +541,14 @@ export default function Setup() {
                   <div className="space-y-4">
                     <Label className="text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
                       <div className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse"></div>
-                      目标岗位链接 JOB SOURCE
+                      岗位链接 JOB SOURCE
                     </Label>
                     <div className="flex flex-col sm:flex-row gap-4">
                       <div className="relative flex-1 group">
                         <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
                         <Input
                           type="url"
-                          placeholder="粘贴 Boss直聘 等平台岗位链接..."
+                          placeholder="粘贴 Boss直聘、拉勾等招聘链接..."
                           value={jobUrl}
                           onChange={(e) => setJobUrl(e.target.value)}
                           className="pl-12 h-14 bg-black/40 border-white/10 text-white rounded-2xl focus:border-cyan-500/50 transition-all"
@@ -559,7 +559,7 @@ export default function Setup() {
                         disabled={isParsingJd || isJdReady}
                         className="h-14 px-8 font-black rounded-2xl transition-all shadow-lg active:scale-95 bg-white text-black hover:bg-slate-200 tracking-widest uppercase text-xs"
                       >
-                        {isJdReady ? 'Ready ✅' : (isParsingJd ? 'Decoding...' : '开始解析')}
+                        {isJdReady ? '已就绪 ✅' : (isParsingJd ? '解析中...' : '开始解析')}
                       </Button>
                     </div>
                   </div>
@@ -570,10 +570,10 @@ export default function Setup() {
                     <div className="space-y-3">
                       <Label className="text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] flex items-center gap-2">
                         <div className="w-1 h-1 rounded-full bg-cyan-400"></div>
-                        岗位代号 TITLE
+                        岗位名称 TITLE
                       </Label>
                       <Input
-                        placeholder="e.g. 高级前端架构师"
+                        placeholder="例如：高级前端开发工程师"
                         value={formData.title}
                         onChange={(e) => setFormData({...formData, title: e.target.value})}
                         className="h-14 bg-black/40 border-white/10 text-white rounded-2xl focus:border-cyan-500/50"
@@ -582,10 +582,10 @@ export default function Setup() {
                     <div className="space-y-3">
                       <Label className="text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] flex items-center gap-2">
                         <div className="w-1 h-1 rounded-full bg-cyan-400"></div>
-                        核心诉求 DESCRIPTION
+                        岗位描述 / 要求 DESCRIPTION
                       </Label>
                       <textarea
-                        placeholder="详细描述候选人需要具备的能力图谱..."
+                        placeholder="请输入该岗位的具体职责和技能要求..."
                         value={formData.jd_content}
                         onChange={(e) => setFormData({...formData, jd_content: e.target.value})}
                         rows={5}
@@ -594,7 +594,7 @@ export default function Setup() {
                     </div>
                     <div className="flex justify-end">
                       <Button onClick={submitJobForm} disabled={isParsingJd || isJdReady} className="h-12 px-8 font-black rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 tracking-widest uppercase text-[10px]">
-                        {isJdReady ? 'Stored ✅' : '提交配置 TRANSMIT'}
+                        {isJdReady ? '保存成功 ✅' : '提交保存'}
                       </Button>
                     </div>
                   </div>
@@ -603,7 +603,7 @@ export default function Setup() {
                 <div className="space-y-4">
                   <Label className="text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-purple-500 animate-pulse"></div>
-                    候选人简历 RESUME
+                    个人简历 RESUME
                   </Label>
                   <div className={`group relative border border-dashed rounded-3xl p-10 text-center transition-all duration-500 ${isUploadingResume ? "bg-cyan-500/5 border-cyan-500/30" : isResumeReady ? "bg-emerald-500/5 border-emerald-500/30" : "border-white/10 bg-white/[0.01] hover:bg-white/[0.03] cursor-pointer"}`}>
                     <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" onChange={uploadResume} className="hidden" />
@@ -613,7 +613,7 @@ export default function Setup() {
                           {isUploadingResume ? <Loader2 className="w-7 h-7 animate-spin" /> : isResumeReady ? <CheckCircle2 className="w-7 h-7" /> : <Fingerprint className="w-7 h-7" />}
                         </div>
                         <p className={`text-sm font-bold tracking-widest uppercase transition-colors ${isResumeReady ? "text-emerald-400" : "text-slate-400"}`}>
-                          {resumeFile ? resumeFile.name : "LOAD BIO-DATA"}
+                          {resumeFile ? resumeFile.name : "上传我的简历"}
                         </p>
                       </div>
                     </label>
@@ -623,7 +623,7 @@ export default function Setup() {
                 <div className="space-y-4">
                   <Label className="text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-yellow-500"></div>
-                    系统运行模式 MODE
+                    面试难度 / 风格 MODE
                   </Label>
                   <div className="flex bg-[#030014] border border-white/5 rounded-2xl p-1.5 relative overflow-hidden">
                     <div 
@@ -636,7 +636,7 @@ export default function Setup() {
                         borderColor: interviewStyle === 0 ? 'rgba(16, 185, 129, 0.4)' : interviewStyle === 1 ? 'rgba(59, 130, 246, 0.4)' : 'rgba(244, 63, 94, 0.4)'
                       }}
                     />
-                    {['Mild', 'Normal', 'Pressure'].map((label, idx) => (
+                    {['温柔引导', '常规面试', '高压挑战'].map((label, idx) => (
                       <button
                         key={idx}
                         onMouseEnter={() => setHoverStyle(idx)}
@@ -656,7 +656,7 @@ export default function Setup() {
                     disabled={!(isJdReady && isResumeReady) || isCreatingSession}
                     className="w-full h-16 bg-white text-black hover:bg-slate-200 rounded-2xl text-xl font-black transition-all hover:scale-[1.02] shadow-[0_15px_40px_rgba(255,255,255,0.1)] relative overflow-hidden group tracking-[0.2em] uppercase"
                   >
-                    <span className="relative z-10">启动模拟矩阵</span>
+                    <span className="relative z-10">开始模拟面试</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </Button>
                 </div>

@@ -209,8 +209,8 @@ export default function Login() {
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 border border-white/10 shadow-[0_0_20px_rgba(34,211,238,0.15)] mb-6 backdrop-blur-xl">
               <Network className="h-7 w-7 text-cyan-400" />
             </div>
-            <h1 className="text-4xl font-black text-white tracking-tight mb-2">系统接入</h1>
-            <p className="text-slate-400 font-light tracking-wide">AI 驱动的面试练习平台网络中枢</p>
+            <h1 className="text-4xl font-black text-white tracking-tight mb-2">登录 SimuView</h1>
+            <p className="text-slate-400 font-light tracking-wide">AI 驱动的智能模拟面试平台</p>
           </div>
 
           {/* 登录表单 */}
@@ -221,14 +221,14 @@ export default function Login() {
               {/* 用户名 */}
               <div className="space-y-3">
                 <Label htmlFor="username" className="text-slate-300 font-semibold text-xs uppercase tracking-widest ml-1">
-                  用户识别码
+                  账号 / 用户名
                 </Label>
                 <div className="relative group">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
                   <Input
                     id="username"
                     type="text"
-                    placeholder="Enter your username"
+                    placeholder="请输入您的账号"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="h-14 pl-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-cyan-500/50 focus:ring-cyan-500/20 transition-all"
@@ -240,13 +240,13 @@ export default function Login() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between ml-1">
                   <Label htmlFor="password" className="text-slate-300 font-semibold text-xs uppercase tracking-widest">
-                    安全密钥
+                    密码
                   </Label>
                   <button
                     type="button"
                     className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium tracking-wide"
                   >
-                    忘记密钥？
+                    忘记密码？
                   </button>
                 </div>
                 <div className="relative group">
@@ -254,7 +254,7 @@ export default function Login() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="请输入您的密码"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-14 pl-12 bg-[#030014]/50 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:border-purple-500/50 focus:ring-purple-500/20 transition-all"
@@ -286,7 +286,7 @@ export default function Login() {
                       </svg>
                     </div>
                   </div>
-                  <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">保持网络连接</span>
+                  <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">记住我</span>
                 </label>
               </div>
 
@@ -301,11 +301,11 @@ export default function Login() {
                   {isLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                      认证中...
+                      正在登录...
                     </>
                   ) : (
                     <>
-                      授权登入
+                      立即登录
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
@@ -315,12 +315,12 @@ export default function Login() {
 
             {/* 注册链接 */}
             <div className="mt-8 text-center">
-              <span className="text-slate-500 text-sm">新节点接入？ </span>
+              <span className="text-slate-500 text-sm">还没有账号？ </span>
               <button 
                 onClick={() => navigate("/register")}
                 className="text-cyan-400 hover:text-cyan-300 font-bold text-sm tracking-wide transition-colors uppercase"
               >
-                创建标识
+                立即注册
               </button>
             </div>
 

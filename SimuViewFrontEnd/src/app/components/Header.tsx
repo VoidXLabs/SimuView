@@ -40,9 +40,9 @@ export function Header({ showNav = false }: HeaderProps) {
   };
 
   const navLinks = [
-    { name: "主控台", path: "/", icon: <Terminal className="w-4 h-4" /> },
-    { name: "初始化会话", path: "/setup", icon: <Cpu className="w-4 h-4" />, highlight: true },
-    { name: "数据归档", path: "/my-interviews", icon: <Network className="w-4 h-4" /> },
+    { name: "首页", path: "/", icon: <Terminal className="w-4 h-4" /> },
+    { name: "开始面试", path: "/setup", icon: <Cpu className="w-4 h-4" />, highlight: true },
+    { name: "面试记录", path: "/my-interviews", icon: <Network className="w-4 h-4" /> },
   ];
 
   return (
@@ -64,7 +64,7 @@ export function Header({ showNav = false }: HeaderProps) {
                 SimuView
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-cyan-500/70 tracking-widest uppercase">Core Matrix</span>
+                <span className="text-[10px] font-mono text-cyan-500/70 tracking-widest uppercase">智能模拟面试</span>
                 <span className="flex h-1.5 w-1.5 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
@@ -158,11 +158,11 @@ export function Header({ showNav = false }: HeaderProps) {
                   <DropdownMenuGroup className="p-1">
                     <DropdownMenuItem className="cursor-pointer rounded-xl text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 p-3 transition-colors mb-1 font-medium">
                       <User className="mr-3 h-4 w-4" />
-                      <span>节点档案 (Profile)</span>
+                      <span>个人中心</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer rounded-xl text-slate-300 hover:bg-purple-500/10 hover:text-purple-400 p-3 transition-colors font-medium">
                       <Cpu className="mr-3 h-4 w-4" />
-                      <span>算力配额 (Quota)</span>
+                      <span>我的设置</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator className="bg-white/5 my-1" />
@@ -171,7 +171,7 @@ export function Header({ showNav = false }: HeaderProps) {
                     onClick={handleLogout}
                   >
                     <LogOut className="mr-3 h-4 w-4" />
-                    <span className="tracking-widest uppercase text-xs">切断连接 (Disconnect)</span>
+                    <span className="tracking-widest uppercase text-xs">退出登录</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -182,7 +182,7 @@ export function Header({ showNav = false }: HeaderProps) {
               className="bg-white text-black hover:bg-slate-200 px-8 py-5 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] tracking-widest uppercase text-sm relative overflow-hidden group"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <span className="relative z-10">接入网络</span>
+              <span className="relative z-10">立即登录</span>
             </Button>
           )}
         </div>

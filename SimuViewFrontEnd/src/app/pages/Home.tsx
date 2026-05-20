@@ -48,23 +48,25 @@ const HeroVisual = () => {
           <Award className="w-4 h-4 text-white/20" />
         </div>
 
-        <div className="flex-1 p-6 flex flex-col items-center justify-center">
+        <div className="flex-1 p-6 flex flex-col items-center justify-center overflow-hidden">
           {activeTab === 0 && (
-            <div className="w-full h-full animate-in fade-in zoom-in-95 duration-700">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                  <PolarGrid stroke="rgba(255,255,255,0.05)" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} />
-                  <Radar
-                    name="Candidate"
-                    dataKey="A"
-                    stroke="#22d3ee"
-                    fill="#22d3ee"
-                    fillOpacity={0.3}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-              <div className="text-center mt-2">
+            <div className="w-full h-full flex flex-col animate-in fade-in zoom-in-95 duration-700">
+              <div className="flex-1 w-full min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                    <PolarGrid stroke="rgba(255,255,255,0.05)" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} />
+                    <Radar
+                      name="Candidate"
+                      dataKey="A"
+                      stroke="#22d3ee"
+                      fill="#22d3ee"
+                      fillOpacity={0.3}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="text-center mt-2 shrink-0">
                 <span className="text-xs font-bold text-white tracking-widest uppercase">能力图谱解析</span>
               </div>
             </div>
@@ -302,9 +304,9 @@ export default function Home() {
                 <Activity className="w-7 h-7 text-cyan-400 animate-pulse" />
               </div>
               <div>
-                <h3 className="text-cyan-400 font-bold text-xl tracking-wide">检测到活跃中的神经链接</h3>
+                <h3 className="text-cyan-400 font-bold text-xl tracking-wide">您有一个未完成的面试</h3>
                 <p className="text-cyan-500/70 text-sm mt-1.5 font-light">
-                  系统记录显示您有一个未完成的面试会话 (标识码: #{activeSession.resolvedId})。
+                  系统记录显示您有一个正在进行中的面试会话 (ID: #{activeSession.resolvedId})。
                 </p>
               </div>
             </div>
@@ -365,7 +367,7 @@ export default function Home() {
                 className="relative group h-16 px-12 rounded-2xl bg-white text-black hover:bg-slate-50 transition-all duration-500 overflow-hidden shadow-[0_8px_30px_rgba(34,211,238,0.15)]"
               >
                 <span className="relative z-10 flex items-center font-black text-lg tracking-widest uppercase">
-                  启动模拟矩阵
+                  立即开始模拟面试
                   <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -374,7 +376,7 @@ export default function Home() {
                 variant="outline"
                 className="h-16 px-10 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/30 text-white font-bold text-lg backdrop-blur-xl transition-all duration-500"
               >
-                查看分析报告
+                查看我的面试报告
               </Button>
             </div>
           </div>
@@ -402,8 +404,8 @@ export default function Home() {
                     重新定义<br />AI 面试标准
                   </h2>
                   <p className="text-slate-400 text-lg max-w-md leading-relaxed font-light">
-                    不仅仅是一个题库，而是一个拥有逻辑思考与情绪感知的数字孪生导师。
-                    通过全链路的数据流转，打破传统面试的局限，深度挖掘你的真实潜力。
+                    不仅仅是一个题库，而是一个拥有逻辑思考与专业见解的数字面试导师。
+                    通过多维度的表现分析，为您提供精准的实战反馈。
                   </p>
                 </div>
                 
@@ -423,7 +425,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">智能双向解析</h3>
               <p className="text-slate-400 text-sm leading-relaxed font-light mt-auto">
-                导入岗位 JD 与个人简历，毫秒级提取核心考点，告别千篇一律的通用题库。
+                解析岗位 JD 与个人简历，自动提取核心考点，让面试准备更加有的放矢。
               </p>
               
               {/* 配图动画 */}
@@ -439,7 +441,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">沉浸式语音流</h3>
               <p className="text-slate-400 text-sm leading-relaxed font-light mt-auto">
-                真实还原线上面试场景。全双工语音交互，体验真人般的交互压迫感。
+                真实还原线上面试场景。全双工语音交互，体验真人般的自然对话感。
               </p>
               
               {/* 配图动画 */}
@@ -450,28 +452,28 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 4. 多维压力场 */}
+            {/* 4. 专业级诊断 */}
             <div className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-8 relative overflow-hidden group hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 flex flex-col">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500/20 to-orange-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                 <Gauge className="w-6 h-6 text-rose-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">多维压力场</h3>
+              <h3 className="text-xl font-bold text-white mb-2">专业级诊断</h3>
               <p className="text-slate-400 text-sm leading-relaxed font-light mt-auto">
-                温和引导、标准校准、极致高压。自定义 AI 严苛程度，匹配不同训练需求。
+                自动生成包含能力雷达图、薄弱点剖析及改进建议，让每一次练习都有收获。
               </p>
               
               {/* 配图动画 */}
               <div className="absolute -right-4 -bottom-4 w-28 h-28 border-[8px] border-rose-500/10 rounded-full border-t-rose-500/40 rotate-45 group-hover:rotate-[225deg] transition-transform duration-1000"></div>
             </div>
 
-            {/* 5. 专家级诊断流 */}
+            {/* 5. 专家回复范例 */}
             <div className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-8 relative overflow-hidden group hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 flex flex-col">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                 <Radar className="w-6 h-6 text-blue-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">专家级诊断流</h3>
+              <h3 className="text-xl font-bold text-white mb-2">多维实战模拟</h3>
               <p className="text-slate-400 text-sm leading-relaxed font-light mt-auto">
-                拒绝只打分不指导。自动生成包含能力雷达图、薄弱点剖析及高分回答范例。
+                从温柔引导到高压挑战。自定义面试风格，精准匹配您的训练强度需求。
               </p>
               
               {/* 配图动画 */}
@@ -488,9 +490,9 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <Archive className="w-6 h-6 text-slate-300" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">云端面试档案</h3>
+                <h3 className="text-2xl font-bold text-white mb-3">面试历史记录</h3>
                 <p className="text-slate-400 text-base leading-relaxed font-light max-w-2xl">
-                  系统自动归档历史会话，随时回溯过往表现，见证每一次能力进阶。你的个人面霸成长史，每一行代码、每一次发音都被安全记录。
+                  系统自动保存您的面试会话，随时回溯复盘。记录您的每一次进步，见证从面试小白到拿到 Offer 的蜕变。
                 </p>
               </div>
               
@@ -510,8 +512,8 @@ export default function Home() {
         {/* 操作导引轮播 (Guide Carousel) */}
         <div className="mt-32 mb-10 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-black text-white tracking-wide mb-4">核心作业流程</h2>
-            <p className="text-slate-400 font-light">只需简单三步，重塑你的面试状态</p>
+            <h2 className="text-3xl lg:text-4xl font-black text-white tracking-wide mb-4">简单三步，开启对练</h2>
+            <p className="text-slate-400 font-light">只需简单设置，即可获得专业的面试体验</p>
           </div>
           
           <div className="relative w-full max-w-7xl mx-auto rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#0a0a14] backdrop-blur-xl shadow-2xl h-[500px] md:h-[600px] lg:h-[750px]">
@@ -526,7 +528,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/60 to-transparent z-10"></div>
                   
                   <div className="absolute bottom-10 left-8 right-8 z-20 text-center">
-                     <span className="inline-block px-4 py-1.5 mb-4 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold tracking-widest backdrop-blur-md">STEP {slide.id}</span>
+                     <span className="inline-block px-4 py-1.5 mb-4 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold tracking-widest backdrop-blur-md">步骤 {slide.id}</span>
                      <h3 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-wide">{slide.title}</h3>
                      <p className="text-slate-300 font-light text-sm md:text-base max-w-xl mx-auto leading-relaxed">{slide.desc}</p>
                   </div>
@@ -571,23 +573,19 @@ export default function Home() {
           <div className="max-w-5xl mx-auto space-y-4">
             <FAQItem 
               question="这个平台是如何工作的？" 
-              answer="SimuView 通过分析您提供的简历和职位描述（JD），利用大模型生成针对性的面试问题。您可以进行实时的语音对练，系统会根据您的回答给出多维度的评估和改进建议。" 
+              answer="SimuView 通过分析您提供的简历和职位描述（JD），利用大语言模型生成针对性的面试问题。您可以进行实时的语音对练，系统会根据您的回答给出多维度的评估和改进建议。" 
             />
             <FAQItem 
               question="AI 面试的评估准确吗？" 
-              answer="我们的 AI 引擎基于海量面试案例和行业标准构建，能够精准捕捉逻辑、表达和专业知识等多个维度的表现。虽然不能完全取代真人，但在模拟真实场景和发现潜在弱点方面非常高效。" 
+              answer="我们的 AI 引擎基于海量面试案例和行业标准构建，能够捕捉逻辑、表达和专业知识等多个维度的表现。它在模拟真实场景和发现潜在弱点方面非常高效，是您面试前的得力助手。" 
             />
             <FAQItem 
               question="支持哪些岗位的面试？" 
-              answer="由于我们采用了动态解析技术，只要您提供相应的职位描述（JD），平台可以支持几乎所有技术、管理、市场等岗位的面试模拟。" 
+              answer="由于我们采用了动态解析技术，只要您提供相应的职位描述（JD），平台可以支持包括技术、管理、产品、市场在内的几乎所有岗位。" 
             />
             <FAQItem 
-              question="我的简历和面试记录会泄露吗？" 
-              answer="我们非常重视用户隐私。您的所有数据均经过加密处理，仅用于生成个性化的面试体验和报告，不会泄露给任何第三方。" 
-            />
-            <FAQItem 
-              question="语音识别不准确怎么办？" 
-              answer="平台集成了高精度的 ASR 引擎。如果您发现识别有误，可以尝试在安静环境下使用麦克风，或在面试过程中通过文本输入进行纠正。目前我们也在不断优化专业术语的识别效果。" 
+              question="我的隐私数据安全吗？" 
+              answer="我们非常重视用户隐私。您的简历和面试记录仅用于生成个性化的面试体验，数据经过加密处理，不会泄露给任何第三方。" 
             />
           </div>
         </div>
