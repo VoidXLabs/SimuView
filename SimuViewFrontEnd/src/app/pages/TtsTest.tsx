@@ -66,6 +66,16 @@ export default function TtsTest() {
   return (
     <div className="min-h-screen bg-[#030014] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white/5 border border-white/10 backdrop-blur-xl text-white rounded-xl p-6 shadow-xl">
+        <div className="flex justify-center mb-6">
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <img 
+              src="/img/interview_man_1.png" 
+              alt="Virtual Interviewer" 
+              className="relative w-48 h-48 rounded-2xl object-cover border border-white/10 shadow-2xl"
+            />
+          </div>
+        </div>
         <div className="mb-6 border-b border-white/10 pb-4">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <Volume2 className="text-cyan-400" />

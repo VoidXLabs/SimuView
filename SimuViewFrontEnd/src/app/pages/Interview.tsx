@@ -142,6 +142,12 @@ export default function Interview() {
 
   const [particlesInit, setParticlesInit] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  
+  // 虚拟形象相关状态
+  const [selectedVirtualId, setSelectedVirtualId] = useState<string | null>(null);
+  const virtualInterviewers = [
+    { id: 'interviewer-1', name: '资深面试官-张强', path: '/img/interview_man_1.png' },
+  ];
 
   useEffect(() => {
     initParticlesEngine(async (engine) => {
@@ -924,6 +930,30 @@ export default function Interview() {
         </div>
 
         <div className="flex items-center gap-3 text-slate-400 font-mono text-sm">
+          {/* 虚拟形象选择器 */}
+          <div className="flex items-center gap-2 mr-4 bg-white/5 px-2 py-1 rounded-lg border border-white/10">
+            <span className="text-[10px] uppercase font-bold text-slate-500">Virtual Avatar</span>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setSelectedVirtualId(null)}
+                className={`w-6 h-6 rounded flex items-center justify-center transition-all ${!selectedVirtualId ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50' : 'text-slate-500 hover:text-white hover:bg-white/5 border border-transparent'}`}
+                title="关闭虚拟形象"
+              >
+                <User className="w-3.5 h-3.5" />
+              </button>
+              {virtualInterviewers.map(v => (
+                <button
+                  key={v.id}
+                  onClick={() => setSelectedVirtualId(v.id)}
+                  className={`w-6 h-6 rounded overflow-hidden transition-all border ${selectedVirtualId === v.id ? 'border-cyan-500 ring-1 ring-cyan-500/50 scale-110' : 'border-white/10 opacity-50 hover:opacity-100 hover:scale-110'}`}
+                  title={v.name}
+                >
+                  <img src={v.path} alt={v.name} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+
           {interviewComplete ? (
             <span className="px-3 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
               <CheckCircle2 className="w-3.5 h-3.5" /> Completed
@@ -941,21 +971,29 @@ export default function Interview() {
         {/* 核心主视区 Main Stage */}
         <main className="flex-1 relative flex flex-col items-center justify-center overflow-hidden z-10">
           
-          {/* AI 占位化身 */}
+          {/* AI 占位化身 / 虚拟形象 */}
           <div className="relative group flex flex-col items-center z-10 -mt-20">
             <div className="relative w-56 h-56 flex items-center justify-center">
               {/* 外围发光环 */}
               <div className={`absolute inset-0 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-md transition-all duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'scale-110 bg-white/[0.03] border-cyan-500/30' : ''}`}></div>
               <div className={`absolute inset-4 rounded-full border border-dashed transition-all duration-[3s] linear infinite ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'border-purple-500/50 rotate-180 animate-[spin_10s_linear_infinite]' : 'border-white/10'}`}></div>
               
-              {/* 核心发光体 */}
-              <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-700 shadow-2xl relative z-10 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-gradient-to-br from-cyan-400 to-purple-600 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-105' : 'bg-[#0a0a14] border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.8)]'}`}>
-                <BrainCircuit className={`w-12 h-12 transition-colors duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'text-white' : 'text-slate-600'}`} />
+              {/* 核心展示区 */}
+              <div className={`w-36 h-36 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-2xl relative z-10 overflow-hidden ${selectedVirtualId ? 'border-2 border-cyan-500/30' : (isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-gradient-to-br from-cyan-400 to-purple-600 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-105 rounded-full' : 'bg-[#0a0a14] border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.8)] rounded-full')}`}>
+                {selectedVirtualId ? (
+                  <img 
+                    src={virtualInterviewers.find(v => v.id === selectedVirtualId)?.path} 
+                    alt="Virtual Interviewer" 
+                    className={`w-full h-full object-cover transition-all duration-500 ${isAiSpeaking ? 'scale-110 brightness-110' : 'scale-100'}`}
+                  />
+                ) : (
+                  <BrainCircuit className={`w-12 h-12 transition-colors duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'text-white' : 'text-slate-600'}`} />
+                )}
               </div>
 
               {/* 呼吸脉冲 */}
               {(isAiThinking || isAiSpeaking || (latestAiMessage && !isInterviewActive && !interviewComplete)) && (
-                <div className="absolute inset-0 rounded-full border-2 border-cyan-400 opacity-0 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+                <div className={`absolute inset-0 border-2 border-cyan-400 opacity-0 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] ${selectedVirtualId ? 'rounded-2xl' : 'rounded-full'}`}></div>
               )}
             </div>
             

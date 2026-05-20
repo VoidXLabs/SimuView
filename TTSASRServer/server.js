@@ -1,12 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import * as googleTTS from 'google-tts-api';
-import https from 'https';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import tencentcloud from 'tencentcloud-sdk-nodejs-asr';
+import tencentcloudAsr from 'tencentcloud-sdk-nodejs-asr';
+import tencentcloudTts from 'tencentcloud-sdk-nodejs-tts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,28 +21,52 @@ app.use(express.json({ limit: '50mb' }));
 // 配置 Multer 处理上传文件 (存在内存里)
 const upload = multer({ storage: multer.memoryStorage() });
 
+// 腾讯云公共配置
+const clientConfig = {
+  credential: {
+    secretId: process.env.TENCENT_CLOUD_SECRET_ID,
+    secretKey: process.env.TENCENT_CLOUD_SECRET_KEY,
+  },
+  region: "ap-shanghai",
+  profile: {
+    httpProfile: {
+      endpoint: "tts.tencentcloudapi.com", // 默认 TTS 端点
+    },
+  },
+};
+
 app.post('/api/tts', async (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: '文本不能为空' });
 
   try {
-    const url = googleTTS.getAudioUrl(text, {
-      lang: 'zh-CN',
-      slow: false,
-      host: 'https://translate.google.com',
-    });
+    const TtsClient = tencentcloudTts.tts.v20190823.Client;
+    const client = new TtsClient(clientConfig);
 
-    https.get(url, (audioResponse) => {
+    const params = {
+      Text: text,
+      SessionId: `tts_${Date.now()}`,
+      VoiceType: 1004,   // 智云 (标准男声) - 语气沉稳、严肃，适合面试官场景
+      ModelType: 0,      // 使用标准模型
+      Volume: 0,
+      Speed: 0,
+      ProjectId: parseInt(process.env.TENCENT_CLOUD_APP_ID || "0"),
+      Codec: "mp3"
+    };
+
+    const result = await client.TextToVoice(params);
+    
+    if (result.Audio) {
+      const audioBuffer = Buffer.from(result.Audio, 'base64');
       res.setHeader('Content-Type', 'audio/mpeg');
-      audioResponse.pipe(res);
-    }).on('error', (e) => {
-      console.error('音频下载失败:', e);
-      res.status(500).json({ error: '音频下载失败' });
-    });
+      res.send(audioBuffer);
+    } else {
+      throw new Error('腾讯云 TTS 未返回音频数据');
+    }
 
   } catch (error) {
-    console.error('服务器错误:', error);
-    res.status(500).json({ error: '服务器错误' });
+    console.error('腾讯云 TTS 错误:', error);
+    res.status(500).json({ error: 'TTS 转换失败', details: error.message });
   }
 });
 
@@ -53,21 +76,17 @@ app.post('/api/asr', upload.single('audio'), async (req, res) => {
   }
 
   try {
-    const AsrClient = tencentcloud.asr.v20190614.Client;
-    const clientConfig = {
-      credential: {
-        secretId: process.env.TENCENT_CLOUD_SECRET_ID,
-        secretKey: process.env.TENCENT_CLOUD_SECRET_KEY,
-      },
-      region: "ap-shanghai",
+    const AsrClient = tencentcloudAsr.asr.v20190614.Client;
+    // ASR 需要不同的端点
+    const asrConfig = {
+      ...clientConfig,
       profile: {
         httpProfile: {
           endpoint: "asr.tencentcloudapi.com",
         },
       },
     };
-
-    const client = new AsrClient(clientConfig);
+    const client = new AsrClient(asrConfig);
 
     // 将音频文件转换为 Base64
     const audioBase64 = req.file.buffer.toString('base64');
