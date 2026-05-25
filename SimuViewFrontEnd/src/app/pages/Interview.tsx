@@ -38,7 +38,7 @@ const TerminalLog = () => {
   }, []);
 
   return (
-    <div className="mt-6 font-mono text-[10px] text-cyan-500/40 text-left w-full space-y-1 overflow-hidden h-16">
+    <div className="mt-6 font-mono text-[10px] text-cyan-600/60 dark:text-cyan-500/40 text-left w-full space-y-1 overflow-hidden h-16">
       {logs.map((log, i) => (
         <div key={i} className="animate-in fade-in slide-in-from-left-1 duration-300">
           {log}
@@ -60,25 +60,25 @@ const InterviewTips = () => {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-3 px-2">
-        <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
-        <span className="text-xs font-black tracking-[0.3em] uppercase text-white/70">Interview Tips</span>
+        <Sparkles className="w-4 h-4 text-cyan-500 dark:text-cyan-400 animate-pulse" />
+        <span className="text-xs font-black tracking-[0.3em] uppercase text-slate-800 dark:text-white/70">Interview Tips</span>
       </div>
       
       <div className="space-y-4">
         {tips.map((tip, i) => (
-          <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-cyan-500/20 transition-all group">
+          <div key={i} className="p-4 rounded-2xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 hover:border-cyan-500/20 transition-all group shadow-sm dark:shadow-none">
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-1 h-1 rounded-full bg-cyan-500 group-hover:animate-ping" />
-              <span className="text-[10px] font-black text-cyan-400/80 uppercase tracking-widest">{tip.title}</span>
+              <span className="text-[10px] font-black text-cyan-600 dark:text-cyan-400/80 uppercase tracking-widest">{tip.title}</span>
             </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed group-hover:text-slate-400 transition-colors">
+            <p className="text-[11px] text-slate-500 leading-relaxed group-hover:text-slate-700 dark:group-hover:text-slate-400 transition-colors">
               {tip.content}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-cyan-500/5 to-purple-500/5 border border-white/5">
+      <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-cyan-500/5 to-purple-500/5 border border-slate-200 dark:border-white/5">
         <p className="text-[10px] text-slate-500 italic leading-relaxed text-center">
           "每一次模拟都是通向成功的一小步，加油！"
         </p>
@@ -639,7 +639,7 @@ export default function Interview() {
   // 未开始状态
   if (!hasStarted) {
     return (
-      <div className="flex flex-col h-screen bg-[#030014] items-center justify-center relative overflow-hidden font-sans text-slate-200">
+      <div className="flex flex-col h-screen bg-slate-50 dark:bg-[#030014] items-center justify-center relative overflow-hidden font-sans text-slate-800 dark:text-slate-200">
         {/* 背景粒子 */}
         {particlesInit && (
           <Particles
@@ -681,46 +681,46 @@ export default function Interview() {
         )}
 
         {/* 极光模糊光斑 */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-900/10 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cyan-900/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-500/5 dark:bg-purple-900/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cyan-500/5 dark:bg-cyan-900/10 blur-[120px] rounded-full pointer-events-none"></div>
 
         {/* 赛博网格 */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute bottom-0 left-0 right-0 h-[40%] cyber-grid animate-grid-move opacity-20 [mask-image:linear-gradient(to_top,black,transparent)]"></div>
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] mix-blend-overlay"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-[40%] cyber-grid animate-grid-move opacity-10 dark:opacity-20 [mask-image:linear-gradient(to_top,black,transparent)]"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] dark:opacity-[0.1] mix-blend-overlay"></div>
         </div>
 
-        <div className="relative z-10 flex flex-col items-center max-w-lg text-center p-12 glass-card rounded-[2.5rem] shadow-2xl">
+        <div className="relative z-10 flex flex-col items-center max-w-lg text-center p-12 bg-white/80 dark:bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-white/10">
           {/* 雷达扫描图标 */}
           <div className="relative w-24 h-24 mb-10">
             <div className="absolute inset-0 rounded-full border border-cyan-500/30 animate-scan-ripple"></div>
             <div className="absolute inset-[-10px] rounded-full border border-cyan-500/10 animate-scan-ripple [animation-delay:1s]"></div>
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-cyan-400/20 to-purple-600/20 blur-xl opacity-50"></div>
-            <div className="relative w-full h-full rounded-2xl bg-white/5 border border-white/20 flex items-center justify-center backdrop-blur-sm shadow-inner">
-              <BrainCircuit className="w-12 h-12 text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+            <div className="relative w-full h-full rounded-2xl bg-white/10 dark:bg-white/5 border border-white/40 dark:border-white/20 flex items-center justify-center backdrop-blur-sm shadow-inner">
+              <BrainCircuit className="w-12 h-12 text-cyan-600 dark:text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
             </div>
           </div>
 
-          <h1 className="text-4xl font-black text-white mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
+          <h1 className="text-4xl font-black mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-white/60">
             网络已连接
           </h1>
-          <p className="text-slate-400 mb-8 leading-relaxed font-light text-balance">
+          <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed font-light text-balance">
             AI 中枢已经针对您的核心档案构建了专属考核矩阵。调整呼吸，准备随时进入全息模拟。
           </p>
 
           <Button
             onClick={handleStartInterviewClick}
-            className="relative overflow-hidden w-full h-16 bg-white text-black hover:bg-slate-100 rounded-2xl text-xl font-bold shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-all hover:scale-[1.02] active:scale-[0.98] tracking-[0.2em]"
+            className="relative overflow-hidden w-full h-16 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-100 rounded-2xl text-xl font-bold shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-all hover:scale-[1.02] active:scale-[0.98] tracking-[0.2em]"
           >
             <span className="relative z-10">接入会话</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] animate-sweep pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-white/40 to-transparent skew-x-[-20deg] animate-sweep pointer-events-none"></div>
           </Button>
 
           <TerminalLog />
 
           <button
             onClick={() => navigate("/")}
-            className="mt-8 text-slate-500 hover:text-cyan-400 transition-colors text-xs font-medium tracking-[0.3em] uppercase group"
+            className="mt-8 text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors text-xs font-medium tracking-[0.3em] uppercase group"
           >
             <span className="opacity-60 group-hover:opacity-100 transition-opacity">中止返回 EXIT SESSION</span>
           </button>
@@ -732,19 +732,19 @@ export default function Interview() {
   // 加载状态
   if (isLoading) {
     return (
-      <div className="flex flex-col h-screen bg-[#030014] items-center justify-center relative">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
+      <div className="flex flex-col h-screen bg-slate-50 dark:bg-[#030014] items-center justify-center relative">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 dark:opacity-10"></div>
         <div className="relative z-10 flex flex-col items-center">
           <div className="relative w-20 h-20 mb-8">
-            <div className="absolute inset-0 border-2 border-white/10 rounded-full"></div>
-            <div className="absolute inset-0 border-2 border-cyan-400 rounded-full border-t-transparent animate-spin"></div>
+            <div className="absolute inset-0 border-2 border-slate-200 dark:border-white/10 rounded-full"></div>
+            <div className="absolute inset-0 border-2 border-cyan-500 dark:border-cyan-400 rounded-full border-t-transparent animate-spin"></div>
             <div className="absolute inset-2 border-2 border-purple-500 rounded-full border-b-transparent animate-[spin_1.5s_linear_infinite_reverse]"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+              <div className="w-2 h-2 bg-slate-900 dark:bg-white rounded-full animate-ping"></div>
             </div>
           </div>
-          <p className="text-white text-xl font-bold tracking-widest uppercase">同步数据流</p>
-          <p className="text-cyan-500/70 text-xs mt-2 font-mono tracking-widest">ESTABLISHING NEURAL LINK...</p>
+          <p className="text-slate-900 dark:text-white text-xl font-bold tracking-widest uppercase">同步数据流</p>
+          <p className="text-cyan-600 dark:text-cyan-500/70 text-xs mt-2 font-mono tracking-widest">ESTABLISHING NEURAL LINK...</p>
         </div>
       </div>
     );
@@ -753,27 +753,27 @@ export default function Interview() {
   // 轮询状态界面
   if (isPollingStatus) {
     return (
-      <div className="flex flex-col h-screen bg-[#030014] items-center justify-center p-6 relative">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
+      <div className="flex flex-col h-screen bg-slate-50 dark:bg-[#030014] items-center justify-center p-6 relative">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 dark:opacity-10"></div>
         
-        <div className="relative z-10 w-full max-w-md bg-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-[2rem] p-10 shadow-2xl flex flex-col items-center">
+        <div className="relative z-10 w-full max-w-md bg-white dark:bg-white/[0.02] backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[2rem] p-10 shadow-2xl flex flex-col items-center">
           <div className="relative mb-10 w-24 h-24">
             <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-xl animate-pulse"></div>
-            <Activity className="w-full h-full text-cyan-400 relative z-10 animate-pulse" strokeWidth={1} />
+            <Activity className="w-full h-full text-cyan-600 dark:text-cyan-400 relative z-10 animate-pulse" strokeWidth={1} />
           </div>
           
-          <h2 className="text-2xl font-black text-white mb-3 tracking-wide">量化评估中</h2>
-          <p className="text-slate-400 text-center mb-10 font-light text-sm">
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-wide">量化评估中</h2>
+          <p className="text-slate-600 dark:text-slate-400 text-center mb-10 font-light text-sm">
             核心算法正在解构您的答辩表现谱线，生成最终评测报告...
           </p>
           
           <div className="w-full space-y-3">
-            <div className="flex justify-between text-xs font-bold text-cyan-400 uppercase tracking-widest">
+            <div className="flex justify-between text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">
               <span>System Analyzing</span>
               <span className="animate-pulse">Processing</span>
             </div>
-            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent w-full origin-left animate-[progress-indeterminate_1.5s_ease-in-out_infinite]">
+            <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-transparent via-cyan-500 dark:via-cyan-400 to-transparent w-full origin-left animate-[progress-indeterminate_1.5s_ease-in-out_infinite]">
                 <style>{`
                   @keyframes progress-indeterminate {
                     0% { transform: translateX(-100%); }
@@ -785,7 +785,7 @@ export default function Interview() {
             </div>
           </div>
           
-          <div className="mt-8 flex items-center gap-2 text-slate-500 bg-white/5 px-4 py-2 rounded-full border border-white/5">
+          <div className="mt-8 flex items-center gap-2 text-slate-500 bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-full border border-slate-200 dark:border-white/5">
             <Clock className="w-3.5 h-3.5" />
             <span className="text-[10px] uppercase tracking-widest font-bold">Please stand by</span>
           </div>
@@ -796,34 +796,36 @@ export default function Interview() {
 
   // 评估报告界面
   if (showReport && report) {
-    // 保持原来的报告界面逻辑，但重新应用深色主题
     return (
-      <div className="flex flex-col h-screen bg-[#030014] text-slate-200 overflow-y-auto selection:bg-cyan-500/30">
-        {/* ... similar deep theme styling ... */}
-        {/* 省略细节以符合长度，假设它被移到了其他页面或遵循上面的主题 */}
+      <div className="flex flex-col h-screen bg-slate-50 dark:bg-[#030014] text-slate-800 dark:text-slate-200 overflow-y-auto selection:bg-cyan-500/30">
+        <div className="max-w-4xl mx-auto w-full p-8">
+           <h1 className="text-3xl font-bold mb-6">面试评估报告</h1>
+           {/* 报告详细内容... */}
+           <Button onClick={() => setShowReport(false)} className="mt-8">返回</Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#030014] relative overflow-hidden font-sans text-slate-200">
+    <div className="flex flex-col h-screen bg-slate-50 dark:bg-[#030014] relative overflow-hidden font-sans text-slate-800 dark:text-slate-200">
       {/* 极光背景特效 */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[10%] left-[20%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[150px] mix-blend-screen animate-[pulse_10s_ease-in-out_infinite]"></div>
-        <div className="absolute bottom-[10%] right-[20%] w-[50%] h-[50%] rounded-full bg-cyan-900/10 blur-[150px] mix-blend-screen animate-[pulse_12s_ease-in-out_infinite_reverse]"></div>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15]"></div>
+        <div className="absolute top-[10%] left-[20%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-900/10 blur-[150px] mix-blend-screen animate-[pulse_10s_ease-in-out_infinite]"></div>
+        <div className="absolute bottom-[10%] right-[20%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-900/10 blur-[150px] mix-blend-screen animate-[pulse_12s_ease-in-out_infinite_reverse]"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] dark:opacity-[0.15]"></div>
       </div>
 
       {/* 历史记录触发按钮 - 左侧竖向文字 */}
       <button
         onClick={() => setShowHistory(true)}
-        className="fixed left-0 top-1/2 -translate-y-1/2 z-30 bg-white/5 hover:bg-cyan-500/20 backdrop-blur-xl border border-l-0 border-white/10 rounded-r-2xl py-8 px-2 transition-all group shadow-[10px_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center gap-4 border-y-white/10"
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-30 bg-white/80 dark:bg-white/5 hover:bg-cyan-500/10 dark:hover:bg-cyan-500/20 backdrop-blur-xl border border-l-0 border-slate-200 dark:border-white/10 rounded-r-2xl py-8 px-2 transition-all group shadow-xl dark:shadow-[10px_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center gap-4"
         title="查看对话历史"
       >
-        <History className="w-5 h-5 text-cyan-400 group-hover:rotate-180 transition-transform duration-500" />
+        <History className="w-5 h-5 text-cyan-600 dark:text-cyan-400 group-hover:rotate-180 transition-transform duration-500" />
         <div className="flex flex-col gap-1">
           {"对话历史".split("").map((char, i) => (
-            <span key={i} className="text-[10px] font-black text-cyan-500/60 group-hover:text-cyan-400 tracking-tighter transition-colors uppercase">
+            <span key={i} className="text-[10px] font-black text-cyan-600/60 dark:text-cyan-500/60 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 tracking-tighter transition-colors uppercase">
               {char}
             </span>
           ))}
@@ -837,29 +839,29 @@ export default function Interview() {
           showHistory ? 'translate-x-0 opacity-100' : '-translate-x-[120%] opacity-0'
         }`}
       >
-        <div className="h-full bg-[#05011a]/80 backdrop-blur-3xl border border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.8)] flex flex-col rounded-[2.5rem] overflow-hidden">
-          <div className="p-8 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-white/[0.02] to-transparent">
+        <div className="h-full bg-white/95 dark:bg-[#05011a]/80 backdrop-blur-3xl border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-[0_32px_64px_rgba(0,0,0,0.8)] flex flex-col rounded-[2.5rem] overflow-hidden">
+          <div className="p-8 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-gradient-to-r from-slate-50 dark:from-white/[0.02] to-transparent">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                <History className="w-5 h-5 text-cyan-400" />
+                <History className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-sm tracking-[0.3em] uppercase text-white">Neural History</span>
-                <span className="text-[9px] text-cyan-500/50 font-mono tracking-widest">RECORDING ACTIVE</span>
+                <span className="font-black text-sm tracking-[0.3em] uppercase text-slate-900 dark:text-white">Neural History</span>
+                <span className="text-[9px] text-cyan-600/50 dark:text-cyan-500/50 font-mono tracking-widest">RECORDING ACTIVE</span>
               </div>
             </div>
             <button 
               onClick={() => setShowHistory(false)}
-              className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors group"
+              className="w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center transition-colors group"
             >
-              <CheckCircle2 className="w-5 h-5 text-slate-500 group-hover:text-white rotate-45 transition-transform group-hover:scale-110" />
+              <CheckCircle2 className="w-5 h-5 text-slate-400 dark:text-slate-500 group-hover:text-slate-900 dark:group-hover:text-white rotate-45 transition-transform group-hover:scale-110" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar scroll-smooth">
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-600 space-y-4">
-                <div className="w-16 h-16 rounded-full border border-dashed border-white/10 flex items-center justify-center animate-[pulse_4s_infinite]">
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 space-y-4">
+                <div className="w-16 h-16 rounded-full border border-dashed border-slate-200 dark:border-white/10 flex items-center justify-center animate-[pulse_4s_infinite]">
                   <Activity className="w-8 h-8 opacity-20" />
                 </div>
                 <div className="text-center">
@@ -872,17 +874,17 @@ export default function Interview() {
                 <div key={index} className={`flex flex-col ${msg.role === 'ai' ? 'items-start' : 'items-end'} group`}>
                   <div className={`max-w-[85%] p-5 rounded-[1.5rem] text-sm leading-relaxed transition-all duration-300 ${
                     msg.role === 'ai' 
-                      ? 'bg-white/[0.03] border border-white/10 text-cyan-50 rounded-tl-none hover:bg-white/[0.05] hover:border-cyan-500/20' 
-                      : 'bg-cyan-500/10 border border-cyan-500/20 text-slate-200 rounded-tr-none hover:bg-cyan-500/15'
+                      ? 'bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-cyan-50 rounded-tl-none hover:bg-slate-200 dark:hover:bg-white/[0.05] hover:border-cyan-500/20' 
+                      : 'bg-cyan-500/10 border border-cyan-500/20 text-slate-700 dark:text-slate-200 rounded-tr-none hover:bg-cyan-500/15'
                   }`}>
                     {msg.content}
                   </div>
                   <div className={`flex items-center gap-3 mt-3 px-2 ${msg.role === 'ai' ? 'flex-row' : 'flex-row-reverse'}`}>
-                    <span className="text-[10px] font-black text-slate-500 group-hover:text-slate-300 transition-colors tracking-widest uppercase">
+                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors tracking-widest uppercase">
                       {msg.role === 'ai' ? 'Matrix AI' : 'Candidate'}
                     </span>
-                    <div className="w-1 h-1 rounded-full bg-slate-800"></div>
-                    <span className="text-[9px] text-slate-600 font-mono">
+                    <div className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-600 font-mono">
                       {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                   </div>
@@ -892,12 +894,12 @@ export default function Interview() {
             <div ref={historyEndRef} />
           </div>
 
-          <div className="p-6 border-t border-white/5 bg-black/40 backdrop-blur-md flex justify-between items-center">
+          <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/40 backdrop-blur-md flex justify-between items-center">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">Secure Connection</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono uppercase tracking-wider">Secure Connection</span>
             </div>
-            <p className="text-[9px] text-slate-600 font-mono uppercase tracking-tighter">
+            <p className="text-[9px] text-slate-400 dark:text-slate-600 font-mono uppercase tracking-tighter">
               ID: {String(sessionId || '').slice(0, 12)}...
             </p>
           </div>
@@ -907,36 +909,36 @@ export default function Interview() {
       {/* 遮罩层 */}
       {showHistory && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity animate-in fade-in"
+          className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm z-40 transition-opacity animate-in fade-in"
           onClick={() => setShowHistory(false)}
         />
       )}
 
       {/* 顶部状态栏 Header */}
-      <header className="h-16 shrink-0 border-b border-white/5 bg-[#030014]/50 backdrop-blur-xl flex items-center justify-between px-6 z-20 relative">
+      <header className="h-16 shrink-0 border-b border-slate-200 dark:border-white/5 bg-white/80 dark:bg-[#030014]/50 backdrop-blur-xl flex items-center justify-between px-6 z-20 relative">
         <div className="flex items-center gap-4">
-          <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
-            <Activity className="w-4 h-4 text-cyan-400" />
+          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center">
+            <Activity className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-white text-sm tracking-widest uppercase">Simulation</span>
-            <span className="text-[10px] text-cyan-500/70 font-mono">Q-{currentQuestionIndex + 1}/{totalQuestions}</span>
+            <span className="font-bold text-slate-900 dark:text-white text-sm tracking-widest uppercase">Simulation</span>
+            <span className="text-[10px] text-cyan-600 dark:text-cyan-500/70 font-mono">Q-{currentQuestionIndex + 1}/{totalQuestions}</span>
           </div>
         </div>
         
         {/* 顶部进度条 */}
-        <div className="absolute bottom-0 left-0 h-[2px] bg-white/5 w-full">
-          <div className="h-full bg-cyan-400 transition-all duration-500 shadow-[0_0_10px_rgba(34,211,238,0.8)]" style={{ width: `${progress}%` }}></div>
+        <div className="absolute bottom-0 left-0 h-[2px] bg-slate-100 dark:bg-white/5 w-full">
+          <div className="h-full bg-cyan-500 dark:bg-cyan-400 transition-all duration-500 shadow-[0_0_10px_rgba(34,211,238,0.8)]" style={{ width: `${progress}%` }}></div>
         </div>
 
-        <div className="flex items-center gap-3 text-slate-400 font-mono text-sm">
+        <div className="flex items-center gap-3 text-slate-500 font-mono text-sm">
           {/* 虚拟形象选择器 */}
-          <div className="flex items-center gap-2 mr-4 bg-white/5 px-2 py-1 rounded-lg border border-white/10">
-            <span className="text-[10px] uppercase font-bold text-slate-500">Virtual Avatar</span>
+          <div className="flex items-center gap-2 mr-4 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-lg border border-slate-200 dark:border-white/10">
+            <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Virtual Avatar</span>
             <div className="flex gap-1.5">
               <button
                 onClick={() => setSelectedVirtualId(null)}
-                className={`w-6 h-6 rounded flex items-center justify-center transition-all ${!selectedVirtualId ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50' : 'text-slate-500 hover:text-white hover:bg-white/5 border border-transparent'}`}
+                className={`w-6 h-6 rounded flex items-center justify-center transition-all ${!selectedVirtualId ? 'bg-cyan-500/10 text-cyan-600 border border-cyan-500/30 dark:bg-cyan-400/20 dark:text-cyan-400 dark:border-cyan-500/50' : 'text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/5 border border-transparent'}`}
                 title="关闭虚拟形象"
               >
                 <User className="w-3.5 h-3.5" />
@@ -945,7 +947,7 @@ export default function Interview() {
                 <button
                   key={v.id}
                   onClick={() => setSelectedVirtualId(v.id)}
-                  className={`w-6 h-6 rounded overflow-hidden transition-all border ${selectedVirtualId === v.id ? 'border-cyan-500 ring-1 ring-cyan-500/50 scale-110' : 'border-white/10 opacity-50 hover:opacity-100 hover:scale-110'}`}
+                  className={`w-6 h-6 rounded overflow-hidden transition-all border ${selectedVirtualId === v.id ? 'border-cyan-500 ring-1 ring-cyan-500/50 scale-110' : 'border-slate-200 dark:border-white/10 opacity-50 hover:opacity-100 hover:scale-110'}`}
                   title={v.name}
                 >
                   <img src={v.path} alt={v.name} className="w-full h-full object-cover" />
@@ -955,12 +957,12 @@ export default function Interview() {
           </div>
 
           {interviewComplete ? (
-            <span className="px-3 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+            <span className="px-3 py-1 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
               <CheckCircle2 className="w-3.5 h-3.5" /> Completed
             </span>
           ) : (
-            <div className="flex items-center gap-2 px-3 py-1 rounded bg-white/5 border border-white/10">
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+            <div className="flex items-center gap-2 px-3 py-1 rounded bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse"></div>
               <span>{formatTime(elapsedTime)}</span>
             </div>
           )}
@@ -975,11 +977,11 @@ export default function Interview() {
           <div className="relative group flex flex-col items-center z-10 -mt-20">
             <div className="relative w-56 h-56 flex items-center justify-center">
               {/* 外围发光环 */}
-              <div className={`absolute inset-0 rounded-full border border-white/5 bg-white/[0.01] backdrop-blur-md transition-all duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'scale-110 bg-white/[0.03] border-cyan-500/30' : ''}`}></div>
-              <div className={`absolute inset-4 rounded-full border border-dashed transition-all duration-[3s] linear infinite ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'border-purple-500/50 rotate-180 animate-[spin_10s_linear_infinite]' : 'border-white/10'}`}></div>
+              <div className={`absolute inset-0 rounded-full border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-white/[0.01] backdrop-blur-md transition-all duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'scale-110 bg-slate-200 dark:bg-white/[0.03] border-cyan-500/30' : ''}`}></div>
+              <div className={`absolute inset-4 rounded-full border border-dashed transition-all duration-[3s] linear infinite ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'border-purple-500/50 rotate-180 animate-[spin_10s_linear_infinite]' : 'border-slate-200 dark:border-white/10'}`}></div>
               
               {/* 核心展示区 */}
-              <div className={`w-36 h-36 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-2xl relative z-10 overflow-hidden ${selectedVirtualId ? 'border-2 border-cyan-500/30' : (isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-gradient-to-br from-cyan-400 to-purple-600 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-105 rounded-full' : 'bg-[#0a0a14] border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.8)] rounded-full')}`}>
+              <div className={`w-36 h-36 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-2xl relative z-10 overflow-hidden ${selectedVirtualId ? 'border-2 border-cyan-500/30' : (isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-gradient-to-br from-cyan-400 to-purple-600 shadow-[0_0_60px_rgba(34,211,238,0.4)] scale-105 rounded-full' : 'bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 shadow-lg dark:shadow-[0_0_20px_rgba(0,0,0,0.8)] rounded-full')}`}>
                 {selectedVirtualId ? (
                   <img 
                     src={virtualInterviewers.find(v => v.id === selectedVirtualId)?.path} 
@@ -987,13 +989,13 @@ export default function Interview() {
                     className={`w-full h-full object-cover transition-all duration-500 ${isAiSpeaking ? 'scale-110 brightness-110' : 'scale-100'}`}
                   />
                 ) : (
-                  <BrainCircuit className={`w-12 h-12 transition-colors duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'text-white' : 'text-slate-600'}`} />
+                  <BrainCircuit className={`w-12 h-12 transition-colors duration-700 ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'text-white' : 'text-slate-400 dark:text-slate-600'}`} />
                 )}
               </div>
 
               {/* 呼吸脉冲 */}
               {(isAiThinking || isAiSpeaking || (latestAiMessage && !isInterviewActive && !interviewComplete)) && (
-                <div className={`absolute inset-0 border-2 border-cyan-400 opacity-0 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] ${selectedVirtualId ? 'rounded-2xl' : 'rounded-full'}`}></div>
+                <div className={`absolute inset-0 border-2 border-cyan-500 dark:border-cyan-400 opacity-0 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] ${selectedVirtualId ? 'rounded-2xl' : 'rounded-full'}`}></div>
               )}
             </div>
             
@@ -1002,7 +1004,7 @@ export default function Interview() {
               {[...Array(12)].map((_, i) => (
                 <div 
                   key={i} 
-                  className={`w-1.5 rounded-full transition-all duration-[50ms] ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-700'}`}
+                  className={`w-1.5 rounded-full transition-all duration-[50ms] ${isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? 'bg-cyan-500 dark:bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-200 dark:bg-slate-700'}`}
                   style={{ 
                     height: isAiThinking || isAiSpeaking || (!isInterviewActive && !interviewComplete) ? `${Math.random() * 24 + 8}px` : '4px',
                   }}
@@ -1012,50 +1014,50 @@ export default function Interview() {
           </div>
 
           {/* 实时字幕悬浮层 Overlay */}
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-black/40 backdrop-blur-2xl rounded-3xl p-8 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] z-20">
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-white/90 dark:bg-black/40 backdrop-blur-2xl rounded-3xl p-8 border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] z-20">
             <div className="space-y-6">
               <div className="flex gap-5 items-start">
-                <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-xs">AI</div>
-                <span className="text-white text-lg lg:text-xl leading-relaxed font-light tracking-wide">
+                <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 font-bold text-xs">AI</div>
+                <span className="text-slate-900 dark:text-white text-lg lg:text-xl leading-relaxed font-light tracking-wide">
                   {interviewComplete ? "数据收集完毕。评估模块初始化..." : (isAiThinking ? "正在生成考核维度..." : (latestAiMessage?.content || "系统已准备就绪。"))}
                 </span>
               </div>
               
-              <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-white/5 to-transparent"></div>
 
               <div className="flex gap-5 items-start">
-                <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 border border-white/10 text-slate-400 font-bold text-xs">ME</div>
-                <span className={`flex-1 text-lg lg:text-xl leading-relaxed font-light tracking-wide ${textAnswer ? 'text-slate-300' : 'text-slate-600 italic'}`}>
+                <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 font-bold text-xs">ME</div>
+                <span className={`flex-1 text-lg lg:text-xl leading-relaxed font-light tracking-wide ${textAnswer ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600 italic'}`}>
                   {interviewComplete ? "-" : (isTranscribing ? "正在通过云端极速转写..." : (isRecording ? "正在接收语音输入..." : (textAnswer || "等待指令输入...")))}
                 </span>
-                {isTranscribing && <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />}
+                {isTranscribing && <Loader2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400 animate-spin" />}
               </div>
             </div>
           </div>
         </main>
 
         {/* 右侧小贴士 Aside */}
-        <aside className="w-80 border-l border-white/5 bg-black/20 backdrop-blur-sm z-20 hidden xl:flex flex-col p-8 overflow-y-auto custom-scrollbar">
+        <aside className="w-80 border-l border-slate-200 dark:border-white/5 bg-white/50 dark:bg-black/20 backdrop-blur-sm z-20 hidden xl:flex flex-col p-8 overflow-y-auto custom-scrollbar">
           <InterviewTips />
         </aside>
       </div>
 
       {/* 底部控制台 Footer */}
-      <footer className="shrink-0 bg-[#0a0a14]/80 backdrop-blur-2xl border-t border-white/5 z-30 flex flex-col relative pb-safe">
+      <footer className="shrink-0 bg-white/95 dark:bg-[#0a0a14]/80 backdrop-blur-2xl border-t border-slate-200 dark:border-white/5 z-30 flex flex-col relative pb-safe">
         {/* 打字输入区 */}
         {isTypingMode && !interviewComplete && (
-          <div className="p-4 md:p-6 bg-black/20 flex gap-4 max-w-5xl mx-auto w-full items-end border-b border-white/5">
+          <div className="p-4 md:p-6 bg-slate-50 dark:bg-black/20 flex gap-4 max-w-5xl mx-auto w-full items-end border-b border-slate-200 dark:border-white/5">
             <Textarea
               value={textAnswer}
               onChange={(e) => setTextAnswer(e.target.value)}
               placeholder="Input terminal commands / response..."
-              className="flex-1 bg-white/5 border-white/10 text-white resize-none min-h-[60px] max-h-[150px] focus:border-cyan-500 focus:ring-cyan-500/20 rounded-xl font-mono text-sm placeholder:text-slate-600"
+              className="flex-1 bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white resize-none min-h-[60px] max-h-[150px] focus:border-cyan-500 focus:ring-cyan-500/20 rounded-xl font-mono text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600"
               disabled={isAiThinking || isTranscribing || !isInterviewActive}
             />
             <Button
               onClick={submitAnswer}
               disabled={isAiThinking || isTranscribing || !isInterviewActive || !textAnswer.trim()}
-              className="h-[60px] px-8 bg-white text-black hover:bg-slate-200 disabled:bg-white/5 disabled:text-slate-600 rounded-xl font-bold tracking-widest transition-transform active:scale-95 uppercase text-sm"
+              className="h-[60px] px-8 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 disabled:bg-slate-100 dark:disabled:bg-white/5 disabled:text-slate-400 dark:disabled:text-slate-600 rounded-xl font-bold tracking-widest transition-transform active:scale-95 uppercase text-sm"
             >
               <Send className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Transmit</span>
@@ -1065,7 +1067,7 @@ export default function Interview() {
 
         {/* 底部工具栏 */}
         <div className="h-20 px-8 flex items-center justify-between w-full max-w-5xl mx-auto relative">
-          <Button variant="ghost" className="text-slate-500 hover:text-cyan-400 hover:bg-cyan-400/10 font-mono text-xs uppercase tracking-widest">
+          <Button variant="ghost" className="text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-500/5 dark:hover:bg-cyan-400/10 font-mono text-xs uppercase tracking-widest">
             <FileText className="w-4 h-4 mr-2" />
             <span className="hidden sm:inline">Data Sheet</span>
           </Button>
@@ -1075,7 +1077,7 @@ export default function Interview() {
               <Button 
                 onClick={toggleRecording}
                 disabled={isAiThinking || isTranscribing || !isInterviewActive}
-                className={`w-16 h-16 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-300 border-[3px] ${isRecording ? 'bg-rose-500 hover:bg-rose-600 border-rose-400/50 animate-pulse scale-110 shadow-[0_0_30px_rgba(244,63,94,0.5)]' : 'bg-[#030014] hover:bg-[#0a0a14] text-cyan-400 border-cyan-500/30 hover:border-cyan-400'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-300 border-[3px] ${isRecording ? 'bg-rose-500 hover:bg-rose-600 border-rose-400/50 animate-pulse scale-110 shadow-[0_0_30px_rgba(244,63,94,0.5)]' : 'bg-white dark:bg-[#030014] hover:bg-slate-50 dark:hover:bg-[#0a0a14] text-cyan-600 dark:text-cyan-400 border-slate-200 dark:border-cyan-500/30 hover:border-cyan-500 dark:hover:border-cyan-400'} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isRecording ? <MicOff className="w-6 h-6 text-white" /> : <Mic className="w-6 h-6" />}
               </Button>
@@ -1084,7 +1086,7 @@ export default function Interview() {
 
           <Button 
             variant="ghost" 
-            className={`text-slate-500 hover:text-cyan-400 hover:bg-cyan-400/10 font-mono text-xs uppercase tracking-widest transition-colors ${isTypingMode ? 'bg-white/5 text-white' : ''}`}
+            className={`text-slate-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-500/5 dark:hover:bg-cyan-400/10 font-mono text-xs uppercase tracking-widest transition-colors ${isTypingMode ? 'bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white' : ''}`}
             onClick={() => setIsTypingMode(!isTypingMode)}
           >
             <Keyboard className="w-4 h-4 sm:mr-2" />
