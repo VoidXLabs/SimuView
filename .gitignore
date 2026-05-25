@@ -7,3 +7,6 @@ node_modules/
 **/.env
 SimuViewFrontEnd/.env
 .env
+
+# Local suggestions and roadmaps
+suggestions/

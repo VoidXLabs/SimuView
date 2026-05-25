@@ -470,7 +470,7 @@ export default function Home() {
             {/* 5. 专家回复范例 */}
             <div className="rounded-[2rem] bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 p-8 relative overflow-hidden group hover:bg-black/[0.04] dark:hover:bg-white/[0.04] hover:border-black/10 dark:hover:border-white/10 transition-all duration-500 flex flex-col shadow-sm dark:shadow-none">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <Radar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <RadarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">多维实战模拟</h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light mt-auto">
@@ -478,9 +478,9 @@ export default function Home() {
               </p>
               
               {/* 配图动画 */}
-              <div className="absolute right-2 bottom-2 w-24 h-24 border border-blue-400/10 dark:border-blue-400/20 rounded-full opacity-30 dark:opacity-50 group-hover:opacity-60 dark:group-hover:opacity-100 flex items-center justify-center">
-                 <div className="w-16 h-16 border border-blue-400/20 dark:border-blue-400/30 rounded-full flex items-center justify-center">
-                    <div className="w-8 h-8 bg-blue-400/10 rounded-full animate-ping"></div>
+              <div className="absolute right-2 bottom-2 w-24 h-24 border border-blue-500/10 dark:border-blue-400/20 rounded-full opacity-40 dark:opacity-50 group-hover:opacity-60 dark:group-hover:opacity-100 flex items-center justify-center">
+                 <div className="w-16 h-16 border border-blue-500/20 dark:border-blue-400/30 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-blue-500/20 dark:bg-blue-400/10 rounded-full animate-ping"></div>
                  </div>
               </div>
             </div>
@@ -525,8 +525,8 @@ export default function Home() {
                 className={`absolute inset-0 transition-opacity duration-1000 flex flex-col justify-between ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
               >
                 <div className="w-full h-full flex items-center justify-center relative">
-                  <img src={slide.image} alt={slide.title} className="w-full h-full object-cover md:object-contain opacity-40 dark:opacity-80" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-white via-white/60 dark:from-[#0a0a14] dark:via-[#0a0a14]/60 to-transparent z-10"></div>
+                  <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 dark:from-[#0a0a14] dark:via-[#0a0a14]/40 to-transparent z-10"></div>
                   
                   <div className="absolute bottom-10 left-8 right-8 z-20 text-center">
                      <span className="inline-block px-4 py-1.5 mb-4 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs font-bold tracking-widest backdrop-blur-md">步骤 {slide.id}</span>
