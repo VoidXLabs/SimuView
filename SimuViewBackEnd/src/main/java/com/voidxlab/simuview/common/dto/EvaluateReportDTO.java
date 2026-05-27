@@ -6,6 +6,8 @@ public record EvaluateReportDTO(
     List<QuestionEvalDTO> questionEvaluations,
     int totalScore,
     String overallReport,
+    List<String> strengths,
+    List<String> weaknesses,
     DimensionScores dimensionScores,
     List<String> suggestions
 ) {
@@ -20,6 +22,9 @@ public record EvaluateReportDTO(
     public record DimensionScores(
         int technicalDepth,
         int problemSolving,
-        int communication
+        int communication,
+        int logicalThinking,
+        int experienceMatch,
+        int learningPotential
     ) {}
 }
