@@ -6,6 +6,9 @@ target/
 **/application-*.yml
 **/resume.pdf
 !application.yml
+CLAUDE.md
+.claudeignore
+.claude
 ### STS ###
 .apt_generated
 .classpath
