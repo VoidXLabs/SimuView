@@ -5,6 +5,7 @@ import { Header } from "../components/Header";
 import apiClient from '../api/apiClient';
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
+import { EvaluationReportView } from "../components/EvaluationReportView";
 
 interface InterviewRecord {
   interviewId: number;
@@ -233,14 +234,14 @@ export default function MyInterviews() {
           </div>
         </div>
 
-        {/* 右侧详情：JSON 数据 */}
+        {/* 右侧详情：解析报告 */}
         <div className="flex-[2] bg-white dark:bg-[#0a0a14]/90 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-6 lg:p-10 flex flex-col h-full shadow-xl dark:shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[40%] h-[1px] bg-gradient-to-l from-cyan-500/50 to-transparent"></div>
           
           <div className="flex items-center justify-between mb-8 border-b border-slate-100 dark:border-white/5 pb-6">
             <div>
               <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-wide">解析报告流</h3>
-              <p className="text-slate-400 dark:text-slate-500 text-sm font-mono mt-1 uppercase tracking-widest">Raw Data Output</p>
+              <p className="text-slate-400 dark:text-slate-500 text-sm font-mono mt-1 uppercase tracking-widest">Decrypted Protocol View</p>
             </div>
             <div className="flex gap-2">
               <div className="w-3 h-3 rounded-full bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/30 dark:border-rose-500/50"></div>
@@ -260,10 +261,27 @@ export default function MyInterviews() {
               </span>
             </div>
           ) : selectedReport ? (
-            <div className="bg-slate-50 dark:bg-[#030014] rounded-2xl p-6 overflow-auto flex-1 border border-slate-200 dark:border-white/5 shadow-inner">
-              <pre className="text-emerald-700 dark:text-emerald-400 font-mono text-[13px] leading-relaxed whitespace-pre-wrap break-all selection:bg-emerald-500/30">
-                {JSON.stringify(selectedReport, null, 2)}
-              </pre>
+            <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10">
+              {(() => {
+                try {
+                  const reportData = typeof selectedReport.reportJson === 'string' 
+                    ? JSON.parse(selectedReport.reportJson) 
+                    : selectedReport.reportJson;
+                  
+                  if (!reportData) throw new Error("Empty report data");
+
+                  return <EvaluationReportView data={reportData} />;
+                } catch (e) {
+                  return (
+                    <div className="bg-rose-500/5 border border-rose-500/10 rounded-2xl p-6 text-rose-500 font-mono text-xs">
+                      <p className="font-bold mb-2">PROTOCOL DECRYPTION FAILED</p>
+                      <pre className="whitespace-pre-wrap break-all opacity-70">
+                        {JSON.stringify(selectedReport, null, 2)}
+                      </pre>
+                    </div>
+                  );
+                }
+              })()}
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 bg-slate-50/50 dark:bg-white/[0.01] rounded-2xl border border-slate-200 dark:border-white/5 border-dashed">
