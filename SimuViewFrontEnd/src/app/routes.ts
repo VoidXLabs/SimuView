@@ -4,6 +4,7 @@ import Setup from "./pages/Setup";
 import Interview from "./pages/Interview";
 import InterviewDetail from "./pages/InterviewDetail";
 import MyInterviews from "./pages/MyInterviews";
+import Resumes from "./pages/Resumes";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import TtsTest from "./pages/TtsTest";
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
       {
         path: "/setup",
         Component: Setup,
+      },
+      {
+        path: "/resumes",
+        Component: Resumes,
       },
       {
         path: "/interview",

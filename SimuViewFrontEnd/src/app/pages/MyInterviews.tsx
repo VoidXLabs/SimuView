@@ -222,12 +222,12 @@ export default function MyInterviews() {
             ) : (
               <div className="text-center py-16 bg-slate-50 dark:bg-white/[0.02] rounded-3xl border border-slate-200 dark:border-white/5 flex flex-col items-center">
                 <ServerCrash className="w-12 h-12 text-slate-400 dark:text-slate-600 mb-4" />
-                <p className="text-slate-600 dark:text-slate-400 mb-6 font-light">数据库中未检索到相关记录</p>
+                <p className="text-slate-600 dark:text-slate-400 mb-6 font-light">还没有面试报告，点击按钮开始面试吧～</p>
                 <Button 
                   onClick={() => navigate("/setup")} 
                   className="bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 font-bold px-8 rounded-xl"
                 >
-                  初始化新会话
+                  立即开始面试
                 </Button>
               </div>
             )}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Brain, Target, Mic, BarChart3, ChevronRight, ChevronLeft, Sparkles, Activity, FileSearch, Gauge, Radar as RadarIcon, Archive, Network, MessageSquare, AudioLines, Award } from "lucide-react";
+import { Brain, Target, Mic, BarChart3, ChevronRight, ChevronLeft, Sparkles, Activity, FileSearch, Gauge, Radar as RadarIcon, Archive, Network, MessageSquare, AudioLines, Award, FileText } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Header } from "../components/Header";
 import apiClient from '../api/apiClient';
@@ -375,6 +375,7 @@ export default function Home() {
               </Button>
               <Button
                 variant="outline"
+                onClick={() => navigate("/my-interviews")}
                 className="h-16 px-10 rounded-2xl border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/30 text-slate-900 dark:text-white font-bold text-lg backdrop-blur-xl transition-all duration-500"
               >
                 查看我的面试报告
@@ -485,8 +486,22 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 6. 长条块 - 云端面试档案 */}
-            <div className="md:col-span-2 lg:col-span-4 rounded-[2rem] bg-gradient-to-r from-black/[0.01] to-transparent dark:from-white/[0.02] dark:to-transparent border border-black/5 dark:border-white/5 p-8 md:p-10 relative overflow-hidden group hover:bg-black/[0.02] dark:hover:bg-white/[0.04] hover:border-black/10 dark:hover:border-white/10 transition-all duration-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 shadow-sm dark:shadow-none">
+            {/* 6. 简历管理 - 新增模块 */}
+            <div 
+              onClick={() => navigate("/resumes")}
+              className="md:col-span-1 rounded-[2rem] bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 p-8 relative overflow-hidden group hover:bg-black/[0.04] dark:hover:bg-white/[0.04] hover:border-black/10 dark:hover:border-white/10 transition-all duration-500 flex flex-col shadow-sm dark:shadow-none cursor-pointer"
+            >
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">简历资产管理</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light mt-auto">
+                集中管理您的多份简历，支持一键上传与解析，为不同岗位准备最合适的自己。
+              </p>
+            </div>
+
+            {/* 7. 长条块 - 云端面试档案 */}
+            <div className="md:col-span-2 lg:col-span-3 rounded-[2rem] bg-gradient-to-r from-black/[0.01] to-transparent dark:from-white/[0.02] dark:to-transparent border border-black/5 dark:border-white/5 p-8 md:p-10 relative overflow-hidden group hover:bg-black/[0.02] dark:hover:bg-white/[0.04] hover:border-black/10 dark:hover:border-white/10 transition-all duration-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 shadow-sm dark:shadow-none">
               <div className="flex-1">
                 <div className="w-12 h-12 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <Archive className="w-6 h-6 text-slate-600 dark:text-slate-300" />

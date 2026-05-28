@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router";
-import { Brain, User, LogOut, Activity, Cpu, Terminal, Network, ShieldCheck, Sun, Moon } from "lucide-react";
+import { Brain, User, LogOut, Activity, Cpu, Terminal, Network, ShieldCheck, Sun, Moon, FileText } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
   DropdownMenu,
@@ -43,6 +43,7 @@ export function Header({ showNav = false }: HeaderProps) {
 
   const navLinks = [
     { name: "首页", path: "/", icon: <Terminal className="w-4 h-4" /> },
+    { name: "我的简历", path: "/resumes", icon: <FileText className="w-4 h-4" /> },
     { name: "开始面试", path: "/setup", icon: <Cpu className="w-4 h-4" />, highlight: true },
     { name: "面试记录", path: "/my-interviews", icon: <Network className="w-4 h-4" /> },
   ];
