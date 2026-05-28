@@ -27,6 +27,8 @@ public enum ErrorCode {
     RESUME_FILE_TYPE_NOT_SUPPORTED(2006, "不支持的文件类型"),
     RESUME_ANALYSIS_FAILED(2007, "简历分析失败"),
     RESUME_ANALYSIS_NOT_FOUND(2008, "简历分析结果不存在"),
+    RESUME_UPLOAD_NUM_LIMIT_EXCEEDED(2009, "上传简历数量超出限制"),
+    RESUME_ALREADY_EXISTS(2010, "简历已存在"),
     
     // ========== 面试模块错误 3xxx ==========
     INTERVIEW_SESSION_NOT_FOUND(3001, "面试会话不存在"),

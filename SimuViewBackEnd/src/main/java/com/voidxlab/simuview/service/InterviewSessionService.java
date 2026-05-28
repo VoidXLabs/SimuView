@@ -341,8 +341,6 @@ public class InterviewSessionService {
         sseExecutor.submit(() -> evaluateSession(sessionId));
     }
 
-    // ========== Private Methods ==========
-
     private InterviewRecord getOwnedSession(Long sessionId, Long userId) {
         InterviewRecord record = interviewRecordMapper.selectById(sessionId);
         if (record == null) {

@@ -26,10 +26,13 @@ public class FileService {
         
         String originalFilename = fileUploadUtil.sanitizeFilename(file.getOriginalFilename());
         String datePath = LocalDate.now().format(DATE_FORMATTER);
-        String filePath = String.format("%s/%s/%s/%s/%s", BASE_PATH, userId, RESUME_PATH, datePath, originalFilename);
+        String filePath = String.format("%s/%s/%s/%s", BASE_PATH, userId, RESUME_PATH, originalFilename);
         
         return fileUploadUtil.upload(file, filePath);
     }
 
 
+    public void deleteResume(String fileUrl) {
+        fileUploadUtil.delete(fileUrl);
+    }
 }

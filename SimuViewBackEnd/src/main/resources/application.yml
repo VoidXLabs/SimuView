@@ -50,11 +50,13 @@ mybatis-plus:
       id-type: auto
       table-underline: true
 
-# 应用配置不能
+# 应用配置
 app:
   ai:
     structured-max-attempts: 3              # 结构化输出最大重试次数
     structured-include-last-error: true     # 重试时是否包含错误信息
+  resume:
+    max-upload-num: 10
 
 
 logging:

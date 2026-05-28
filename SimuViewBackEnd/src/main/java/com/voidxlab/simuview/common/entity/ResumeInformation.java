@@ -27,6 +27,9 @@ public class ResumeInformation {
     @TableField("file_url")
     private String fileUrl;
 
+    @TableField("file_name")
+    private String fileName;
+
     @TableField("content")
     private String content;
 
