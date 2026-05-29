@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
         try {
             response.setStatus(500);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":500,\"message\":\"系统内部错误\"}");
+            response.getWriter().write("{\"code\":500,\"message\":\"系统内部错误: "+ e.getMessage() + "\"}");
             response.getWriter().flush();
         } catch (IOException ignored) {
         }

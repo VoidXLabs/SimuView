@@ -29,8 +29,9 @@ public class ResumeController {
         }
 
         String contentType = file.getContentType();
-        if (contentType != null && !contentType.contains("pdf") &&
-                !contentType.contains("doc") && !contentType.contains("docx")) {
+        if (contentType != null && !contentType.contains("pdf")
+//                && !contentType.contains("doc") && !contentType.contains("docx")
+        ) {
             throw BusinessException.badRequest("只支持PDF和Word格式的简历文件");
         }
 
