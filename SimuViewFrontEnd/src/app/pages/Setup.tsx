@@ -438,6 +438,12 @@ export default function Setup() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 检查文件类型
+    if (file.type !== 'application/pdf') {
+      toast.error("目前仅支持 PDF 格式的简历");
+      return;
+    }
+
     setIsUploadingResume(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -574,28 +580,26 @@ export default function Setup() {
 
               <div className="space-y-12">
                 {mode === 'url' && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 opacity-60">
                     <Label className="text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
-                      <div className="w-1 h-1 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse"></div>
-                      岗位链接 JOB SOURCE
+                      <div className="w-1 h-1 rounded-full bg-slate-400"></div>
+                      岗位链接 JOB SOURCE (暂未开发)
                     </Label>
                     <div className="flex flex-col sm:flex-row gap-4">
                       <div className="relative flex-1 group">
-                        <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-cyan-500 transition-colors" />
+                        <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <Input
                           type="url"
-                          placeholder="粘贴 Boss直聘、拉勾等招聘链接..."
-                          value={jobUrl}
-                          onChange={(e) => setJobUrl(e.target.value)}
-                          className="pl-12 h-14 bg-white dark:bg-black/40 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-2xl focus:border-cyan-500/50 transition-all"
+                          placeholder="该功能暂未开发完成..."
+                          disabled
+                          className="pl-12 h-14 bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/5 text-slate-400 rounded-2xl cursor-not-allowed"
                         />
                       </div>
                       <Button 
-                        onClick={analysisJobUrl}
-                        disabled={isParsingJd || isJdReady}
-                        className="h-14 px-8 font-black rounded-2xl transition-all shadow-lg active:scale-95 bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-black dark:hover:bg-slate-200 tracking-widest uppercase text-xs"
+                        disabled
+                        className="h-14 px-8 font-black rounded-2xl bg-slate-200 dark:bg-white/5 text-slate-400 dark:text-slate-600 cursor-not-allowed tracking-widest uppercase text-xs"
                       >
-                        {isJdReady ? '已就绪 ✅' : (isParsingJd ? '解析中...' : '开始解析')}
+                        暂不可用
                       </Button>
                     </div>
                   </div>
@@ -629,8 +633,16 @@ export default function Setup() {
                       />
                     </div>
                     <div className="flex justify-end">
-                      <Button onClick={submitJobForm} disabled={isParsingJd || isJdReady} className="h-12 px-8 font-black rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 tracking-widest uppercase text-[10px]">
-                        {isJdReady ? '保存成功 ✅' : '提交保存'}
+                      <Button 
+                        onClick={submitJobForm} 
+                        disabled={isParsingJd || isJdReady} 
+                        className={`h-12 px-10 font-black rounded-xl tracking-widest uppercase text-xs transition-all shadow-lg active:scale-95 ${
+                          isJdReady 
+                            ? 'bg-emerald-500 text-white hover:bg-emerald-600' 
+                            : 'bg-cyan-600 text-white hover:bg-cyan-500 shadow-cyan-500/20'
+                        }`}
+                      >
+                        {isJdReady ? '保存成功 ✅' : '提交并解析岗位内容'}
                       </Button>
                     </div>
                   </div>
@@ -639,7 +651,7 @@ export default function Setup() {
                 <div className="space-y-4">
                   <Label className="text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-purple-500 animate-pulse"></div>
-                    个人简历 RESUME
+                    个人简历 RESUME <span className="text-[8px] opacity-60 ml-2 font-normal">(仅支持 .pdf 格式)</span>
                   </Label>
                   <div className={`relative border rounded-3xl p-6 transition-all duration-500 ${isResumeReady ? "bg-emerald-500/5 border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]" : "border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.01]"}`}>
                     <div className="flex flex-col gap-4">
@@ -684,8 +696,8 @@ export default function Setup() {
                                 {userResumes.length} 个存档可用
                               </p>
                               <label className="cursor-pointer text-[9px] text-cyan-600 dark:text-cyan-500 font-black uppercase tracking-widest hover:text-cyan-400 transition-colors flex items-center gap-1">
-                                <Plus className="w-3 h-3" /> 重新上传
-                                <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
+                                <Plus className="w-3 h-3" /> 重新上传 (仅 PDF)
+                                <input type="file" className="hidden" accept=".pdf" onChange={handleFileUpload} />
                               </label>
                             </div>
                           </div>
@@ -693,13 +705,14 @@ export default function Setup() {
                       ) : (
                         <div className="flex flex-col items-center py-4 text-center">
                           <AlertTriangle className="w-8 h-8 text-amber-500 mb-3 opacity-50" />
-                          <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">用户没有上传过简历</p>
+                          <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">用户没有上传过简历</p>
+                          <p className="text-[10px] text-slate-400 mb-4 font-mono">SUPPORTED FORMAT: .PDF ONLY</p>
                           <label className="cursor-pointer">
                             <div className="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2">
                               {isUploadingResume ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                              {isUploadingResume ? "上传并解析中..." : "点击这里上传你的简历"}
+                              {isUploadingResume ? "上传并解析中..." : "上传 PDF 简历"}
                             </div>
-                            <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={isUploadingResume} />
+                            <input type="file" className="hidden" accept=".pdf" onChange={handleFileUpload} disabled={isUploadingResume} />
                           </label>
                         </div>
                       )}

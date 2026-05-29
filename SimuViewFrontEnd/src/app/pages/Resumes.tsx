@@ -79,9 +79,9 @@ export default function Resumes() {
     if (!file) return;
 
     // 检查文件类型
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const allowedTypes = ['application/pdf'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("只支持 PDF 或 Word 格式的简历");
+      toast.error("目前仅支持 PDF 格式的简历");
       return;
     }
 
@@ -167,15 +167,15 @@ export default function Resumes() {
                 </div>
                 简历库
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-light">管理您的个人简历资产</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-light">管理您的个人简历资产 <span className="text-[10px] opacity-60 ml-2 font-mono">(PDF ONLY)</span></p>
             </div>
             
             <label className="cursor-pointer">
               <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${uploading ? 'bg-slate-100 text-slate-400' : 'bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-500/20'}`}>
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                {uploading ? '上传中...' : '上传简历'}
+                {uploading ? '上传中...' : '上传 PDF'}
               </div>
-              <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} />
+              <input type="file" className="hidden" accept=".pdf" onChange={handleFileUpload} disabled={uploading} />
             </label>
           </div>
 
