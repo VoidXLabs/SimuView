@@ -112,7 +112,7 @@ export default function AsrTest() {
       formData.append('audio', wavBlob, 'record.wav');
 
       // 4. 调用后端的腾讯云 ASR 接口
-      const response = await fetch('http://localhost:3001/api/asr', {
+      const response = await fetch('/tts-api/api/asr', {
         method: 'POST',
         body: formData,
       });

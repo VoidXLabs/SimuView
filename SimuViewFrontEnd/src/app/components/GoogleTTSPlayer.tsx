@@ -16,7 +16,7 @@ const GoogleTTSPlayer: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:3001/api/tts', {
+      const response = await fetch('/tts-api/api/tts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

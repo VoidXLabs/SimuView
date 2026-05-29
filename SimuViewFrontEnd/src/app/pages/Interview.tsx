@@ -187,7 +187,7 @@ export default function Interview() {
   const playTTS = async (text: string) => {
     try {
       setIsAiSpeaking(true);
-      const response = await fetch('http://localhost:3001/api/tts', {
+      const response = await fetch('/tts-api/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
@@ -275,7 +275,7 @@ export default function Interview() {
       const formData = new FormData();
       formData.append('audio', wavBlob, 'record.wav');
 
-      const response = await fetch('http://localhost:3001/api/asr', {
+      const response = await fetch('/tts-api/api/asr', {
         method: 'POST',
         body: formData,
       });
@@ -309,7 +309,7 @@ export default function Interview() {
     setIsLoading(false);
     setIsAiThinking(true);
 
-    const url = `http://localhost:8080/api/v1/sessions/${sessionId}/questions/stream`;
+    const url = `/api/v1/sessions/${sessionId}/questions/stream`;
     
     let streamingQuestion = '';
     

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 创建axios实例，配置baseURL
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: '',
   timeout: 30000, // 30秒超时
 });
 

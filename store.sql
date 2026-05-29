@@ -1,3 +1,5 @@
+create database simuview;
+use simuview;
 -- 1. 用户信息表
 -- 系统需要管理求职者和管理员。
 CREATE TABLE `users` (

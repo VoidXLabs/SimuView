@@ -46,10 +46,10 @@ public class UserController {
         return Result.success(userLoginVO);
     }
 
-    @PostMapping("/register")
-    public Result<User> register(@RequestBody UserRegisterDTO user){
-        log.info("用户注册：{}", user);
-        userService.register(user);
-        return Result.success();
-    }
+//    @PostMapping("/register")
+//    public Result<User> register(@RequestBody UserRegisterDTO user){
+//        log.info("用户注册：{}", user);
+//        userService.register(user);
+//        return Result.success();
+//    }
 }

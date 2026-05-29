@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Upload, Link as LinkIcon, Loader2, CheckCircle2, Sparkles, FileText, Edit3, Network, Fingerprint, Activity, Zap, Cpu, Search, AlertTriangle, ShieldCheck, FileSearch, ListChecks } from "lucide-react";
+import { ArrowLeft, Upload, Link as LinkIcon, Loader2, CheckCircle2, Sparkles, FileText, Edit3, Network, Fingerprint, Activity, Zap, Cpu, Search, AlertTriangle, ShieldCheck, FileSearch, ListChecks, Plus, ChevronDown } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -170,14 +170,7 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
               </div>
 
               <div className="w-full space-y-4">
-                <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-xl">
-                  <AlertTriangle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
-                  <span className="text-[10px] text-rose-600 dark:text-rose-300 font-bold uppercase tracking-tight">缺失技能：微服务治理经验</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-300 font-bold uppercase tracking-tight">优势项：深度垂直技术沉淀</span>
-                </div>
+                {/* 移除占位提示 */}
               </div>
             </div>
           </div>
@@ -259,7 +252,7 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${data.isResumeReady ? 'bg-emerald-500/20 text-emerald-500 dark:text-emerald-400' : 'bg-slate-200 dark:bg-white/5 text-slate-400 dark:text-slate-500'}`}>
                     <FileSearch className="w-5 h-5" />
                   </div>
-                  <span className={`font-bold text-sm tracking-widest uppercase ${data.isResumeReady ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>2. 上传个人简历</span>
+                  <span className={`font-bold text-sm tracking-widest uppercase ${data.isResumeReady ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>2. 选择个人简历</span>
                 </div>
                 {data.isResumeReady && <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 animate-in zoom-in" />}
               </div>
@@ -300,7 +293,7 @@ export default function Setup() {
     work_experience: "",
     education: ""
   });
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeFile, setResumeFile] = useState<any>(null);
   const [isJdReady, setIsJdReady] = useState(false);
   const [isResumeReady, setIsResumeReady] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
@@ -308,6 +301,9 @@ export default function Setup() {
   const [jdId, setJdId] = useState("");
   const [resumeId, setResumeId] = useState("");
   const [interviewStyle, setInterviewStyle] = useState<number>(1);
+  const [userResumes, setUserResumes] = useState<any[]>([]);
+  const [loadingResumes, setLoadingResumes] = useState(false);
+  const [isResumeDropdownOpen, setIsResumeDropdownOpen] = useState(false);
 
   // 可视化状态控制
   const [vizState, setVizState] = useState('idle');
@@ -315,6 +311,35 @@ export default function Setup() {
   const [showResumeSuccess, setShowResumeSuccess] = useState(false);
 
   const wordCount = formData.jd_content.length;
+
+  // 获取用户已上传的简历
+  const fetchUserResumes = async () => {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    const userId = user.id || user.userId;
+    if (!userId) return;
+
+    setLoadingResumes(true);
+    try {
+      const response = await apiClient.post('/api/v1/resume/page', {
+        userId: parseInt(userId),
+        pageNum: 1,
+        pageSize: 100
+      });
+      if (response.data.success && response.data.data?.records) {
+        setUserResumes(response.data.data.records);
+      }
+    } catch (error) {
+      console.error("Failed to fetch resumes", error);
+    } finally {
+      setLoadingResumes(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserResumes();
+  }, []);
 
   // 监听简历准备就绪，开启 5s 停留计时
   useEffect(() => {
@@ -401,36 +426,47 @@ export default function Setup() {
     }
   };
 
-  // 上传简历接口
-  const uploadResume = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files ? e.target.files[0] : null;
-    if (!selectedFile) return;
-    const fileName = selectedFile.name.toLowerCase();
-    if (!fileName.endsWith('.pdf') && !fileName.endsWith('.doc') && !fileName.endsWith('.docx')) {
-      toast.error("Only PDF and Word documents are supported");
-      return;
-    }
-    setResumeFile(selectedFile);
+  const handleResumeSelect = (resume: any) => {
+    setResumeId(String(resume.resumeId));
+    setIsResumeReady(true);
+    setResumeFile({ name: resume.fileName || resume.fileUrl.split('/').pop() || 'Selected Resume' });
+    setIsResumeDropdownOpen(false);
+    toast.success("已选择简历");
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     setIsUploadingResume(true);
-    const form = new FormData();
-    form.append('file', selectedFile);
+    const formData = new FormData();
+    formData.append('file', file);
+
     try {
-      const response = await apiClient.post('/api/v1/resume/upload', form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await apiClient.post('/api/v1/resume/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-      const data = response.data;
-      if (data.success && data.data) {
-        const resumeIdValue = data.data.resumeId !== undefined ? data.data.resumeId : data.data;
-        setResumeId(String(resumeIdValue));
-        setIsResumeReady(true);
-        toast.success("Resume uploaded successfully!");
-      } else {
-        toast.error(data.message || "Failed to upload resume");
+
+      if (response.data.success) {
+        toast.success("简历上传成功并已解析");
+        await fetchUserResumes();
+        // 自动选中刚刚上传的简历
+        const newResumesData = response.data.data;
+        const newId = newResumesData.resumeId || newResumesData.id;
+        if (newId) {
+          setResumeId(String(newId));
+          setIsResumeReady(true);
+          setResumeFile({ name: file.name });
+        }
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to upload resume");
+      console.error("Upload failed", error);
+      toast.error(error.response?.data?.message || "上传失败");
     } finally {
       setIsUploadingResume(false);
+      e.target.value = '';
     }
   };
 
@@ -605,18 +641,69 @@ export default function Setup() {
                     <div className="w-1 h-1 rounded-full bg-purple-500 animate-pulse"></div>
                     个人简历 RESUME
                   </Label>
-                  <div className={`group relative border border-dashed rounded-3xl p-10 text-center transition-all duration-500 ${isUploadingResume ? "bg-cyan-500/5 border-cyan-500/30" : isResumeReady ? "bg-emerald-500/5 border-emerald-500/30" : "border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.01] hover:bg-slate-100 dark:hover:bg-white/[0.03] cursor-pointer"}`}>
-                    <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" onChange={uploadResume} className="hidden" />
-                    <label htmlFor="resume-upload" className="cursor-pointer">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border ${isUploadingResume ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-600 dark:text-cyan-400" : isResumeReady ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-400" : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400 dark:text-slate-500 group-hover:text-cyan-500 dark:group-hover:text-cyan-400"}`}>
-                          {isUploadingResume ? <Loader2 className="w-7 h-7 animate-spin" /> : isResumeReady ? <CheckCircle2 className="w-7 h-7" /> : <Fingerprint className="w-7 h-7" />}
+                  <div className={`relative border rounded-3xl p-6 transition-all duration-500 ${isResumeReady ? "bg-emerald-500/5 border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]" : "border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.01]"}`}>
+                    <div className="flex flex-col gap-4">
+                      {userResumes.length > 0 ? (
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border ${isUploadingResume ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-600 dark:text-cyan-400" : isResumeReady ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-600 dark:text-emerald-400" : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400 dark:text-slate-500"}`}>
+                            {isUploadingResume ? <Loader2 className="w-6 h-6 animate-spin" /> : isResumeReady ? <CheckCircle2 className="w-6 h-6" /> : <FileText className="w-6 h-6" />}
+                          </div>
+                          
+                          <div className="flex-1 relative">
+                            <button
+                              onClick={() => setIsResumeDropdownOpen(!isResumeDropdownOpen)}
+                              className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-800 dark:text-slate-200 hover:border-cyan-500/30 transition-all"
+                            >
+                              <span className="truncate">
+                                {resumeId ? (userResumes.find(r => String(r.resumeId) === resumeId)?.fileName || userResumes.find(r => String(r.resumeId) === resumeId)?.fileUrl.split('/').pop()) : "-- 选择已上传的简历 --"}
+                              </span>
+                              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isResumeDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {isResumeDropdownOpen && (
+                              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 py-2 max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+                                {userResumes.map(resume => (
+                                  <button
+                                    key={resume.resumeId}
+                                    onClick={() => handleResumeSelect(resume)}
+                                    className="w-full px-5 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 flex flex-col gap-1 transition-colors group"
+                                  >
+                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-cyan-600 dark:group-hover:text-cyan-400">
+                                      {resume.fileName || resume.fileUrl.split('/').pop() || `Resume #${resume.resumeId}`}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-mono tracking-tighter">
+                                      {new Date(resume.createTime).toLocaleDateString()} • {resume.content?.slice(0, 30)}...
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between mt-1.5 px-1">
+                              <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">
+                                {userResumes.length} 个存档可用
+                              </p>
+                              <label className="cursor-pointer text-[9px] text-cyan-600 dark:text-cyan-500 font-black uppercase tracking-widest hover:text-cyan-400 transition-colors flex items-center gap-1">
+                                <Plus className="w-3 h-3" /> 重新上传
+                                <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
+                              </label>
+                            </div>
+                          </div>
                         </div>
-                        <p className={`text-sm font-bold tracking-widest uppercase transition-colors ${isResumeReady ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400"}`}>
-                          {resumeFile ? resumeFile.name : "上传我的简历"}
-                        </p>
-                      </div>
-                    </label>
+                      ) : (
+                        <div className="flex flex-col items-center py-4 text-center">
+                          <AlertTriangle className="w-8 h-8 text-amber-500 mb-3 opacity-50" />
+                          <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">用户没有上传过简历</p>
+                          <label className="cursor-pointer">
+                            <div className="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2">
+                              {isUploadingResume ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                              {isUploadingResume ? "上传并解析中..." : "点击这里上传你的简历"}
+                            </div>
+                            <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={isUploadingResume} />
+                          </label>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -674,7 +761,7 @@ export default function Setup() {
 
               {/* 装饰元素 */}
               <div className="absolute -right-4 -bottom-4 w-24 h-24 border-r border-b border-slate-300 dark:border-white/20 rounded-br-[3rem]"></div>
-              <div className="absolute -left-2 top-[40%] w-1 h-20 bg-gradient-to-b from-transparent via-cyan-500/50 to-transparent"></div>
+              <div className="absolute -left-2 top-[40%] w-1 h-20 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent"></div>
             </div>
           </div>
         </div>
