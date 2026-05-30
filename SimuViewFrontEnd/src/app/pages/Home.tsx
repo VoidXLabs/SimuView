@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Brain, Target, Mic, BarChart3, ChevronRight, ChevronLeft, Sparkles, Activity, FileSearch, Gauge, Radar as RadarIcon, Archive, Network, MessageSquare, AudioLines, Award, FileText } from "lucide-react";
+import { Brain, Target, Mic, BarChart3, ChevronRight, ChevronLeft, Sparkles, Activity, FileSearch, Gauge, Radar as RadarIcon, Archive, Network, MessageSquare, AudioLines, Award, FileText, Play, Square, Github, ExternalLink, Mail } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Header } from "../components/Header";
 import apiClient from '../api/apiClient';
@@ -157,6 +157,277 @@ interface InterviewRecord {
   startTime: string;
   endTime: string;
 }
+
+const InteractiveDemo = () => {
+  const navigate = useNavigate();
+  const [stage, setStage] = useState('idle'); // idle, speaking, recording, analyzing, result
+  
+  const handleStart = () => {
+    setStage('speaking');
+    setTimeout(() => setStage('recording'), 3000);
+  };
+
+  const handleStop = () => {
+    setStage('analyzing');
+    setTimeout(() => setStage('result'), 2500);
+  };
+
+  const handleReset = () => {
+    setStage('idle');
+  };
+
+  return (
+    <section className="mt-32 mb-20 relative z-10 px-6">
+      <div className="text-center mb-16">
+        <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-wide mb-4">
+          立即体验 AI 面试对练
+        </h2>
+        <p className="text-slate-500 dark:text-slate-400 font-light max-w-2xl mx-auto">
+          无需注册，直接感受 AI 导师的专业引导与实时反馈
+        </p>
+      </div>
+
+      <div className="max-w-4xl mx-auto">
+        <div className="relative rounded-[2.5rem] overflow-hidden border border-black/10 dark:border-white/10 bg-white/40 dark:bg-[#0a0a14]/60 backdrop-blur-3xl shadow-2xl p-8 md:p-12">
+          {/* 终端顶部按钮 */}
+          <div className="absolute top-6 left-8 flex gap-2">
+            <div className="w-3 h-3 rounded-full bg-rose-500/50"></div>
+            <div className="w-3 h-3 rounded-full bg-amber-500/50"></div>
+            <div className="w-3 h-3 rounded-full bg-emerald-500/50"></div>
+          </div>
+          <div className="absolute top-6 right-8 text-[10px] font-mono text-slate-400 tracking-widest uppercase">
+            Live_Sandbox_v1.0
+          </div>
+
+          <div className="mt-10 min-h-[350px] flex flex-col items-center justify-center space-y-8">
+            {stage === 'idle' && (
+              <div className="text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto">
+                  <Play className="w-8 h-8 text-cyan-500 fill-cyan-500 ml-1" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-800 dark:text-white">准备好开始了吗？</h3>
+                <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                  AI 导师将向你提问，你可以通过语音进行回答（模拟）。
+                </p>
+                <Button 
+                  onClick={handleStart}
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-10 h-14 rounded-2xl font-black tracking-widest uppercase shadow-lg shadow-cyan-500/20"
+                >
+                  进入对练
+                </Button>
+              </div>
+            )}
+
+            {stage === 'speaking' && (
+              <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center shrink-0 border border-cyan-500/30">
+                    <Brain className="w-6 h-6 text-cyan-500" />
+                  </div>
+                  <div className="flex-1 p-6 bg-cyan-500/5 border border-cyan-500/20 rounded-3xl rounded-tl-none">
+                    <p className="text-lg text-slate-800 dark:text-slate-200 leading-relaxed italic">
+                      "你好！欢迎来到 SimuView。假设你正在应聘一个高级前端开发岗位，请简单介绍一下你自己，并说说你最引以为傲的一个项目。"
+                    </p>
+                    <div className="mt-4 flex items-center gap-2">
+                      <div className="flex gap-1">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />
+                        ))}
+                      </div>
+                      <span className="text-[10px] font-mono text-cyan-600/70 dark:text-cyan-400/70 uppercase tracking-tighter">AI 正在播报...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {stage === 'recording' && (
+              <div className="flex flex-col items-center space-y-8 w-full animate-in fade-in zoom-in duration-500">
+                <div className="text-center">
+                  <span className="text-xs font-mono text-rose-500 animate-pulse tracking-widest uppercase mb-2 block">Recording...</span>
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-white">请开始你的回答</h3>
+                </div>
+                
+                <div className="flex items-end justify-center gap-1.5 h-24 w-full max-w-xs">
+                  {[...Array(20)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="w-1.5 bg-cyan-500 rounded-full animate-wave shadow-[0_0_10px_rgba(34,211,238,0.5)]" 
+                      style={{ 
+                        height: `${Math.random() * 80 + 20}%`,
+                        animationDelay: `${i * 0.05}s`
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <Button 
+                  onClick={handleStop}
+                  className="bg-rose-500 hover:bg-rose-400 text-white px-10 h-14 rounded-2xl font-black tracking-widest uppercase shadow-lg shadow-rose-500/20 group"
+                >
+                  <Square className="w-4 h-4 mr-2 fill-white" />
+                  完成回答
+                </Button>
+              </div>
+            )}
+
+            {stage === 'analyzing' && (
+              <div className="flex flex-col items-center space-y-8 animate-in fade-in duration-500">
+                <div className="relative w-24 h-24">
+                  <div className="absolute inset-0 rounded-full border-4 border-cyan-500/10"></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-cyan-500 border-t-transparent animate-spin"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-cyan-500 animate-pulse" />
+                  </div>
+                </div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-white uppercase tracking-widest">智能分析中</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-mono">
+                    DEP-ANALYSIS: LOGIC_CONSISTENCY, KEYWORD_EXTRACTION...
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {stage === 'result' && (
+              <div className="w-full space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="p-6 rounded-3xl bg-emerald-500/5 border border-emerald-500/20">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <Award className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <h4 className="text-lg font-bold text-slate-800 dark:text-white">分析完成</h4>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="p-4 bg-white/40 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5">
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">💡 核心建议：</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                        你的自我介绍逻辑清晰。但在描述“傲人项目”时，建议加入具体的 **STAR 法则**，特别是针对性能优化部分，若能提及具体的百分比提升，会更具说服力。
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { label: '逻辑思维', score: '85', color: 'cyan' },
+                        { label: '专业表达', score: '92', color: 'indigo' },
+                        { label: '自信度', score: '88', color: 'emerald' },
+                      ].map(stat => (
+                        <div key={stat.label} className="p-3 text-center rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5">
+                          <p className="text-[10px] text-slate-500 uppercase tracking-tighter mb-1">{stat.label}</p>
+                          <p className="text-xl font-black text-slate-800 dark:text-white">{stat.score}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center gap-4">
+                  <Button 
+                    variant="outline"
+                    onClick={handleReset}
+                    className="rounded-xl px-8"
+                  >
+                    重新体验
+                  </Button>
+                  <Button 
+                    onClick={() => navigate("/setup")}
+                    className="bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl px-8 font-bold"
+                  >
+                    开启完整面试
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Footer = () => {
+  const navigate = useNavigate();
+  
+  return (
+    <footer className="relative z-10 mt-32 border-t border-black/5 dark:border-white/5 bg-white/50 dark:bg-[#030014]/50 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="col-span-1 md:col-span-1">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center">
+                <Brain className="w-6 h-6 text-cyan-500" />
+              </div>
+              <span className="text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase">SimuView</span>
+            </div>
+            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 font-light">
+              下一代 AI 模拟面试平台。通过全场景语音对练与深度报告分析，助力每一位求职者在真实的面试中脱颖而出。
+            </p>
+            <div className="flex gap-4">
+              <a href="https://github.com/VoidXLabs/SimuView" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                <Github className="w-5 h-5" />
+              </a>
+              <a href="mailto:contact@voidxlabs.com" className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                <Mail className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6">产品功能</h4>
+            <ul className="space-y-4">
+              {['模拟面试', '简历解析', '能力报告', '简历管理'].map((item) => (
+                <li key={item}>
+                  <button onClick={() => navigate(item === '简历管理' ? '/resumes' : '/setup')} className="text-sm text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors font-light">
+                    {item}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6">开发者资源</h4>
+            <ul className="space-y-4">
+              <li>
+                <a href="https://github.com/VoidXLabs/SimuView" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors font-light">
+                  GitHub 仓库 <ExternalLink className="w-3 h-3" />
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-sm text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors font-light">更新日志</a>
+              </li>
+              <li>
+                <a href="#" className="text-sm text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors font-light">技术架构</a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6">加入我们</h4>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-light leading-relaxed mb-4">
+              SimuView 是一个开源项目，欢迎提交 PR 或 Issue。
+            </p>
+            <div className="p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/20">
+              <p className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 uppercase tracking-widest mb-2">Build with Love</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-light">探索 AI 与职业发展的无限可能。</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-light">
+            © 2026 SimuView AI. Project of VoidX Labs.
+          </p>
+          <div className="flex gap-8">
+            <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">隐私政策</a>
+            <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">服务条款</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
 
 export default function Home() {
   const navigate = useNavigate();
@@ -579,6 +850,9 @@ export default function Home() {
           </div>
         </div>
 
+        {/* 互动演示 (Interactive Demo) */}
+        <InteractiveDemo />
+
         {/* 常见问题解答 (FAQ) */}
         <div className="mt-32 mb-20 relative z-10">
           <div className="text-center mb-16">
@@ -606,6 +880,8 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

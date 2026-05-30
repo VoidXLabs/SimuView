@@ -178,6 +178,15 @@
   animation: progress-circle 1.5s ease-out forwards;
 }
 
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.4); }
+}
+
+.animate-wave {
+  animation: wave 1s ease-in-out infinite;
+}
+
 .scanning-mask {
   mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
 }
