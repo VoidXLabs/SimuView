@@ -29,6 +29,18 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000
       }
+    },
+    {
+      name: 'simuview-spider',
+      script: 'python3',
+      args: ['main.py'],
+      cwd: './SpiderServer',
+      autorestart: true,
+      watch: false,
+      env: {
+        PYTHONUNBUFFERED: '1',
+        PORT: 8000
+      }
     }
   ]
 };

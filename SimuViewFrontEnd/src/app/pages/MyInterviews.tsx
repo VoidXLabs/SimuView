@@ -264,6 +264,43 @@ export default function MyInterviews() {
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10">
               {(() => {
                 try {
+                  // 如果状态是未就绪
+                  if (selectedReport.status === "UNAVAILABLE" || (selectedReport.raw && selectedReport.raw.code === 3010)) {
+                    // 找到当前选中的面试记录以获取 jdId 和 resumeId
+                    const currentRecord = interviews.find(i => i.interviewId === loadingReportId || (selectedReport.raw && i.interviewId === selectedReport.raw.interviewId));
+                    
+                    return (
+                      <div className="flex flex-col items-center justify-center h-full py-12 px-6 text-center bg-cyan-500/5 border border-cyan-500/10 rounded-[2rem] animate-in fade-in duration-500">
+                        <div className="w-20 h-20 rounded-full bg-cyan-500/10 flex items-center justify-center mb-6 border border-cyan-500/20">
+                          <Clock className="w-10 h-10 text-cyan-500 animate-pulse" />
+                        </div>
+                        <h4 className="text-xl font-black text-slate-900 dark:text-white mb-3 uppercase tracking-wider">面试评估结果未就绪</h4>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mb-8 leading-relaxed">
+                          该面试会话尚未完成或评估报告正在生成中。您可以选择回到面试继续完成。
+                        </p>
+                        <Button 
+                          onClick={() => {
+                            // 尝试从记录中获取信息，或者回退到默认
+                            const interviewId = loadingReportId || (selectedReport.raw && selectedReport.raw.interviewId);
+                            const record = interviews.find(i => i.interviewId === interviewId);
+                            
+                            navigate("/interview", {
+                              state: {
+                                sessionId: interviewId,
+                                jdId: record?.jdId,
+                                resumeId: record?.resumeId,
+                                questionCount: 5 // 默认
+                              }
+                            });
+                          }}
+                          className="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-10 py-6 rounded-2xl shadow-xl shadow-cyan-500/20 transition-all hover:scale-105 active:scale-95 uppercase tracking-widest text-xs"
+                        >
+                          回到面试 BACK TO SESSION
+                        </Button>
+                      </div>
+                    );
+                  }
+
                   const reportData = typeof selectedReport.reportJson === 'string' 
                     ? JSON.parse(selectedReport.reportJson) 
                     : selectedReport.reportJson;

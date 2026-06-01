@@ -55,11 +55,12 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
   }, [state]);
 
   const renderContent = () => {
+    const contentKey = state;
     switch (state) {
       case 'parsing_url':
       case 'analyzing_jd':
         return (
-          <div className="h-full flex flex-col">
+          <div key={contentKey} className="h-full flex flex-col animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -96,7 +97,7 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
 
       case 'typing_jd':
         return (
-          <div className="h-full flex flex-col justify-center items-center text-center space-y-6 animate-in fade-in duration-700">
+          <div key={contentKey} className="h-full flex flex-col justify-center items-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="relative">
               <div className="absolute inset-0 bg-cyan-500/20 blur-2xl animate-pulse"></div>
               <Edit3 className="w-16 h-16 text-cyan-500 dark:text-cyan-400 relative z-10" strokeWidth={1} />
@@ -121,7 +122,7 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
 
       case 'uploading_resume':
         return (
-          <div className="h-full flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-700">
+          <div key={contentKey} className="h-full flex flex-col items-center justify-center space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
             <div className="relative w-40 h-40 flex items-center justify-center">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="absolute inset-0 border border-purple-500/30 rounded-full animate-radar-pulse" style={{ animationDelay: `${i * 0.6}s` }}></div>
@@ -143,7 +144,7 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
 
       case 'resume_ready':
         return (
-          <div className="h-full flex flex-col p-4 animate-in fade-in duration-700">
+          <div key={contentKey} className="h-full flex flex-col p-4 animate-in fade-in zoom-in-95 duration-700">
             <div className="flex items-center gap-3 mb-8">
               <ShieldCheck className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
               <div className="flex flex-col">
@@ -183,7 +184,7 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
           { depth: 95, stress: 90, guide: 10 },
         ][data.style];
         return (
-          <div className="h-full flex flex-col p-6 space-y-8 animate-in fade-in duration-500">
+          <div key={contentKey} className="h-full flex flex-col p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center gap-3">
               <Zap className="w-6 h-6 text-yellow-500 dark:text-yellow-400" />
               <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider">模式参数校准</h3>
@@ -230,10 +231,10 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
       case 'checklist':
         const isAllDone = data.isJdReady && data.isResumeReady;
         return (
-          <div className="h-full flex flex-col p-6 animate-in fade-in duration-1000">
+          <div key={contentKey} className="h-full flex flex-col p-6 animate-in fade-in duration-1000">
             <div className="flex items-center gap-3 mb-10">
               <ListChecks className="w-6 h-6 text-cyan-500 dark:text-cyan-400" />
-              <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider">准备工作就绪度</h3>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider">准备工作</h3>
             </div>
             
             <div className="flex-1 space-y-6">
@@ -274,7 +275,7 @@ const VisualizationHub = ({ state, data }: { state: string, data: any }) => {
   };
 
   return (
-    <div className="h-full p-8 relative">
+    <div className="h-full p-8 relative transition-all duration-700 ease-in-out">
       {renderContent()}
     </div>
   );
@@ -285,7 +286,13 @@ export default function Setup() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'url' | 'form'>('url');
   const [jobUrl, setJobUrl] = useState("");
+  const [jobList, setJobList] = useState<any[]>([]);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [searchKeywords, setSearchKeywords] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
   const [isParsingJd, setIsParsingJd] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     jd_content: "",
@@ -353,40 +360,127 @@ export default function Setup() {
   }, [isResumeReady]);
 
   useEffect(() => {
+    // 只有在没有进行重要任务时才显示模式参数，防止干扰
+    const isProcessing = isParsingJd || isUploadingResume || isCreatingSession;
+
     if (isParsingJd) setVizState('parsing_url');
     else if (isUploadingResume) setVizState('uploading_resume');
     else if (showResumeSuccess) setVizState('resume_ready');
-    else if (hoverStyle !== null) setVizState('hover_mode');
+    else if (hoverStyle !== null && !isProcessing) setVizState('hover_mode');
     else if (wordCount > 0 && mode === 'form' && !isJdReady) setVizState('typing_jd');
     else setVizState('checklist');
-  }, [isParsingJd, isUploadingResume, showResumeSuccess, hoverStyle, wordCount, mode, isJdReady]);
+  }, [isParsingJd, isUploadingResume, isCreatingSession, showResumeSuccess, hoverStyle, wordCount, mode, isJdReady]);
 
-  // 解析招聘信息（URL模式）
-  const analysisJobUrl = async () => {
-    if (!jobUrl.trim()) {
-      toast.error("Please enter job URL!");
-      return;
+  // 获取爬虫基础地址
+  const getSpiderBaseUrl = () => {
+    let spiderBaseUrl = import.meta.env.VITE_SPIDER_API_BASE_URL || "";
+    if (window.location.protocol === 'https:' && spiderBaseUrl.startsWith('http:')) {
+      return '/spider-api';
     }
-    setIsParsingJd(true);
+    return spiderBaseUrl;
+  };
+
+  // 搜索岗位列表
+  const searchJobs = async (keywords: string = "") => {
+    setIsSearching(true);
     try {
-      const response = await apiClient.post('/api/v1/jd-information', {
-        view_id,
-        jdUrl: jobUrl,
-        jdContent: ""
-      });
-      const data = response.data;
-      if (data.success && data.data?.jd_id) {
-        setJdId(data.data.jd_id);
-        setIsJdReady(true);
-        toast.success("Job description parsed successfully!");
-      } else {
-        toast.error(data.message || "Failed to parse job description");
+      let baseUrl = getSpiderBaseUrl();
+      if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+      
+      const targetUrl = `${baseUrl}/jobs?keywords=${encodeURIComponent(keywords)}`;
+      console.log("Calling spider API:", targetUrl);
+      
+      const response = await fetch(targetUrl);
+      const text = await response.text();
+      
+      if (!response.ok) {
+        console.error("API Response Error:", response.status, text);
+        throw new Error(`搜索失败 (${response.status})`);
+      }
+      
+      try {
+        const result = JSON.parse(text);
+        if (result.success) {
+          setJobList(result.data);
+        }
+      } catch (e) {
+        console.error("返回内容不是 JSON 格式，收到内容前100字:", text.substring(0, 100));
+        throw new Error("接口响应格式错误，请检查 Nginx 代理配置");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to parse job description");
+      console.error("Search jobs error:", error);
+      toast.error(error.message || "搜索岗位失败，请确认爬虫服务已启动");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // 获取岗位详情
+  const fetchJobDetail = async (job: any) => {
+    setIsFetchingDetail(true);
+    setSelectedJob(job);
+    try {
+      let baseUrl = getSpiderBaseUrl();
+      if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+      
+      const response = await fetch(`${baseUrl}/job-detail`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: job.detailUrl })
+      });
+      
+      if (!response.ok) throw new Error(`获取详情失败 (${response.status})`);
+      const result = await response.json();
+      if (result.success) {
+        setSelectedJob({ ...job, ...result.data });
+      }
+    } catch (error: any) {
+      console.error("Fetch job detail error:", error);
+      toast.error("获取岗位详情失败");
+    } finally {
+      setIsFetchingDetail(false);
+    }
+  };
+
+  // 确认选择岗位
+  const confirmJobSelection = async () => {
+    if (!selectedJob) return;
+    
+    setIsParsingJd(true);
+    setVizState('parsing_url');
+    
+    try {
+      // 将爬取到的数据同步到后端数据库
+      const response = await apiClient.post('/api/v1/jd-information', {
+        view_id,
+        title: selectedJob.title || selectedJob.jobTitle,
+        jdContent: `薪资: ${selectedJob.salary}\n地点: ${selectedJob.location}\n要求: ${selectedJob.education}\n公司: ${selectedJob.company}\n\n职位描述:\n${selectedJob.description}`,
+        jdUrl: selectedJob.detailUrl,
+        salaryRange: selectedJob.salary,
+        workExperience: selectedJob.experience || "",
+        education: selectedJob.education || selectedJob.requirement
+      });
+
+      const data = response.data;
+      if (data.success && data.data) {
+        setJdId(String(data.data));
+        setIsJdReady(true);
+        setIsSearchModalOpen(false); // 确定完岗位之后悬浮窗消失
+        toast.success("岗位信息确认成功！");
+      } else {
+        toast.error(data.message || "同步到服务器失败");
+      }
+    } catch (error: any) {
+      console.error("Confirm job error:", error);
+      toast.error(error.message || "确认失败");
     } finally {
       setIsParsingJd(false);
     }
+  };
+
+  // 兼容旧的分析逻辑（如果需要保留，但现在逻辑已变）
+  const analysisJobUrl = async () => {
+    // 逻辑已经迁移到 searchJobs 和 fetchJobDetail
   };
 
   // 提交岗位信息（表单模式）
@@ -531,7 +625,7 @@ export default function Setup() {
       </div>
 
       <div className="relative z-10 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-[#030014]/50 backdrop-blur-xl">
-        <Header showNav />
+        <Header showNav={false} />
       </div>
 
       <main className="relative z-10 max-w-[1400px] mx-auto px-6 py-12">
@@ -566,42 +660,226 @@ export default function Setup() {
                 ></div>
                 <button
                   onClick={() => { setMode('url'); resetJd(); }}
-                  className={`relative z-10 flex-1 py-4 font-bold text-xs uppercase tracking-widest transition-colors duration-300 ${mode === 'url' ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}
+                  className={`relative z-10 flex-1 py-4 font-bold text-xs uppercase tracking-widest transition-colors duration-300 ${mode === 'url' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}
                 >
-                  粘贴职位链接
+                  搜寻岗位
                 </button>
                 <button
                   onClick={() => { setMode('form'); resetJd(); }}
-                  className={`relative z-10 flex-1 py-4 font-bold text-xs uppercase tracking-widest transition-colors duration-300 ${mode === 'form' ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}
+                  className={`relative z-10 flex-1 py-4 font-bold text-xs uppercase tracking-widest transition-colors duration-300 ${mode === 'form' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}
                 >
-                  手动输入岗位
+                  手动输入岗位 <span className="ml-1 text-[8px] px-1.5 py-0.5 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-full border border-cyan-500/20">推荐使用</span>
                 </button>
               </div>
 
               <div className="space-y-12">
                 {mode === 'url' && (
-                  <div className="space-y-4 opacity-60">
-                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
-                      <div className="w-1 h-1 rounded-full bg-slate-400"></div>
-                      岗位链接 JOB SOURCE (暂未开发)
-                    </Label>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <div className="relative flex-1 group">
-                        <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                        <Input
-                          type="url"
-                          placeholder="该功能暂未开发完成..."
-                          disabled
-                          className="pl-12 h-14 bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/5 text-slate-400 rounded-2xl cursor-not-allowed"
-                        />
+                  <div className="space-y-6">
+                    <div className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[2.5rem] bg-slate-50/50 dark:bg-white/[0.02] transition-all hover:border-cyan-500/30">
+                      <Search className="w-10 h-10 text-slate-300 dark:text-white/10 mb-3" />
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">
+                        {isJdReady ? '岗位已确认' : '开始搜寻岗位'}
+                      </h3>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4 max-w-xs text-center leading-relaxed">
+                        {isJdReady 
+                          ? `已成功锁定【${selectedJob?.title || "所选岗位"}】。如果不满意，您可以点击下方按钮重新搜寻。`
+                          : '点击下方按钮开启岗位搜索，我们将为您从上海本地宝实时获取最新的招聘信息。'}
+                      </p>
+                      <div className="flex gap-4">
+                        <Button 
+                          onClick={() => {
+                            setIsSearchModalOpen(true);
+                            if (jobList.length === 0) searchJobs("");
+                          }}
+                          disabled={isJdReady}
+                          className={`h-12 px-8 font-black rounded-2xl tracking-widest uppercase text-[10px] transition-all shadow-xl ${
+                            isJdReady 
+                              ? 'bg-emerald-500 text-white opacity-80 cursor-default' 
+                              : 'bg-slate-900 dark:bg-white dark:text-black hover:scale-105 active:scale-95'
+                          }`}
+                        >
+                          {isJdReady ? '岗位已选择 ✅' : '立即搜寻岗位 SEARCH JOBS'}
+                        </Button>
+                        {isJdReady && (
+                          <Button 
+                            onClick={() => {
+                              resetJd();
+                              setSelectedJob(null);
+                            }}
+                            variant="outline"
+                            className="h-12 px-6 rounded-2xl border-slate-200 dark:border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/5 hover:text-rose-500 hover:border-rose-500/20"
+                          >
+                            重新选择
+                          </Button>
+                        )}
                       </div>
-                      <Button 
-                        disabled
-                        className="h-14 px-8 font-black rounded-2xl bg-slate-200 dark:bg-white/5 text-slate-400 dark:text-slate-600 cursor-not-allowed tracking-widest uppercase text-xs"
-                      >
-                        暂不可用
-                      </Button>
                     </div>
+
+                    <div className="flex items-start gap-2 px-4 py-3 bg-amber-500/5 border border-amber-500/10 rounded-2xl">
+                      <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5" />
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-bold text-amber-600 dark:text-amber-500/80 uppercase tracking-wider">支持范围限制 Notice</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">目前仅支持爬取 <span className="font-mono text-amber-600/80">m.sh.bendibao.com</span> (上海本地宝) 的岗位详情。建议使用手动输入模式以获得最佳体验。</p>
+                      </div>
+                    </div>
+
+                    {isSearchModalOpen && (
+                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+                        {/* 优化背景模糊，不再使用纯黑模糊 */}
+                        <div className="absolute inset-0 bg-slate-500/10 backdrop-blur-xl animate-in fade-in duration-300" onClick={() => setIsSearchModalOpen(false)}></div>
+                        <div className="relative w-full max-w-6xl h-[85vh] bg-white dark:bg-[#0a0a14] rounded-[2.5rem] border border-slate-200 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+                          {/* Modal Header - 解决关闭按钮重叠问题 */}
+                          <div className="p-6 md:p-8 border-b border-slate-200 dark:border-white/5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                                <Search className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+                              </div>
+                              <div>
+                                <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">岗位搜寻中心</h2>
+                                <p className="text-slate-500 text-[10px] uppercase tracking-widest font-mono">Real-time Job Aggregator v2.0</p>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-3 flex-1 max-w-xl lg:mr-12">
+                              <div className="relative flex-1 group">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Input
+                                  placeholder="搜索岗位关键字，例如：Java, 前端, 服务员..."
+                                  value={searchKeywords}
+                                  onChange={(e) => setSearchKeywords(e.target.value)}
+                                  onKeyDown={(e) => e.key === 'Enter' && searchJobs(searchKeywords)}
+                                  className="pl-12 h-14 bg-slate-50 dark:bg-black/40 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-2xl focus:border-cyan-500/50"
+                                />
+                              </div>
+                              <Button 
+                                onClick={() => searchJobs(searchKeywords)}
+                                disabled={isSearching}
+                                className="h-14 px-8 font-black rounded-2xl tracking-widest uppercase text-xs bg-slate-900 dark:bg-white dark:text-black hover:bg-slate-800 text-white"
+                              >
+                                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : '搜索'}
+                              </Button>
+                            </div>
+                            
+                            <button 
+                              onClick={() => setIsSearchModalOpen(false)}
+                              className="w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center transition-colors text-slate-400 hover:text-slate-900 dark:hover:text-white shrink-0"
+                            >
+                              <Plus className="w-6 h-6 rotate-45" />
+                            </button>
+                          </div>
+
+                          {/* Modal Content */}
+                          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                            {/* Left List */}
+                            <div className="w-full md:w-80 lg:w-96 border-r border-slate-200 dark:border-white/5 flex flex-col">
+                              <div className="p-4 border-b border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] flex justify-between items-center">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">岗位列表 ({jobList.length})</span>
+                                {isSearching && <Loader2 className="w-3 h-3 animate-spin text-cyan-500" />}
+                              </div>
+                              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                                {jobList.length === 0 ? (
+                                  <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50 py-20">
+                                    <Search className="w-10 h-10 mb-4" />
+                                    <p className="text-[11px] uppercase font-black tracking-widest text-center">输入关键词<br/>开始搜索</p>
+                                  </div>
+                                ) : (
+                                  jobList.map((job, idx) => (
+                                    <button
+                                      key={idx}
+                                      onClick={() => fetchJobDetail(job)}
+                                      className={`w-full text-left p-5 rounded-3xl border transition-all duration-300 group ${
+                                        selectedJob?.detailUrl === job.detailUrl 
+                                          ? 'bg-cyan-500/10 border-cyan-500/40 shadow-[0_10px_30px_rgba(6,182,212,0.1)]' 
+                                          : 'bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/5 hover:border-cyan-500/20'
+                                      }`}
+                                    >
+                                      <div className="flex justify-between items-start mb-2">
+                                        <h4 className="text-sm font-black text-slate-900 dark:text-white group-hover:text-cyan-500 transition-colors line-clamp-1">{job.title}</h4>
+                                        <span className="text-[10px] font-black text-rose-500 whitespace-nowrap ml-2">{job.salary}</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-1.5 mb-3">
+                                        <span className="text-[8px] px-2 py-0.5 bg-slate-100 dark:bg-white/5 rounded-full text-slate-500 font-bold uppercase">{job.location}</span>
+                                        <span className="text-[8px] px-2 py-0.5 bg-slate-100 dark:bg-white/5 rounded-full text-slate-500 font-bold uppercase">{job.education}</span>
+                                      </div>
+                                      <div className="text-[9px] text-slate-400 dark:text-slate-500 flex items-center gap-1 font-bold truncate">
+                                        <Zap className="w-3 h-3 text-cyan-500/50" />
+                                        {job.company}
+                                      </div>
+                                    </button>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Right Detail */}
+                            <div className="flex-1 flex flex-col bg-slate-50/30 dark:bg-black/20 overflow-hidden">
+                              {isFetchingDetail && (
+                                <div className="absolute inset-0 z-50 bg-white/60 dark:bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-300">
+                                  <div className="relative w-20 h-20">
+                                    <div className="absolute inset-0 border-4 border-cyan-500/10 rounded-full"></div>
+                                    <div className="absolute inset-0 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                                  </div>
+                                  <span className="text-[11px] font-black text-cyan-500 uppercase tracking-[0.3em] mt-6 animate-pulse">正在深度解析详情...</span>
+                                </div>
+                              )}
+                              
+                              {!selectedJob ? (
+                                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-20 opacity-30">
+                                  <FileSearch className="w-20 h-20 mb-8" />
+                                  <h3 className="text-xl font-black uppercase tracking-[0.4em]">请在左侧选择岗位</h3>
+                                  <p className="text-xs mt-4">Select a job from the list to preview details</p>
+                                </div>
+                              ) : (
+                                <div className="flex-1 flex flex-col h-full animate-in fade-in duration-500">
+                                  <div className="p-8 md:p-12 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.01]">
+                                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                          <span className="px-3 py-1 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-cyan-500/20">Active Position</span>
+                                          <span className="text-[10px] text-slate-400 font-mono">ID: {selectedJob.detailUrl.split('/').pop()?.split('.')[0]}</span>
+                                        </div>
+                                        <h3 className="text-4xl font-black text-slate-900 dark:text-white leading-tight">{selectedJob.title}</h3>
+                                        <div className="flex items-center gap-6">
+                                          <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                                            <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{selectedJob.company}</span>
+                                          </div>
+                                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-white/10"></div>
+                                          <span className="text-xl font-black text-rose-500">{selectedJob.salary}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex-1 p-8 md:p-12 overflow-y-auto text-base text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap font-sans custom-scrollbar">
+                                    <div className="flex items-center gap-4 mb-8">
+                                      <div className="h-[1px] flex-1 bg-slate-200 dark:bg-white/5"></div>
+                                      <span className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.4em] px-4">岗位详情描述 JOB DESCRIPTION</span>
+                                      <div className="h-[1px] flex-1 bg-slate-200 dark:bg-white/5"></div>
+                                    </div>
+                                    <div className="max-w-3xl mx-auto">
+                                      {selectedJob.description || "正在为您提取精准的职位描述，请稍候..."}
+                                    </div>
+                                  </div>
+                                  <div className="p-8 md:p-12 bg-white dark:bg-[#0a0a14] border-t border-slate-200 dark:border-white/5 flex gap-6">
+                                    <Button 
+                                      onClick={confirmJobSelection}
+                                      disabled={isParsingJd || isJdReady}
+                                      className={`flex-1 h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all shadow-2xl ${
+                                        isJdReady 
+                                          ? 'bg-emerald-500 text-white' 
+                                          : 'bg-cyan-600 text-white hover:bg-cyan-500 hover:scale-[1.02] active:scale-[0.98]'
+                                      }`}
+                                    >
+                                      {isJdReady ? '已确认岗位信息 ✅' : '确定选择该岗位并解析'}
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -932,30 +932,6 @@ export default function Interview() {
         </div>
 
         <div className="flex items-center gap-3 text-slate-500 font-mono text-sm">
-          {/* 虚拟形象选择器 */}
-          <div className="flex items-center gap-2 mr-4 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-lg border border-slate-200 dark:border-white/10">
-            <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Virtual Avatar</span>
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setSelectedVirtualId(null)}
-                className={`w-6 h-6 rounded flex items-center justify-center transition-all ${!selectedVirtualId ? 'bg-cyan-500/10 text-cyan-600 border border-cyan-500/30 dark:bg-cyan-400/20 dark:text-cyan-400 dark:border-cyan-500/50' : 'text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/5 border border-transparent'}`}
-                title="关闭虚拟形象"
-              >
-                <User className="w-3.5 h-3.5" />
-              </button>
-              {virtualInterviewers.map(v => (
-                <button
-                  key={v.id}
-                  onClick={() => setSelectedVirtualId(v.id)}
-                  className={`w-6 h-6 rounded overflow-hidden transition-all border ${selectedVirtualId === v.id ? 'border-cyan-500 ring-1 ring-cyan-500/50 scale-110' : 'border-slate-200 dark:border-white/10 opacity-50 hover:opacity-100 hover:scale-110'}`}
-                  title={v.name}
-                >
-                  <img src={v.path} alt={v.name} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          </div>
-
           {interviewComplete ? (
             <span className="px-3 py-1 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
               <CheckCircle2 className="w-3.5 h-3.5" /> Completed
