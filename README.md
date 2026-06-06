@@ -53,28 +53,38 @@
 
 ## 🏗️ 系统架构
 
-系统采用前后端分离架构，充分保障了高并发下的语音流稳定性：
+SimuView 采用 **多语言、分布式协同架构**，充分发挥各技术栈的优势，确保了高并发下的稳定性与实时交互的流畅性：
 
-- **Frontend**: React + TypeScript + Tailwind CSS (打造赛博朋克风格 UI)。
-- **Backend**: Spring Boot + MyBatis-Plus (核心业务逻辑、AI 工作流调度)。
-- **AI Stack**: 
-  - **LLM**: 大模型驱动的面试逻辑与评估。
-  - **TTS/ASR**: 基于高性能语音中枢的实时音轨处理。
-- **Storage**: MySQL (结构化数据) + 阿里云 OSS (简历/音轨存档)。
+<div align="center">
+  <img src="images/system_struct.png" width="900" alt="SimuView Architecture" />
+</div>
+
+- **☕ Java Spring Boot (核心枢纽)**：负责核心业务逻辑、数据库事务、AI 工作流编排及安全校验。作为系统的“大脑”，协调各微服务间的通信。
+- **🐍 Python FastAPI (数据抓取)**：利用 Python 强大的生态与 `Scrapy/Request` 能力，负责实时抓取岗位描述（JD）数据并进行结构化 ETL 处理。
+- **⚡ Node.js (语音中枢)**：发挥其非阻塞 I/O 优势，作为 ASR/TTS 的高性能代理，处理海量实时语音流数据的转换与分发。
+- **⚛️ React + TS (用户终端)**：构建响应式 UI，通过 Web Workers 异步处理语音采集，为用户提供沉浸式的赛博朋克风格交互体验。
+
+---
+
+## 🤝 协同亮点
+
+- **实时反馈闭环**：前端采集音频流 -> Node.js 转发 -> 云端 ASR -> Java 后端触发 AI 追问 -> 生成文本 -> Node.js 转发云端 TTS -> 前端播放。
+- **动态 JD 注入**：Java 后端通过 REST 调用 Python 爬虫，实时获取最新岗位要求，使 AI 面试官具备“行业感知”。
+- **资源高效调度**：Python 负责 CPU 密集型的数据解析，Node.js 负责高并发的 I/O 流，Java 负责复杂的业务逻辑，各司其职。
 
 ---
 
 ## 🛠️ 环境要求
 
-在启动项目之前，请确保您的本地开发环境已安装以下软件并符合版本要求：
+在启动项目之前，请确保您的本地开发环境已安装以下软件：
 
 | 软件 | 版本 | 说明 |
 | :--- | :--- | :--- |
 | **JDK** | 17+ | 后端运行核心环境 |
-| **Maven** | 3.8+ | Java 项目构建工具 |
+| **Python** | 3.9+ | 爬虫与数据处理服务 |
 | **Node.js** | 20.x+ | 前端及语音服务运行环境 |
 | **MySQL** | 8.0+ | 结构化数据存储 |
-| **Redis** | 6.0+ | (可选) 用于缓存与会话管理 |
+| **Maven** | 3.8+ | Java 项目构建工具 |
 
 ---
 
@@ -85,58 +95,49 @@
    ```sql
    CREATE DATABASE simuview CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-2. 运行项目根目录下的 `store.sql` 脚本初始化表结构。
+2. 运行项目根目录下的 `sql/store.sql` 脚本初始化表结构。
 
 ### 2. 后端配置 (SimuViewBackEnd)
-由于 `application.yml` 中使用了环境变量，您需要在 IDE (如 IntelliJ IDEA) 的 **Run/Debug Configurations** 中设置环境变量，或者创建一个 `src/main/resources/application-secret.yml` 文件。
-
-**需要配置的参数：**
+设置环境变量或在 `application-secret.yml` 中配置：
 
 | 参数名 | 说明 |
 | :--- | :--- |
 | `SPRING_DATASOURCE_PASSWORD` | MySQL 数据库密码 |
-| `SPRING_AI_OPENAI_API_KEY` | 大模型 API KEY (支持阿里云 DashScope 等兼容 OpenAI 接口的服务) |
+| `SPRING_AI_OPENAI_API_KEY` | 大模型 API KEY (支持 OpenAI 兼容接口) |
 | `ALIYUN_OSS_ACCESS_KEY_ID` | 阿里云 OSS AccessKey ID |
 | `ALIYUN_OSS_ACCESS_KEY_SECRET` | 阿里云 OSS AccessKey Secret |
-| `SIMUVIEW_JWT_SECRET_KEY` | JWT 签名密钥 (建议设置为 32 位以上随机字符串) |
+| `SIMUVIEW_JWT_SECRET_KEY` | JWT 签名密钥 (建议设置为 32 位随机字符串) |
 
-### 3. 语音中枢配置 (TTSASRServer)
-在 `TTSASRServer` 目录下，该服务负责处理 ASR (语音转文字) 与 TTS (文字转语音)。
-1. 该服务通常需要配置相关语音引擎的 SDK 密钥。
-2. 确保端口 `3000` (默认) 未被占用。
-
-### 4. 前端环境变量 (SimuViewFrontEnd)
-在 `SimuViewFrontEnd` 目录下创建 `.env` 文件：
+### 3. 前端与服务地址 (SimuViewFrontEnd)
+在 `SimuViewFrontEnd` 目录下配置 `.env`：
 ```env
 VITE_API_BASE_URL=http://localhost:8080
 VITE_TTS_ASR_URL=http://localhost:3000
+VITE_SPIDER_URL=http://localhost:8000
 ```
 
 ---
 
-## 🚀 启动流程
+## 🚀 启动流程 (建议按序启动)
 
-### 1. 语音服务启动 (TTSASRServer)
-该服务需最先启动，以供前端调用：
+### 1. 启动语音服务 (Node.js)
 ```bash
-cd TTSASRServer
-npm install
-node server.js
+cd TTSASRServer && npm install && node server.js
 ```
 
-### 2. 后端启动 (SimuViewBackEnd)
-- 确认环境变量已正确加载。
+### 2. 启动数据爬虫服务 (Python)
 ```bash
-cd SimuViewBackEnd
-mvn clean install
-mvn spring-boot:run
+cd SpiderServer && pip install -r requirements.txt && uvicorn main:app --reload --port 8000
 ```
 
-### 3. 前端启动 (SimuViewFrontEnd)
+### 3. 启动后端核心 (Java)
 ```bash
-cd SimuViewFrontEnd
-npm install
-npm run dev
+cd SimuViewBackEnd && mvn spring-boot:run
+```
+
+### 4. 启动前端界面 (React)
+```bash
+cd SimuViewFrontEnd && npm install && npm run dev
 ```
 
 ---

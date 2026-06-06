@@ -1,0 +1,49 @@
+server {
+    # 重点 1：增加 default_server，确保所有进入 80 端口的流量（无论 Host 是什么）都走这里
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    # 包含你的域名
+    server_name voidxlab.fun www.voidxlab.fun;
+
+    root /var/www/simuview;
+    index index.html;
+
+    # 重点 2：将爬虫配置放到最前面，并使用最强的匹配符 ^~
+    location ^~ /spider-api {
+        proxy_pass http://127.0.0.1:8000/; # 必须带这个末尾斜杠
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # 针对 Cloudflare Tunnel 的优化
+        proxy_buffering off;
+        proxy_redirect off;
+    }
+
+    # 代理后端接口
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # 语音服务
+    location /tts-api/ {
+        proxy_pass http://127.0.0.1:3001/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_buffering off;
+    }
+
+    # 处理前端路由 - 放在最后
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
