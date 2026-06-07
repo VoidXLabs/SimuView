@@ -184,42 +184,69 @@ export default function Interview() {
     };
   }, []);
 
-  const playTTS = async (text: string) => {
-    try {
-      setIsAiSpeaking(true);
-      const response = await fetch('/tts-api/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
-      
-      if (!response.ok) throw new Error('TTS Failed');
-      
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      
-      if (audioRef.current) {
-        URL.revokeObjectURL(audioRef.current.src);
-        audioRef.current.pause();
+  const ttsQueueRef = useRef<string[]>([]);
+  const isTtsPlayingRef = useRef(false);
+  const sentenceBufferRef = useRef<string>('');
+
+  const processTtsQueue = async () => {
+    if (isTtsPlayingRef.current || ttsQueueRef.current.length === 0) return;
+    
+    isTtsPlayingRef.current = true;
+    const text = ttsQueueRef.current.shift();
+    if (text) {
+      try {
+        await playSingleSentence(text);
+      } catch (err) {
+        console.error("Play sentence failed", err);
       }
-      
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      
-      audio.onended = () => {
-        setIsAiSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      
-      audio.onerror = () => {
-        setIsAiSpeaking(false);
-      };
-      
-      await audio.play();
-    } catch (err) {
-      console.error("TTS Error", err);
-      setIsAiSpeaking(false);
     }
+    isTtsPlayingRef.current = false;
+    processTtsQueue();
+  };
+
+  const playSingleSentence = (text: string) => {
+    return new Promise<void>(async (resolve) => {
+      try {
+        setIsAiSpeaking(true);
+        const response = await fetch('/tts-api/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+        
+        if (!response.ok) throw new Error('TTS Failed');
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        
+        audio.onended = () => {
+          setIsAiSpeaking(false);
+          URL.revokeObjectURL(url);
+          resolve();
+        };
+        
+        audio.onerror = () => {
+          setIsAiSpeaking(false);
+          URL.revokeObjectURL(url);
+          resolve(); // Resolve anyway to continue queue
+        };
+        
+        await audio.play();
+      } catch (err) {
+        console.error("TTS Error", err);
+        setIsAiSpeaking(false);
+        resolve();
+      }
+    });
+  };
+
+  const playTTS = async (text: string) => {
+    // 兼容旧接口，直接推入队列并触发处理
+    ttsQueueRef.current.push(text);
+    processTtsQueue();
   };
 
   const startRecording = async () => {
@@ -258,7 +285,9 @@ export default function Interview() {
     if (isRecording) {
       stopRecording();
     } else {
+      // 停止当前播报并清空队列
       if (audioRef.current) audioRef.current.pause();
+      ttsQueueRef.current = [];
       setIsAiSpeaking(false);
       startRecording();
     }
@@ -308,6 +337,7 @@ export default function Interview() {
     const token = localStorage.getItem('token');
     setIsLoading(false);
     setIsAiThinking(true);
+    sentenceBufferRef.current = '';
 
     const url = `/api/v1/sessions/${sessionId}/questions/stream`;
     
@@ -359,6 +389,19 @@ export default function Interview() {
                 } else if (eventName === 'question.token') {
                   if (data.token) {
                     streamingQuestion += data.token;
+                    sentenceBufferRef.current += data.token;
+
+                    // 句子结束判定逻辑：检测到标点符号且缓冲区有内容
+                    const match = sentenceBufferRef.current.match(/^(.*?[。！？；.!?;])(.*)$/s);
+                    if (match) {
+                      const sentenceToPlay = match[1].trim();
+                      sentenceBufferRef.current = match[2];
+                      if (sentenceToPlay) {
+                        ttsQueueRef.current.push(sentenceToPlay);
+                        processTtsQueue();
+                      }
+                    }
+
                     setMessages(prev => {
                       const newMessages = [...prev];
                       if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === 'ai' && !newMessages[newMessages.length - 1].questionId) {
@@ -376,6 +419,13 @@ export default function Interview() {
                   if (questionId && receivedQuestionIdsRef.current.has(questionId)) continue;
 
                   if (questionContent) {
+                    // 处理剩余未播报的文本
+                    if (sentenceBufferRef.current.trim()) {
+                      ttsQueueRef.current.push(sentenceBufferRef.current.trim());
+                      processTtsQueue();
+                      sentenceBufferRef.current = '';
+                    }
+
                     const aiMessage: Message = {
                       role: "ai",
                       content: questionContent,
@@ -392,13 +442,12 @@ export default function Interview() {
                       return [...prev, aiMessage];
                     });
 
-                    setCurrentQuestionId(questionId);
                     setIsAiThinking(false);
                     setIsInterviewActive(true);
-                    if (questionId) receivedQuestionIdsRef.current.add(questionId);
-                    
-                    // 触发语音播报
-                    playTTS(questionContent);
+                    if (questionId) {
+                      setCurrentQuestionId(questionId);
+                      receivedQuestionIdsRef.current.add(questionId);
+                    }
                     
                     streamingQuestion = '';
                   }
