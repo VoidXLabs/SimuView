@@ -88,7 +88,7 @@ export default function MyInterviews() {
     const s = String(status).toUpperCase();
     if (s === '0' || s === 'PENDING') {
       return { 
-        text: 'PENDING', 
+        text: '待处理', 
         color: 'text-slate-600 dark:text-slate-400', 
         bg: 'bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10', 
         icon: <Clock className="w-3.5 h-3.5" /> 
@@ -96,7 +96,7 @@ export default function MyInterviews() {
     }
     if (s === '1' || s === 'IN_PROGRESS' || s === 'ACTIVE' || s === 'STARTED') {
       return { 
-        text: 'ACTIVE', 
+        text: '进行中', 
         color: 'text-purple-600 dark:text-purple-400', 
         bg: 'bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20', 
         icon: <ActivityIcon className="w-3.5 h-3.5" /> 
@@ -104,14 +104,14 @@ export default function MyInterviews() {
     }
     if (s === '2' || s === 'COMPLETED' || s === 'EVALUATED' || s === 'RESOLVED') {
       return { 
-        text: 'RESOLVED', 
+        text: '已完成', 
         color: 'text-cyan-600 dark:text-cyan-400', 
         bg: 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20', 
         icon: <CheckCircle2 className="w-3.5 h-3.5" /> 
       };
     }
     return { 
-      text: s || 'UNKNOWN', 
+      text: s === 'null' ? '未知' : (s || '未知'), 
       color: 'text-slate-500 dark:text-slate-500', 
       bg: 'bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10', 
       icon: <AlertCircle className="w-3.5 h-3.5" /> 
@@ -135,12 +135,12 @@ export default function MyInterviews() {
         setSelectedReport(data.data);
       } else {
         toast.error(data.message || "未能加载报告");
-        setSelectedReport({ status: "UNAVAILABLE", reason: "Data streams missing or uncompiled.", raw: data });
+        setSelectedReport({ status: "UNAVAILABLE", reason: "数据流缺失或未编译。", raw: data });
       }
     } catch (error: any) {
       console.error("Failed to fetch report", error);
       toast.error("报告获取失败，可能尚未生成");
-      setSelectedReport({ status: "ERROR", error: "Connection anomaly", details: error.message });
+      setSelectedReport({ status: "ERROR", error: "连接异常", details: error.message });
     } finally {
       setLoadingReportId(null);
     }
@@ -176,7 +176,7 @@ export default function MyInterviews() {
             {loading ? (
               <div className="flex flex-col items-center justify-center h-40 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-3xl">
                 <Loader2 className="w-8 h-8 text-cyan-500 animate-spin mb-4" />
-                <span className="text-slate-500 dark:text-slate-400 font-mono text-sm tracking-widest uppercase">SYNCING LOGS...</span>
+                <span className="text-slate-500 dark:text-slate-400 font-mono text-sm tracking-widest uppercase">正在同步日志...</span>
               </div>
             ) : interviews.length > 0 ? (
               interviews.map((interview) => {
@@ -211,7 +211,7 @@ export default function MyInterviews() {
                       <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm">
                         <ScanSearch className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                         <div className="flex items-center gap-2 font-mono text-xs">
-                          <span className="text-slate-400 dark:text-slate-500">JD_REF:</span>
+                          <span className="text-slate-400 dark:text-slate-500">职位参考:</span>
                           <span className="text-cyan-600 dark:text-cyan-400/80 bg-cyan-50 dark:bg-cyan-400/10 px-1.5 rounded border border-cyan-100 dark:border-transparent">{interview.jdId}</span>
                         </div>
                       </div>
@@ -240,7 +240,7 @@ export default function MyInterviews() {
           
           <div className="flex items-center justify-between mb-8 border-b border-slate-100 dark:border-white/5 pb-6">
             <div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-wide">解析报告流</h3>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-wide">报告详情视图</h3>
               <p className="text-slate-400 dark:text-slate-500 text-sm font-mono mt-1 uppercase tracking-widest">Decrypted Protocol View</p>
             </div>
             <div className="flex gap-2">
@@ -257,7 +257,7 @@ export default function MyInterviews() {
                 <div className="absolute inset-0 border-2 border-cyan-500 dark:border-cyan-400 rounded-full border-t-transparent animate-spin"></div>
               </div>
               <span className="text-cyan-600 dark:text-cyan-500 font-mono text-sm tracking-widest uppercase animate-pulse">
-                Decrypting Protocol...
+                正在解密协议...
               </span>
             </div>
           ) : selectedReport ? (
@@ -295,7 +295,7 @@ export default function MyInterviews() {
                           }}
                           className="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-10 py-6 rounded-2xl shadow-xl shadow-cyan-500/20 transition-all hover:scale-105 active:scale-95 uppercase tracking-widest text-xs"
                         >
-                          回到面试 BACK TO SESSION
+                          回到面试
                         </Button>
                       </div>
                     );
@@ -311,7 +311,7 @@ export default function MyInterviews() {
                 } catch (e) {
                   return (
                     <div className="bg-rose-500/5 border border-rose-500/10 rounded-2xl p-6 text-rose-500 font-mono text-xs">
-                      <p className="font-bold mb-2">PROTOCOL DECRYPTION FAILED</p>
+                      <p className="font-bold mb-2">协议解密失败</p>
                       <pre className="whitespace-pre-wrap break-all opacity-70">
                         {JSON.stringify(selectedReport, null, 2)}
                       </pre>
@@ -323,8 +323,8 @@ export default function MyInterviews() {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 bg-slate-50/50 dark:bg-white/[0.01] rounded-2xl border border-slate-200 dark:border-white/5 border-dashed">
               <Terminal className="w-10 h-10 mb-3 opacity-50" />
-              <p className="font-mono text-sm tracking-widest uppercase">Awaiting Selection</p>
-              <p className="text-xs font-light mt-2 opacity-50">Select a log entry to decrypt details</p>
+              <p className="font-mono text-sm tracking-widest uppercase">等待选择</p>
+              <p className="text-xs font-light mt-2 opacity-50">选择一条记录以查看详情</p>
             </div>
           )}
         </div>

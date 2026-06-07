@@ -74,7 +74,7 @@ export default function InterviewDetail() {
           className="group flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white mb-8 transition-colors bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/5 backdrop-blur-sm w-fit shadow-sm"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-semibold text-sm">Back to Dashboard</span>
+          <span className="font-semibold text-sm">返回仪表盘</span>
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -89,7 +89,7 @@ export default function InterviewDetail() {
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center border border-emerald-500/10 dark:border-emerald-500/20">
                       <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold tracking-wider text-sm uppercase">Interview Report</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold tracking-wider text-sm uppercase">面试报告</span>
                   </div>
                   <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{report.title}</h1>
                   <div className="flex items-center gap-4 text-slate-500 dark:text-slate-300 text-sm font-medium">
@@ -99,7 +99,7 @@ export default function InterviewDetail() {
                 </div>
                 
                 <div className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-white/5 shadow-inner min-w-[120px]">
-                  <span className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Score</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">评分</span>
                   <span className="text-5xl font-black text-slate-900 dark:text-white">{report.totalScore}</span>
                   <div className="mt-2 flex gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
@@ -116,25 +116,25 @@ export default function InterviewDetail() {
           {/* Sidebar */}
           <div className="space-y-6">
             <div className="rounded-[2rem] bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 space-y-6 transition-colors shadow-sm sticky top-8">
-              <h3 className="text-slate-900 dark:text-white font-bold px-2">Interview Meta</h3>
+              <h3 className="text-slate-900 dark:text-white font-bold px-2">面试信息</h3>
               <div className="space-y-1">
                 <div className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                  <span className="text-slate-500 dark:text-slate-400 text-sm">Interview ID</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-sm">面试 ID</span>
                   <span className="text-slate-700 dark:text-neutral-200 font-mono text-xs">#{id || '7721'}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                  <span className="text-slate-500 dark:text-slate-400 text-sm">Format</span>
-                  <span className="text-slate-700 dark:text-neutral-200 text-sm">Voice AI</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-sm">形式</span>
+                  <span className="text-slate-700 dark:text-neutral-200 text-sm">语音 AI</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                  <span className="text-slate-500 dark:text-slate-400 text-sm">AI Model</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-sm">AI 模型</span>
                   <span className="text-slate-700 dark:text-neutral-200 text-sm">GPT-4-Turbo</span>
                 </div>
               </div>
               
               <div className="pt-4 border-t border-slate-100 dark:border-white/5 px-2">
                 <Button className="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-xl h-12 font-bold shadow-lg shadow-emerald-900/10 dark:shadow-emerald-900/20">
-                  Download PDF Report
+                  下载 PDF 报告
                 </Button>
               </div>
             </div>
@@ -143,15 +143,15 @@ export default function InterviewDetail() {
               <div className="w-16 h-16 bg-emerald-500/10 dark:bg-white/10 rounded-2xl flex items-center justify-center mx-auto">
                 <Star className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-slate-900 dark:text-white font-bold">Ready for another?</h3>
+              <h3 className="text-slate-900 dark:text-white font-bold">准备好下一次了吗？</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-                Practice makes perfect. Start a new session to improve your score.
+                熟能生巧。开始新的练习以提高你的分数。
               </p>
               <Button 
                 onClick={() => navigate("/setup")}
                 className="w-full bg-emerald-600 dark:bg-white text-white dark:text-black hover:bg-emerald-700 dark:hover:bg-neutral-200 rounded-xl h-12 font-bold shadow-md transition-all"
               >
-                New Practice Session
+                开始新练习
               </Button>
             </div>
           </div>

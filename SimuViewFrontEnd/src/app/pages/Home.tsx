@@ -43,7 +43,7 @@ const HeroVisual = () => {
         <div className="p-6 pb-2 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-cyan-600 dark:bg-cyan-500 animate-pulse"></div>
-            <span className="text-[10px] font-mono tracking-widest text-cyan-600/70 dark:text-cyan-500/70 uppercase">Matrix Evaluation</span>
+            <span className="text-[10px] font-mono tracking-widest text-cyan-600/70 dark:text-cyan-500/70 uppercase">能力矩阵评估</span>
           </div>
           <Award className="w-4 h-4 text-black/20 dark:text-white/20" />
         </div>
@@ -108,7 +108,7 @@ const HeroVisual = () => {
               </div>
               <div className="mt-6 px-4 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
                 <p className="text-[10px] font-mono tracking-[0.2em] text-cyan-700 dark:text-cyan-400 uppercase flex items-center gap-2">
-                  <AudioLines className="w-3 h-3" /> Voice Syncing...
+                  <AudioLines className="w-3 h-3" /> 语音同步中...
                 </p>
               </div>
             </div>
@@ -196,7 +196,7 @@ const InteractiveDemo = () => {
             <div className="w-3 h-3 rounded-full bg-emerald-500/50"></div>
           </div>
           <div className="absolute top-6 right-8 text-[10px] font-mono text-slate-400 tracking-widest uppercase">
-            Live_Sandbox_v1.0
+            实战沙盒 v1.0
           </div>
 
           <div className="mt-10 min-h-[350px] flex flex-col items-center justify-center space-y-8">
@@ -244,7 +244,7 @@ const InteractiveDemo = () => {
             {stage === 'recording' && (
               <div className="flex flex-col items-center space-y-8 w-full animate-in fade-in zoom-in duration-500">
                 <div className="text-center">
-                  <span className="text-xs font-mono text-rose-500 animate-pulse tracking-widest uppercase mb-2 block">Recording...</span>
+                  <span className="text-xs font-mono text-rose-500 animate-pulse tracking-widest uppercase mb-2 block">正在录音...</span>
                   <h3 className="text-2xl font-bold text-slate-800 dark:text-white">请开始你的回答</h3>
                 </div>
                 
@@ -528,9 +528,9 @@ export default function Home() {
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString('zh-CN', {
         year: 'numeric',
-        month: 'short',
+        month: 'long',
         day: 'numeric'
       });
     } catch {
@@ -602,7 +602,7 @@ export default function Home() {
 
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-black/[0.03] dark:bg-white/[0.03] border border-black/10 dark:border-white/10 backdrop-blur-md shadow-sm dark:shadow-[0_0_20px_rgba(255,255,255,0.02)]">
               <Sparkles className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-              <span className="text-[10px] font-black tracking-[0.3em] text-cyan-700 dark:text-cyan-200/60 uppercase">Next-Gen AI Matrix</span>
+              <span className="text-[10px] font-black tracking-[0.3em] text-cyan-700 dark:text-cyan-200/60 uppercase">下一代 AI 矩阵</span>
             </div>
             
             <h1 className="flex flex-col items-center lg:items-start py-2">
